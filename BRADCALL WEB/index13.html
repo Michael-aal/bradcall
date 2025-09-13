@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        form{
+            background: linear-gradient(red,black);
+            padding: 30px;
+            margin: 20px;
+            border: 2px solid ;
+            width: 20rem;
+            color: white;
+            height: 20rem;
+            justify-content: center;
+        }
+         
+        h1{
+            flex-wrap: nowrap;
+            margin-left:25px ;
+        }
+        input{
+            font-size: 20px;
+        }
+
+        button{
+            width: 250px;
+            margin-top: 1rem;
+            background-color: black;
+            color: white;
+            font-size: 30px;
+        }
+
+        .chatbox{
+            margin-left: 34px;
+            margin-top: 70px;
+        }
+
+        .ans{
+            border: 1px solid;
+            width: 23rem;
+            height: 20rem;
+            padding: 10px;
+            margin: 02rem;
+
+        }
+
+        h2{
+            border: 1px solid;
+            background-color: black;
+            color: white;
+            padding: 5px;
+            border-radius: 20px;
+        }
+        .container{
+     display: flex;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <form action="index13.html" method="post">
+            <div class="chatbox">
+            <h1>BRADCALL</h1>
+            <input type="text" id="chat" placeholder="chatbot" name="chatbot">
+            <button onclick="send()">send</button>
+        </div>
+        </form>
+    <div class="ans">
+        <h2 id="answer">hi</h2>
+    </div>
+    </div>
+
+
+    <script>
+     const Chats = document.getElementById("chat");
+     const ans = document.getElementById("answer");
+     console.log(ans);
+     function send(){
+
+        switch(Chats){
+           case Chats = "hi":
+            ans.textContent = "how are you";
+            
+
+            default:
+                ans.textContent = " i don't understand";
+                break
+        }
+     }
+
+    </script>
+
+</body>
+</html>
