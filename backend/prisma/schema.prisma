@@ -1,0 +1,9 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+enum Role { PARTNER PROVIDER ADMIN }
+enum RequestStatus { PENDING ACCEPTED REJECTED IN_PROGRESS COMPLETED CANCELLED }
+model User { id String @id @default(cuid()) name String email String @unique passwordHash String role Role @default(PARTNER) createdAt DateTime @default(now()) provider ProviderProfile? servicesRequested ServiceRequest[] @relation("PartnerRequests") requestsReceived ServiceRequest[] @relation("ProviderRequests") }
+model ProviderProfile { id String @id @default(cuid()) userId String @unique displayName String bio String? location String? verified Boolean @default(false) user User @relation(fields:[userId],references:[id],onDelete:Cascade) services Service[] requests ServiceRequest[] @relation("ProviderRequests") }
+model Category { id String @id @default(cuid()) name String @unique services Service[] }
+model Service { id String @id @default(cuid()) title String description String price Float location String active Boolean @default(true) createdAt DateTime @default(now()) providerId String categoryId String provider ProviderProfile @relation(fields:[providerId],references:[id],onDelete:Cascade) category Category @relation(fields:[categoryId],references:[id]) requests ServiceRequest[] }
+model ServiceRequest { id String @id @default(cuid()) details String location String status RequestStatus @default(PENDING) createdAt DateTime @default(now()) serviceId String partnerId String providerId String service Service @relation(fields:[serviceId],references:[id]) partner User @relation("PartnerRequests",fields:[partnerId],references:[id]) provider ProviderProfile @relation("ProviderRequests",fields:[providerId],references:[id]) @@index([providerId,status]) @@index([partnerId,createdAt]) }
