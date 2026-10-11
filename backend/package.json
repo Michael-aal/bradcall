@@ -9,7 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "admin:seed": "node prisma/seed-admin.js",
-    "check": "node --check src/server.js && node --check src/routes/auth.routes.js && node --check src/routes/admin.routes.js && node --check src/routes/service.routes.js && node --check src/routes/request.routes.js && node --check prisma/seed-admin.js && node --check ../marketplace.js && node --check ../dashboard.js && node --check ../community-map.js"
+    "check": "node --check src/server.js && node --check src/routes/auth.routes.js && node --check src/routes/admin.routes.js && node --check src/routes/service.routes.js && node --check src/routes/request.routes.js && node --check prisma/seed-admin.js && node --check ../config.js && node --check ../bradcall.js && node --check ../marketplace.js && node --check ../dashboard.js && node --check ../community-map.js"
   },
   "dependencies": {
     "@prisma/client": "latest",
