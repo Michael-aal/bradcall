@@ -1,1 +1,24 @@
-{"name":"bradcall-backend","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"node --watch src/server.js","start":"node src/server.js","prisma:generate":"prisma generate","prisma:migrate":"prisma migrate dev"},"dependencies":{"@prisma/client":"latest","bcryptjs":"latest","cors":"latest","dotenv":"latest","express":"latest","jsonwebtoken":"latest"},"devDependencies":{"prisma":"latest"}}
+{
+  "name": "bradcall-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "admin:seed": "node prisma/seed-admin.js"
+  },
+  "dependencies": {
+    "@prisma/client": "latest",
+    "bcryptjs": "latest",
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest",
+    "jsonwebtoken": "latest"
+  },
+  "devDependencies": {
+    "prisma": "latest"
+  }
+}
