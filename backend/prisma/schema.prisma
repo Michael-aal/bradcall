@@ -35,6 +35,12 @@ enum PaymentMethod {
   PAYSTACK
   CASH
 }
+enum PayoutStatus {
+  PENDING
+  PAID
+  ON_HOLD
+  NOT_REQUIRED
+}
 enum SupportStatus {
   OPEN
   IN_PROGRESS
@@ -164,6 +170,9 @@ model Payment {
  providerAmountKobo Int
  method PaymentMethod
  status PaymentStatus @default(PENDING)
+ payoutStatus PayoutStatus @default(PENDING)
+ payoutReference String?
+ payoutMarkedAt DateTime?
  authorizationUrl String?
  paidAt DateTime?
  cashReportedAt DateTime?
