@@ -78,7 +78,7 @@ Do not run against an uninspected database or assume production is configured. B
 
 - \`PAYSTACK_SECRET_KEY\` — server-side secret only
 - \`PAYSTACK_CALLBACK_URL\` — public payment result page URL
-- \`BRADCALL_COMMISSION_PERCENT\` — disclosed provider commission calculation (defaults to 5%)
+- \`BRADCALL_COMMISSION_PERCENT\` — disclosed provider commission calculation (defaults to 0% (configure only after disclosing and agreeing the rate))
 - \`OPENAI_API_KEY\` — optional, server-side only; enables AI-assisted report triage
 
-**Settlement limitation:** the current integration records the platform commission and provider share but does not implement an approved split payout or escrow. Funds collected into the platform Paystack account require a separately approved payout process. Do not advertise delayed payouts or escrow until Paystack confirms the compliant product and configuration.
+**Settlement limitation:** the current integration records the platform commission and provider share but does not implement an approved split payout or escrow. The admin payout ledger records a completed external transfer reference; it does not move funds itself. Admins must verify the provider and resolve disputes before recording a payout. Funds collected into the platform Paystack account require a separately approved payout process. Do not advertise delayed payouts or escrow until Paystack confirms the compliant product and configuration.
