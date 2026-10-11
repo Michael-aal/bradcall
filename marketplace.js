@@ -1,0 +1,13 @@
+const API_BASE=(window.BRADCALL_API_URL||"http://localhost:5000").replace(/\/$/,"");
+const $=s=>document.querySelector(s);
+const showError=message=>{const el=$("#form-error");if(el){el.textContent=message;el.classList.add("visible")}};
+const clearError=()=>{const el=$("#form-error");if(el){el.textContent="";el.classList.remove("visible")}};
+const friendlyError=e=>e instanceof TypeError?"Could not reach Bradcall's API. Check that the backend is running and BRADCALL_API_URL is configured.":e.message||"Something went wrong. Please try again.";
+const saveSession=data=>{localStorage.setItem("bradcall_token",data.token);localStorage.setItem("bradcall_user",JSON.stringify(data.user))};
+const goForRole=role=>location.href=role==="PROVIDER"?"provider.html":"consumer.html";
+const loginForm=$("#login-form");
+if(loginForm)loginForm.addEventListener("submit",async e=>{e.preventDefault();clearError();const email=$("#email").value.trim();const password=$("#password").value;if(!email||!password)return showError("Enter your email and password.");try{const r=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});const data=await r.json();if(!r.ok)throw Error(data.message||"Unable to log in.");saveSession(data);goForRole(data.user.role)}catch(err){showError(friendlyError(err))}});
+const registerForm=$("#register-form");
+if(registerForm)registerForm.addEventListener("submit",async e=>{e.preventDefault();clearError();const name=$("#name").value.trim();const email=$("#email").value.trim();const password=$("#password").value;const confirm=$("#confirm-password").value;const role=document.querySelector('input[name="role"]:checked')?.value||"PARTNER";if(!name||!email||!password||!confirm)return showError("Complete all required fields.");if(password.length<8)return showError("Use a password with at least 8 characters.");if(password!==confirm)return showError("Your passwords do not match.");try{const r=await fetch(API_BASE+"/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,email,password,role})});const data=await r.json();if(!r.ok)throw Error(data.message||"Unable to create your account.");saveSession(data);goForRole(data.user.role)}catch(err){showError(friendlyError(err))}});
+document.querySelectorAll("[data-signout]").forEach(el=>el.addEventListener("click",()=>{localStorage.removeItem("bradcall_token");localStorage.removeItem("bradcall_user");location.href="index.html"}));
+document.querySelectorAll("[data-user-name]").forEach(el=>{try{const user=JSON.parse(localStorage.getItem("bradcall_user")||"null");if(user)el.textContent=user.name}catch{}});
