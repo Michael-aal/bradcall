@@ -1,4 +1,4 @@
-const API_BASE=(window.BRADCALL_API_URL||"http://localhost:5000").replace(/\/$/,"");
+const API_BASE=(window.BRADCALL_API_URL||(location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://localhost:5000":location.origin)).replace(/\/$/,"");
 const $=s=>document.querySelector(s);
 const showError=message=>{const el=$("#form-error");if(el){el.textContent=message;el.classList.add("visible")}};
 const clearError=()=>{const el=$("#form-error");if(el){el.textContent="";el.classList.remove("visible")}};
