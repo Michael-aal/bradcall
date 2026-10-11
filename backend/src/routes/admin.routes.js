@@ -46,4 +46,6 @@ router.get("/requests", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.get("/providers",async(req,res,next)=>{try{res.json(await prisma.providerProfile.findMany({include:{user:{select:{id:true,name:true,email:true,status:true}},_count:{select:{services:true,requests:true}}},orderBy:{user:{createdAt:"desc"}},take:200}));}catch(error){next(error);}});
+router.patch("/providers/:id/verification",async(req,res,next)=>{try{if(typeof req.body.verified!=="boolean")return res.status(400).json({message:"verified must be true or false."});const p=await prisma.providerProfile.update({where:{id:req.params.id},data:{verified:req.body.verified}});res.json({id:p.id,verified:p.verified});}catch(error){next(error);}});
 export default router;
