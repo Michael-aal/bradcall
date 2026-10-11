@@ -37,3 +37,5 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .site-footer{border-top:1px solid var(--brand-line);padding:24px;text-align:center;color:#71817b;font-size:13px}
 @media(max-width:800px){.market-grid{grid-template-columns:1fr 1fr}.auth-wrap{grid-template-columns:1fr;gap:22px;padding-top:32px}.auth-intro{padding:0 4px}.auth-intro h1{font-size:38px}}
 @media(max-width:520px){.market-grid{grid-template-columns:1fr}.page-shell{padding:32px 16px 52px}.auth-panel{padding:22px 18px}.auth-wrap{padding:26px 16px 44px}.role-choice{grid-template-columns:1fr}}
+
+:root{--red:var(--brand-green);--red-soft:#e4f5ef;--dark:#18332d;--paper:var(--brand-paper);--line:var(--brand-line)}
