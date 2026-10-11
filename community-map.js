@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const API=(window.BRADCALL_API_URL||"http://localhost:5000").replace(/\/$/,"");
+const API=(window.BRADCALL_API_URL||(location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://localhost:5000":location.origin)).replace(/\/$/,"");
 const root=document.querySelector("[data-community-map]");if(!root)return;
 const $=s=>root.querySelector(s);
 const mapNode=$("#community-map-canvas"),search=$("#community-map-search"),button=$("#community-map-submit"),caption=$("#community-map-caption"),list=$("#community-map-list");
