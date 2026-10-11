@@ -12,7 +12,7 @@
     "check": "node --check src/server.js && node --check src/routes/auth.routes.js && node --check src/routes/admin.routes.js && node --check src/routes/service.routes.js && node --check src/routes/request.routes.js && node --check prisma/seed-admin.js && node --check ../config.js && node --check ../bradcall.js && node --check ../marketplace.js && node --check ../dashboard.js && node --check ../community-map.js"
   },
   "dependencies": {
-    "@prisma/client": "latest",
+    "@prisma/client": "6.19.3",
     "bcryptjs": "latest",
     "cors": "latest",
     "dotenv": "latest",
@@ -20,6 +20,6 @@
     "jsonwebtoken": "latest"
   },
   "devDependencies": {
-    "prisma": "latest"
+    "prisma": "6.19.3"
   }
 }
