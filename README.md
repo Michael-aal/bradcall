@@ -16,8 +16,11 @@ Bradcall is a local-services marketplace built with plain HTML, CSS, and JavaScr
 1. Install a supported Node.js LTS release.
 2. In `backend/`, install dependencies with `npm install`.
 3. Copy `.env.example` to `.env` and set `DATABASE_URL` and a strong random `JWT_SECRET` (at least 32 characters).
-4. Ensure the PostgreSQL schema has been migrated, then run `npm run prisma:generate`.
-5. Start the API with `npm run dev`. Health check: `GET /api/health`.
+4. For a new/empty database, run `npx prisma migrate deploy` and then `npm run prisma:generate`.
+5. Run `npm run check` for JavaScript syntax checks.
+6. Start the API with `npm run dev`. Health check: `GET /api/health`.
+
+If a database already contains these tables but has no matching Prisma migration history, do not run the initial migration blindly. Confirm the live schema first and baseline the migration deliberately.
 
 ### Provision the first administrator
 
@@ -31,7 +34,7 @@ This is an operator-only command. Do not add public admin registration.
 
 ## Frontend API configuration
 
-For local development the pages use `http://localhost:5000`. Before deployment, set `window.BRADCALL_API_URL` to the deployed backend origin in a small configuration script loaded before `marketplace.js` and `dashboard.js` on each page. Configure the backend's allowed CORS origin to match the frontend domain before exposing the service publicly.
+The pages load `config.js`. Local development defaults to `http://localhost:5000`; for a separate production API, set `window.BRADCALL_API_URL` in `config.js` to the deployed backend origin. Set `CORS_ORIGIN` on the backend to the exact frontend origin(s), comma-separated, before deployment.
 
 ## Community map
 
