@@ -18,14 +18,53 @@ enum RequestStatus {
  COMPLETED
  CANCELLED
 }
-enum AccountStatus { ACTIVE WARNED SUSPENDED BANNED }
-enum PaymentStatus { PENDING PAID FAILED REFUND_PENDING REFUNDED }
-enum PaymentMethod { PAYSTACK CASH }
-enum SupportStatus { OPEN IN_PROGRESS RESOLVED CLOSED }
-enum DisputeStatus { OPEN UNDER_REVIEW RESOLVED REFUNDED REJECTED }
-enum CaseStatus { OPEN UNDER_REVIEW ACTIONED DISMISSED }
-enum ModerationActionType { WARNING SUSPEND BAN REINSTATE }
-enum AppealStatus { OPEN APPROVED REJECTED }
+enum AccountStatus {
+  ACTIVE
+  WARNED
+  SUSPENDED
+  BANNED
+}
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUND_PENDING
+  REFUNDED
+}
+enum PaymentMethod {
+  PAYSTACK
+  CASH
+}
+enum SupportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REFUNDED
+  REJECTED
+}
+enum CaseStatus {
+  OPEN
+  UNDER_REVIEW
+  ACTIONED
+  DISMISSED
+}
+enum ModerationActionType {
+  WARNING
+  SUSPEND
+  BAN
+  REINSTATE
+}
+enum AppealStatus {
+  OPEN
+  APPROVED
+  REJECTED
+}
 model User {
  id String @id @default(cuid())
  name String
