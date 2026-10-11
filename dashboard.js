@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const API=(window.BRADCALL_API_URL||"http://localhost:5000").replace(/\/$/,"");
+const API=(window.BRADCALL_API_URL||(location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://localhost:5000":location.origin)).replace(/\/$/,"");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const token=()=>localStorage.getItem("bradcall_token")||"";
 let user=null;
