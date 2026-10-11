@@ -126,6 +126,7 @@ model ServiceRequest {
  createdAt DateTime @default(now())
  appointmentAt DateTime?
  agreedPrice Float?
+ priceApproved Boolean @default(false)
  serviceId String
  partnerId String
  providerId String
