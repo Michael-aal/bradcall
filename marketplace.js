@@ -4,7 +4,7 @@ const showError=message=>{const el=$("#form-error");if(el){el.textContent=messag
 const clearError=()=>{const el=$("#form-error");if(el){el.textContent="";el.classList.remove("visible")}};
 const friendlyError=e=>e instanceof TypeError?"Could not reach Bradcall's API. Check that the backend is running and BRADCALL_API_URL is configured.":e.message||"Something went wrong. Please try again.";
 const saveSession=data=>{localStorage.setItem("bradcall_token",data.token);localStorage.setItem("bradcall_user",JSON.stringify(data.user))};
-const goForRole=role=>location.href=role==="PROVIDER"?"provider.html":"consumer.html";
+const goForRole=role=>location.href=role==="PROVIDER"?"provider-dashboard.html":role==="ADMIN"?"admin-dashboard.html":"consumer-dashboard.html";
 const loginForm=$("#login-form");
 if(loginForm)loginForm.addEventListener("submit",async e=>{e.preventDefault();clearError();const email=$("#email").value.trim();const password=$("#password").value;if(!email||!password)return showError("Enter your email and password.");try{const r=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});const data=await r.json();if(!r.ok)throw Error(data.message||"Unable to log in.");saveSession(data);goForRole(data.user.role)}catch(err){showError(friendlyError(err))}});
 const registerForm=$("#register-form");
