@@ -1,0 +1,32 @@
+name: Bradcall backend and frontend checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - feat/bradcall-multipage-auth-glovo-palette
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bradcall?schema=public
+      JWT_SECRET: ci-only-secret-that-is-at-least-thirty-two-characters-long
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Validate Prisma schema
+        run: npx prisma validate
+      - name: Generate Prisma Client
+        run: npx prisma generate
+      - name: Check JavaScript syntax
+        run: npm run check
