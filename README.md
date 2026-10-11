@@ -45,3 +45,40 @@ The shaded circle is an approximate viewing aid, not an official community bound
 ## Important verification notes
 
 This repository work has been committed to the feature branch and still needs a real database-backed end-to-end run, mobile-browser testing, deployment configuration, and a security review before production use. Do not treat the marketplace as production-ready until those checks pass.
+
+
+## Payments, communications and Trust Centre
+
+The feature branch now includes a Trust Centre at \`trust-center.html\` and draft policies at \`policies.html\`.
+
+- **Messaging:** private messages are scoped to a service request and its parties.
+- **Support:** consumers/providers create tickets; admins reply and manage ticket status.
+- **Disputes:** either service party can open a dispute; admins review the case and record resolution.
+- **Paystack:** configure \`PAYSTACK_SECRET_KEY\` and \`PAYSTACK_CALLBACK_URL\` on the backend only. Checkout initialization and transaction verification happen server-side. Configure Paystack to send webhooks to \`/api/payments/webhook\`.
+- **Cash:** providers report cash received; the consumer can confirm or dispute the record. This is an audit record, not independent proof of physical cash transfer. Provider commission is tracked separately.
+- **Refunds:** admins can request a Paystack refund for a confirmed online payment. The status remains pending until Paystack confirms processing.
+- **Trust & Safety:** reports receive AI-assisted triage when \`OPENAI_API_KEY\` is configured; without it, conservative keyword flags are used. AI never applies sanctions automatically. Admin decisions are recorded and appeals are supported.
+- **Policies:** registration requires recorded acceptance of policy version \`2026-10-12-v1\`. The original policy pages are drafts requiring legal review before public launch.
+
+### New database migration
+
+For a database already running the initial Bradcall migration, deploy the additive migration using:
+
+\`\`\`sh
+cd backend
+npm install
+npx prisma migrate deploy
+npm run prisma:generate
+npm run check
+\`\`\`
+
+Do not run against an uninspected database or assume production is configured. Back up the database first and review migration status.
+
+### Required environment settings
+
+- \`PAYSTACK_SECRET_KEY\` — server-side secret only
+- \`PAYSTACK_CALLBACK_URL\` — public payment result page URL
+- \`BRADCALL_COMMISSION_PERCENT\` — disclosed provider commission calculation (defaults to 5%)
+- \`OPENAI_API_KEY\` — optional, server-side only; enables AI-assisted report triage
+
+**Settlement limitation:** the current integration records the platform commission and provider share but does not implement an approved split payout or escrow. Funds collected into the platform Paystack account require a separately approved payout process. Do not advertise delayed payouts or escrow until Paystack confirms the compliant product and configuration.
