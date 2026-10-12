@@ -78,6 +78,9 @@ model User {
  passwordHash String
  role Role @default(PARTNER)
  status AccountStatus @default(ACTIVE)
+ phone String?
+ location String?
+ profileCompleted Boolean @default(false)
  createdAt DateTime @default(now())
  provider ProviderProfile?
  servicesRequested ServiceRequest[] @relation("PartnerRequests")
