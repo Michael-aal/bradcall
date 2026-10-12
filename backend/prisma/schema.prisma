@@ -251,6 +251,7 @@ model ModerationCase {
  description String
  aiSummary String?
  aiRiskLevel String?
+ resolution String?
  status CaseStatus @default(OPEN)
  createdAt DateTime @default(now())
  updatedAt DateTime @updatedAt
