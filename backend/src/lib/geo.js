@@ -1,0 +1,3 @@
+export function validCoordinates(latitude,longitude){return Number.isFinite(Number(latitude))&&Number.isFinite(Number(longitude))&&Number(latitude)>=-90&&Number(latitude)<=90&&Number(longitude)>=-180&&Number(longitude)<=180}
+export function roundServiceAreaCoordinate(value){return Math.round(Number(value)*1000)/1000}
+export function distanceKm(lat1,lon1,lat2,lon2){const rad=d=>d*Math.PI/180,dLat=rad(Number(lat2)-Number(lat1)),dLon=rad(Number(lon2)-Number(lon1));const a=Math.sin(dLat/2)**2+Math.cos(rad(Number(lat1)))*Math.cos(rad(Number(lat2)))*Math.sin(dLon/2)**2;return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(Math.max(0,1-a)))}
