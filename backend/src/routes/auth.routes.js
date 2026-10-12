@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { auth } from "../middleware/auth.js";
 const router=Router(), POLICY_VERSION="2026-10-12-v1";
-const publicUser=u=>({id:u.id,name:u.name,email:u.email,role:u.role,status:u.status,provider:u.provider?{id:u.provider.id,displayName:u.provider.displayName,bio:u.provider.bio,location:u.provider.location,verified:u.provider.verified}:undefined});
+const publicUser=u=>({id:u.id,name:u.name,email:u.email,role:u.role,status:u.status,phone:u.phone||"",location:u.location||"",profileCompleted:Boolean(u.profileCompleted),provider:u.provider?{id:u.provider.id,displayName:u.provider.displayName,bio:u.provider.bio,location:u.provider.location,verified:u.provider.verified}:undefined});
 const sign=u=>{if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)throw new Error("JWT_SECRET must be configured with at least 32 characters");return jwt.sign({id:u.id},process.env.JWT_SECRET,{expiresIn:"7d"});};
 router.post("/register",async(req,res,next)=>{try{
  const name=typeof req.body.name==="string"?req.body.name.trim():"",email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"",password=typeof req.body.password==="string"?req.body.password:"",role=req.body.role||"PARTNER";
@@ -13,7 +13,7 @@ router.post("/register",async(req,res,next)=>{try{
  if(!["PARTNER","PROVIDER"].includes(role))return res.status(400).json({message:"Invalid role."});
  if(req.body.acceptedPolicies!==true)return res.status(400).json({message:"You must accept the Terms of Service and Privacy Policy."});
  if(await prisma.user.findUnique({where:{email}}))return res.status(409).json({message:"Email already registered."});
- const now=new Date(),u=await prisma.user.create({data:{name,email,passwordHash:await bcrypt.hash(password,12),role,provider:role==="PROVIDER"?{create:{displayName:name}}:undefined,policyAcceptances:{create:{policyVersion:POLICY_VERSION,termsAcceptedAt:now,privacyAcceptedAt:now}}},include:{provider:true}});
+ const now=new Date(),u=await prisma.user.create({data:{name,email,passwordHash:await bcrypt.hash(password,12),role,profileCompleted:false,provider:role==="PROVIDER"?{create:{displayName:name}}:undefined,policyAcceptances:{create:{policyVersion:POLICY_VERSION,termsAcceptedAt:now,privacyAcceptedAt:now}}},include:{provider:true}});
  return res.status(201).json({user:publicUser(u),token:sign(u)});
 }catch(e){next(e)}});
 router.post("/login",async(req,res,next)=>{try{
@@ -25,6 +25,21 @@ router.post("/login",async(req,res,next)=>{try{
  return res.json({user:publicUser(u),token:sign(u)});
 }catch(e){next(e)}});
 router.get("/me",auth,async(req,res,next)=>{try{const u=await prisma.user.findUnique({where:{id:req.user.id},include:{provider:true}});if(!u)return res.status(404).json({message:"Account not found."});res.json({user:publicUser(u)});}catch(e){next(e)}});
+router.patch("/profile",auth,async(req,res,next)=>{try{
+ const name=typeof req.body.name==="string"?req.body.name.trim():"";
+ const phone=typeof req.body.phone==="string"?req.body.phone.trim():"";
+ const location=typeof req.body.location==="string"?req.body.location.trim():"";
+ const displayName=typeof req.body.displayName==="string"?req.body.displayName.trim():"";
+ const bio=typeof req.body.bio==="string"?req.body.bio.trim():"";
+ if(!name||name.length>100)return res.status(400).json({message:"Enter your name (up to 100 characters)."});
+ if(phone.length>30)return res.status(400).json({message:"Phone number must be 30 characters or fewer."});
+ if(!location||location.length>120)return res.status(400).json({message:"Enter your main area or city (up to 120 characters)."});
+ if(req.user.role==="PROVIDER"&&(!displayName||displayName.length>100||bio.length>1000))return res.status(400).json({message:"Enter a business name and keep your description within 1,000 characters."});
+ const data={name,phone:phone||null,location,profileCompleted:true};
+ if(req.user.role==="PROVIDER")data.provider={update:{displayName,bio:bio||null,location}};
+ const u=await prisma.user.update({where:{id:req.user.id},data,include:{provider:true}});
+ res.json({user:publicUser(u)});
+}catch(e){next(e)}});
 router.patch("/provider-profile",auth,async(req,res,next)=>{try{
  if(req.user.role!=="PROVIDER")return res.status(403).json({message:"Only provider accounts can edit a provider profile."});
  const displayName=typeof req.body.displayName==="string"?req.body.displayName.trim():"",bio=typeof req.body.bio==="string"?req.body.bio.trim():"",location=typeof req.body.location==="string"?req.body.location.trim():"";
