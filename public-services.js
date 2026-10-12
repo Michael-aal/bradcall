@@ -1,0 +1,11 @@
+(() => {
+"use strict";
+const API=(window.BRADCALL_API_URL||(location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://localhost:5000":location.origin)).replace(/\/$/,"");
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=v=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(v)||0);
+async function load(){const host=$("#public-service-results");if(!host)return;const params=new URLSearchParams();const q=$("#public-service-query")?.value.trim(),locationText=$("#public-service-location")?.value.trim(),category=$("#public-service-category")?.value;if(q)params.set("q",q);if(locationText)params.set("location",locationText);if(category)params.set("category",category);host.innerHTML='<div class="dash-empty">Searching the marketplace…</div>';try{const response=await fetch(API+"/api/services?"+params.toString());const data=await response.json().catch(()=>[]);if(!response.ok)throw new Error(data.message||"Could not load services.");if(!Array.isArray(data)||!data.length){host.innerHTML='<div class="dash-empty">No live listings match this search yet. Providers can create listings after registering.</div>';return;}host.innerHTML=data.map(s=>'<article class="dash-item"><div class="dash-item-top"><div><h3>'+esc(s.title)+'</h3><p>'+esc(s.description)+'</p></div><span class="dash-badge '+(s.provider?.verified?"good":"")+'">'+(s.provider?.verified?"Verified provider":"Service listing")+'</span></div><div class="meta"><span>'+esc(s.category?.name||"General")+'</span><span>'+esc(s.location)+'</span><span>'+money(s.price)+'</span><span>'+esc(s.provider?.displayName||"Provider")+'</span></div><div class="item-actions"><a class="dash-btn" href="register.html">Request this service</a></div></article>').join("");}catch(error){host.innerHTML='<div class="dash-notice error">'+esc(error.message)+' Make sure the Bradcall API is running and configured.</div>';}}
+const form=$("#public-service-search");if(form)form.addEventListener("submit",e=>{e.preventDefault();load();});
+$("#public-service-category")?.addEventListener("change",load);
+load();
+})();

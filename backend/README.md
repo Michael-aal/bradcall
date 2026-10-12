@@ -1,64 +1,28 @@
 # Bradcall API
 
-Express API for the Bradcall service marketplace.
+Express + Prisma + PostgreSQL backend for the Bradcall marketplace.
 
-## Stack
+## Setup
 
-- Express 5
-- PostgreSQL
-- Prisma ORM 7
-- JWT authentication
-- bcrypt password hashing
-- Zod request validation
-- Helmet and restricted CORS
-
-Prisma's current PostgreSQL guidance supports PostgreSQL with Prisma ORM; the database connection is supplied through `DATABASE_URL`. urlPrisma PostgreSQL documentationhttps://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/postgresql
-
-## Roles
-
-- `PARTNER`: browse services and create service requests.
-- `PROVIDER`: create/manage their own services and manage requests assigned to them.
-- `ADMIN`: platform operations and cross-provider management.
-
-Provider and admin service ownership is enforced server-side; the frontend role alone is never trusted.
-
-## Local setup
-
-1. Copy `.env.example` to `.env`.
-2. Set a real PostgreSQL `DATABASE_URL`.
-3. Set a long random `JWT_SECRET`.
-4. Run `npm install`.
-5. Run `npx prisma generate`.
-6. Run `npx prisma migrate dev --name init`.
-7. Run `npm run dev`.
+1. Install Node.js LTS and run `npm install` in this folder.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL`, a random `JWT_SECRET` of at least 32 characters, and the allowed frontend origins in `CORS_ORIGIN`.
+3. For a new/empty database, apply the checked-in schema with `npx prisma migrate deploy`.
+4. Generate Prisma Client with `npm run prisma:generate`.
+5. Run `npm run check` to check JavaScript syntax, then start with `npm run dev`.
 
 Health check: `GET /api/health`.
 
-Never commit `.env` or real credentials.
+## Provision the first administrator
 
-## API
+Set `ADMIN_NAME`, `ADMIN_EMAIL`, and a unique `ADMIN_PASSWORD` of at least 12 characters in the environment, then run `npm run admin:seed`. There is intentionally no public admin-registration endpoint.
 
-### Authentication
+## Existing databases
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
+The initial migration is intended for a new database. If your current database already contains these tables but does not have matching Prisma migration history, inspect the live schema and baseline carefully before deploying migrations. Do not run the initial migration blindly against an existing database.
 
-Registration permits only PARTNER or PROVIDER. ADMIN is intentionally not self-registerable.
+## API routes
 
-### Services
-
-- `GET /api/services`
-- `GET /api/services/:id`
-- `POST /api/services` — PROVIDER/ADMIN
-- `PATCH /api/services/:id` — owner PROVIDER/ADMIN
-- `DELETE /api/services/:id` — owner PROVIDER/ADMIN
-
-Search supports `q`, `location`, and `category`.
-
-### Requests
-
-- `POST /api/requests` — PARTNER
-- `GET /api/requests` — authenticated user; ADMIN can view all
-- `PATCH /api/requests/:id` — assigned PROVIDER/ADMIN
-
-This is the foundation for the marketplace flows. Payments, notifications, provider subscriptions, reviews, and admin invitation workflows are intentionally separate next phases.
+- `/api/auth`: registration, login, current-user details, provider profile updates.
+- `/api/services`: public search plus provider-owned listing management.
+- `/api/requests`: consumer requests and provider status updates.
+- `/api/admin`: admin-only counts, account listing, and all requests.
