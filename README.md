@@ -82,3 +82,15 @@ Do not run against an uninspected database or assume production is configured. B
 - \`OPENAI_API_KEY\` — optional, server-side only; enables AI-assisted report triage
 
 **Settlement limitation:** the current integration records the platform commission and provider share but does not implement an approved split payout or escrow. The admin payout ledger records a completed external transfer reference; it does not move funds itself. Admins must verify the provider and resolve disputes before recording a payout. Funds collected into the platform Paystack account require a separately approved payout process. Do not advertise delayed payouts or escrow until Paystack confirms the compliant product and configuration.
+
+
+## Location-first marketplace and two-way live tracking
+
+- Providers can set an approximate service-area center, a 1–50 km coverage radius, and booking availability.
+- Provider service-area coordinates are rounded before saving and are not returned by public service listings.
+- Customers can request nearby results using their current location; the API sorts providers by distance and respects each provider's coverage radius.
+- The assigned customer and provider can separately opt in to share live location for an accepted booking. Only the booking participants can read those locations.
+- Location sharing ends on completion, rejection, or cancellation. The database stores only the latest location per participant per booking, not a movement history.
+- Providers can record travelling, arrived, work-started, and completed milestones.
+
+Live GPS requires HTTPS in production, browser permission, and an active booking. Background tracking is not guaranteed when a browser is closed or suspended. Route ETA and push notifications are not included yet. Run the additive migration on a backed-up staging database, then run `npm test`, `npm run check`, and database-backed mobile-browser tests before production use.
