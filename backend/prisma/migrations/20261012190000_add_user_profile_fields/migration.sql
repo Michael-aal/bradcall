@@ -1,0 +1,4 @@
+ALTER TABLE "User"
+ADD COLUMN "phone" TEXT,
+ADD COLUMN "location" TEXT,
+ADD COLUMN "profileCompleted" BOOLEAN NOT NULL DEFAULT false;
