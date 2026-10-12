@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { auth, roles } from "../middleware/auth.js";
+import { distanceKm, validCoordinates } from "../lib/geo.js";
 
 const router = Router();
 
@@ -22,8 +23,11 @@ router.get("/", async (req, res, next) => {
     const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
     const category = typeof req.query.category === "string" ? req.query.category.trim().slice(0, 80) : "";
     const location = typeof req.query.location === "string" ? req.query.location.trim().slice(0, 120) : "";
-    const where = {
-      active: true,
+    const hasCoordinates = req.query.latitude !== undefined || req.query.longitude !== undefined;
+    const latitude = Number(req.query.latitude), longitude = Number(req.query.longitude);
+    const radiusKm = Math.min(50, Math.max(1, Number(req.query.radiusKm) || 10));
+    if (hasCoordinates && !validCoordinates(latitude, longitude)) return res.status(400).json({ message: "A valid latitude and longitude are required for nearby search." });
+    const where = { active: true, provider: { available: true },
       ...(category ? { category: { name: { contains: category, mode: "insensitive" } } } : {}),
       ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
       ...(q ? { OR: [
@@ -32,12 +36,9 @@ router.get("/", async (req, res, next) => {
         { category: { name: { contains: q, mode: "insensitive" } } }
       ] } : {})
     };
-    res.json(await prisma.service.findMany({
-      where,
-      include: { provider: { select: { id: true, displayName: true, verified: true, location: true } }, category: true },
-      orderBy: { createdAt: "desc" },
-      take: 100
-    }));
+    const services = await prisma.service.findMany({where,include:{provider:{select:{id:true,displayName:true,verified:true,location:true,latitude:true,longitude:true,serviceRadiusKm:true,available:true}},category:true},orderBy:{createdAt:"desc"},take:200});
+    const results=services.map(item=>{const p=item.provider;const d=hasCoordinates&&Number.isFinite(p.latitude)&&Number.isFinite(p.longitude)?distanceKm(latitude,longitude,p.latitude,p.longitude):null;const {latitude:_lat,longitude:_lon,...safeProvider}=p;return {...item,provider:safeProvider,...(d===null?{}:{distanceKm:Math.round(d*10)/10})};}).filter(item=>!hasCoordinates||(item.distanceKm!==undefined&&item.distanceKm<=radiusKm&&item.distanceKm<=(item.provider.serviceRadiusKm||10))).sort((a,b)=>hasCoordinates?a.distanceKm-b.distanceKm:new Date(b.createdAt)-new Date(a.createdAt));
+    res.json(results.slice(0,100));
   } catch (error) { next(error); }
 });
 
@@ -45,7 +46,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const service = await prisma.service.findUnique({
       where: { id: req.params.id },
-      include: { provider: { select: { id: true, displayName: true, verified: true, location: true } }, category: true }
+      include: { provider: { select: { id: true, displayName: true, verified: true, location: true, available: true } }, category: true }
     });
     if (!service || !service.active) return res.status(404).json({ message: "Service not found" });
     res.json(service);

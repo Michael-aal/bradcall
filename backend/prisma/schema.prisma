@@ -92,6 +92,7 @@ model User {
  moderationActionsMade ModerationAction[] @relation("ActionAdmin")
  appeals Appeal[]
  policyAcceptances PolicyAcceptance[]
+ locationShares RequestLocation[] @relation("LocationShareOwner")
 }
 model ProviderProfile {
  id String @id @default(cuid())
@@ -99,6 +100,10 @@ model ProviderProfile {
  displayName String
  bio String?
  location String?
+ latitude Float?
+ longitude Float?
+ serviceRadiusKm Float @default(10)
+ available Boolean @default(true)
  verified Boolean @default(false)
  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  services Service[]
@@ -133,6 +138,13 @@ model ServiceRequest {
  appointmentAt DateTime?
  agreedPrice Float?
  priceApproved Boolean @default(false)
+ customerTrackingEnabled Boolean @default(false)
+ providerTrackingEnabled Boolean @default(false)
+ providerTravelStartedAt DateTime?
+ providerArrivedAt DateTime?
+ workStartedAt DateTime?
+ completedAt DateTime?
+ trackingEndedAt DateTime?
  serviceId String
  partnerId String
  providerId String
@@ -144,6 +156,7 @@ model ServiceRequest {
  disputes Dispute[]
  supportTickets SupportTicket[]
  moderationCases ModerationCase[]
+ locationShares RequestLocation[]
  @@index([providerId, status])
  @@index([partnerId, createdAt])
  @@index([appointmentAt, status])
@@ -282,4 +295,19 @@ model PolicyAcceptance {
  createdAt DateTime @default(now())
  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  @@unique([userId, policyVersion])
+}
+
+model RequestLocation {
+ id String @id @default(cuid())
+ requestId String
+ userId String
+ latitude Float
+ longitude Float
+ accuracyMeters Float?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+ user User @relation("LocationShareOwner", fields: [userId], references: [id], onDelete: Cascade)
+ @@unique([requestId, userId])
+ @@index([requestId, updatedAt])
 }
