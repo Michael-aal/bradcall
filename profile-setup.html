@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Complete your Bradcall profile.">
+  <meta name="bradcall-api-url" content="">
+  <title>Complete your profile · Bradcall</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="bradcall.css">
+  <link rel="stylesheet" href="marketplace.css">
+  <link rel="stylesheet" href="profile-setup.css">
+  <script src="config.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Bradcall home"><span class="brand-mark">B</span><span>bradcall</span></a>
+  <div class="actions"><button class="plain" id="signout" type="button">Log out</button></div>
+</header>
+<main class="profile-shell">
+  <section class="profile-intro">
+    <span class="pill">ONE QUICK SETUP</span>
+    <h1 id="welcome-title">Let's set up your profile.</h1>
+    <p id="welcome-copy">A few details help Bradcall connect you with the right people in your area.</p>
+    <div class="profile-steps"><span class="step-active">01</span><span>Profile details</span><i></i><span>02</span><span id="next-step">Your workspace</span></div>
+    <div class="profile-promise"><span class="promise-icon">✓</span><div><strong>Your profile stays in your control.</strong><p>You can update your details later. Never share passwords or payment PINs in your profile.</p></div></div>
+  </section>
+  <section class="profile-card">
+    <div class="profile-card-head"><div class="profile-avatar" id="avatar">B</div><div><span class="eyebrow" id="role-label">YOUR BRADCALL PROFILE</span><h2 id="form-title">Your details</h2><p>Fields marked * are required.</p></div></div>
+    <div id="profile-error" class="auth-error" role="alert"></div>
+    <form id="profile-form" class="profile-form">
+      <div class="field"><label for="name">Full name *</label><input id="name" name="name" autocomplete="name" required maxlength="100" placeholder="Enter your full name"></div>
+      <div class="field"><label for="phone">Phone number <span>(optional)</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="e.g. 0801 234 5678"></div>
+      <div class="field"><label for="location">Your main area or city *</label><input id="location" name="location" autocomplete="address-level2" required maxlength="120" placeholder="e.g. Ikeja, Lagos"></div>
+      <div id="provider-fields" hidden>
+        <div class="field"><label for="displayName">Business or service name *</label><input id="displayName" name="displayName" maxlength="100" placeholder="e.g. FlowFix Plumbing"></div>
+        <div class="field"><label for="bio">About your service <span>(optional)</span></label><textarea id="bio" name="bio" rows="4" maxlength="1000" placeholder="Describe your experience, skills and what customers can expect."></textarea><small class="field-help">Keep it clear and honest. You can add individual service listings in your provider workspace.</small></div>
+      </div>
+      <div class="profile-note" id="profile-note">Your area helps us show relevant local services. You can change it later.</div>
+      <button class="auth-submit" id="save-profile" type="submit">Save profile and continue <span aria-hidden="true">→</span></button>
+      <p class="profile-foot">Your profile details are saved to your Bradcall account.</p>
+    </form>
+  </section>
+</main>
+<footer class="site-footer">Bradcall · Local services, made simpler.</footer>
+<script src="profile-setup.js"></script>
+</body>
+</html>
