@@ -24,5 +24,5 @@ The initial migration is intended for a new database. If your current database a
 
 - `/api/auth`: registration, login, current-user details, provider profile updates.
 - `/api/services`: public search plus provider-owned listing management.
-- `/api/requests`: consumer requests and provider status updates.
+- `/api/requests`: customer requests and provider status updates.
 - `/api/admin`: admin-only counts, account listing, and all requests.
