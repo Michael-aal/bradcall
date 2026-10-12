@@ -52,7 +52,7 @@ This repository work has been committed to the feature branch and still needs a 
 The feature branch now includes a Trust Centre at \`trust-center.html\` and draft policies at \`policies.html\`.
 
 - **Messaging:** private messages are scoped to a service request and its parties.
-- **Support:** consumers/providers create tickets; admins reply and manage ticket status.
+- **Support:** customers/service providers create tickets; admins reply and manage ticket status.
 - **Disputes:** either service party can open a dispute; admins review the case and record resolution.
 - **Paystack:** configure \`PAYSTACK_SECRET_KEY\` and \`PAYSTACK_CALLBACK_URL\` on the backend only. Checkout initialization and transaction verification happen server-side. Configure Paystack to send webhooks to \`/api/payments/webhook\`.
 - **Cash:** providers report cash received; the customer can confirm or dispute the record. This is an audit record, not independent proof of physical cash transfer. Provider commission is tracked separately.
