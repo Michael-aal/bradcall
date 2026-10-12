@@ -1,9 +1,285 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
-enum Role { PARTNER PROVIDER ADMIN }
-enum RequestStatus { PENDING ACCEPTED REJECTED IN_PROGRESS COMPLETED CANCELLED }
-model User { id String @id @default(cuid()) name String email String @unique passwordHash String role Role @default(PARTNER) createdAt DateTime @default(now()) provider ProviderProfile? servicesRequested ServiceRequest[] @relation("PartnerRequests") requestsReceived ServiceRequest[] @relation("ProviderRequests") }
-model ProviderProfile { id String @id @default(cuid()) userId String @unique displayName String bio String? location String? verified Boolean @default(false) user User @relation(fields:[userId],references:[id],onDelete:Cascade) services Service[] requests ServiceRequest[] @relation("ProviderRequests") }
-model Category { id String @id @default(cuid()) name String @unique services Service[] }
-model Service { id String @id @default(cuid()) title String description String price Float location String active Boolean @default(true) createdAt DateTime @default(now()) providerId String categoryId String provider ProviderProfile @relation(fields:[providerId],references:[id],onDelete:Cascade) category Category @relation(fields:[categoryId],references:[id]) requests ServiceRequest[] }
-model ServiceRequest { id String @id @default(cuid()) details String location String status RequestStatus @default(PENDING) createdAt DateTime @default(now()) serviceId String partnerId String providerId String service Service @relation(fields:[serviceId],references:[id]) partner User @relation("PartnerRequests",fields:[partnerId],references:[id]) provider ProviderProfile @relation("ProviderRequests",fields:[providerId],references:[id]) @@index([providerId,status]) @@index([partnerId,createdAt]) }
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "postgresql"
+ url = env("DATABASE_URL")
+}
+enum Role { 
+ PARTNER
+ PROVIDER
+ ADMIN
+}
+enum RequestStatus {
+ PENDING
+ ACCEPTED
+ REJECTED
+ IN_PROGRESS
+ COMPLETED
+ CANCELLED
+}
+enum AccountStatus {
+  ACTIVE
+  WARNED
+  SUSPENDED
+  BANNED
+}
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUND_PENDING
+  REFUNDED
+}
+enum PaymentMethod {
+  PAYSTACK
+  CASH
+}
+enum PayoutStatus {
+  PENDING
+  PAID
+  ON_HOLD
+  NOT_REQUIRED
+}
+enum SupportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REFUNDED
+  REJECTED
+}
+enum CaseStatus {
+  OPEN
+  UNDER_REVIEW
+  ACTIONED
+  DISMISSED
+}
+enum ModerationActionType {
+  WARNING
+  SUSPEND
+  BAN
+  REINSTATE
+}
+enum AppealStatus {
+  OPEN
+  APPROVED
+  REJECTED
+}
+model User {
+ id String @id @default(cuid())
+ name String
+ email String @unique
+ passwordHash String
+ role Role @default(PARTNER)
+ status AccountStatus @default(ACTIVE)
+ createdAt DateTime @default(now())
+ provider ProviderProfile?
+ servicesRequested ServiceRequest[] @relation("PartnerRequests")
+ messages Message[]
+ supportTickets SupportTicket[] @relation("TicketCreator")
+ supportMessages SupportMessage[]
+ payments Payment[] @relation("PaymentPayer")
+ openedDisputes Dispute[]
+ reportedCases ModerationCase[] @relation("CaseReporter")
+ moderationTargets ModerationCase[] @relation("CaseTarget")
+ moderationActions ModerationAction[] @relation("ActionTarget")
+ moderationActionsMade ModerationAction[] @relation("ActionAdmin")
+ appeals Appeal[]
+ policyAcceptances PolicyAcceptance[]
+}
+model ProviderProfile {
+ id String @id @default(cuid())
+ userId String @unique
+ displayName String
+ bio String?
+ location String?
+ verified Boolean @default(false)
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ services Service[]
+ requests ServiceRequest[] @relation("ProviderRequests")
+ payments Payment[] @relation("ProviderPayments")
+}
+model Category {
+ id String @id @default(cuid())
+ name String @unique
+ services Service[]
+}
+model Service {
+ id String @id @default(cuid())
+ title String
+ description String
+ price Float
+ location String
+ active Boolean @default(true)
+ createdAt DateTime @default(now())
+ providerId String
+ categoryId String
+ provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+ category Category @relation(fields: [categoryId], references: [id])
+ requests ServiceRequest[]
+}
+model ServiceRequest {
+ id String @id @default(cuid())
+ details String
+ location String
+ status RequestStatus @default(PENDING)
+ createdAt DateTime @default(now())
+ appointmentAt DateTime?
+ agreedPrice Float?
+ priceApproved Boolean @default(false)
+ serviceId String
+ partnerId String
+ providerId String
+ service Service @relation(fields: [serviceId], references: [id])
+ partner User @relation("PartnerRequests", fields: [partnerId], references: [id])
+ provider ProviderProfile @relation("ProviderRequests", fields: [providerId], references: [id])
+ messages Message[]
+ payments Payment[]
+ disputes Dispute[]
+ supportTickets SupportTicket[]
+ moderationCases ModerationCase[]
+ @@index([providerId, status])
+ @@index([partnerId, createdAt])
+ @@index([appointmentAt, status])
+}
+model Message {
+ id String @id @default(cuid())
+ requestId String
+ senderId String
+ body String
+ createdAt DateTime @default(now())
+ readAt DateTime?
+ request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+ sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+ @@index([requestId, createdAt])
+}
+model Payment {
+ id String @id @default(cuid())
+ requestId String
+ payerId String
+ providerId String
+ reference String @unique
+ amountKobo Int
+ commissionKobo Int @default(0)
+ providerAmountKobo Int
+ method PaymentMethod
+ status PaymentStatus @default(PENDING)
+ payoutStatus PayoutStatus @default(PENDING)
+ payoutReference String?
+ payoutMarkedAt DateTime?
+ authorizationUrl String?
+ paidAt DateTime?
+ cashReportedAt DateTime?
+ cashConfirmedAt DateTime?
+ cashConfirmedByPartner Boolean @default(false)
+ cashConfirmedByProvider Boolean @default(false)
+ createdAt DateTime @default(now())
+ request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+ payer User @relation("PaymentPayer", fields: [payerId], references: [id])
+ provider ProviderProfile @relation("ProviderPayments", fields: [providerId], references: [id])
+ @@index([requestId, createdAt])
+ @@index([providerId, status, method])
+}
+model Dispute {
+ id String @id @default(cuid())
+ requestId String
+ openedById String
+ reason String
+ evidenceText String?
+ status DisputeStatus @default(OPEN)
+ resolution String?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+ openedBy User @relation(fields: [openedById], references: [id])
+ @@index([status, createdAt])
+}
+model SupportTicket {
+ id String @id @default(cuid())
+ creatorId String
+ requestId String?
+ subject String
+ category String
+ description String
+ status SupportStatus @default(OPEN)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ creator User @relation("TicketCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+ request ServiceRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+ messages SupportMessage[]
+ @@index([creatorId, status, createdAt])
+ @@index([status, createdAt])
+}
+model SupportMessage {
+ id String @id @default(cuid())
+ ticketId String
+ senderId String
+ body String
+ createdAt DateTime @default(now())
+ ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+ sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+ @@index([ticketId, createdAt])
+}
+model ModerationCase {
+ id String @id @default(cuid())
+ reporterId String
+ targetUserId String
+ requestId String?
+ category String
+ description String
+ aiSummary String?
+ aiRiskLevel String?
+ status CaseStatus @default(OPEN)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ reporter User @relation("CaseReporter", fields: [reporterId], references: [id])
+ target User @relation("CaseTarget", fields: [targetUserId], references: [id])
+ request ServiceRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+ actions ModerationAction[]
+ @@index([status, createdAt])
+ @@index([targetUserId, createdAt])
+}
+model ModerationAction {
+ id String @id @default(cuid())
+ caseId String?
+ targetUserId String
+ adminId String
+ type ModerationActionType
+ reason String
+ expiresAt DateTime?
+ createdAt DateTime @default(now())
+ case ModerationCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+ target User @relation("ActionTarget", fields: [targetUserId], references: [id])
+ admin User @relation("ActionAdmin", fields: [adminId], references: [id])
+ appeals Appeal[]
+ @@index([targetUserId, createdAt])
+}
+model Appeal {
+ id String @id @default(cuid())
+ actionId String
+ userId String
+ reason String
+ status AppealStatus @default(OPEN)
+ resolution String?
+ createdAt DateTime @default(now())
+ reviewedAt DateTime?
+ action ModerationAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@index([status, createdAt])
+}
+model PolicyAcceptance {
+ id String @id @default(cuid())
+ userId String
+ policyVersion String
+ termsAcceptedAt DateTime
+ privacyAcceptedAt DateTime
+ createdAt DateTime @default(now())
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@unique([userId, policyVersion])
+}

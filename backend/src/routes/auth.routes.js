@@ -1,4 +1,35 @@
-import {Router} from "express"; import bcrypt from "bcryptjs"; import jwt from "jsonwebtoken"; import {prisma} from "../lib/prisma.js";
-const router=Router(); const sign=u=>jwt.sign({id:u.id,role:u.role},process.env.JWT_SECRET,{expiresIn:"7d"});
-router.post("/register",async(req,res,next)=>{try{const {name,email,password,role="PARTNER"}=req.body;if(!name||!email||!password)return res.status(400).json({message:"Name, email and password are required"});if(!["PARTNER","PROVIDER"].includes(role))return res.status(400).json({message:"Invalid role"});const e=email.toLowerCase();if(await prisma.user.findUnique({where:{email:e}}))return res.status(409).json({message:"Email already registered"});const user=await prisma.user.create({data:{name,email:e,passwordHash:await bcrypt.hash(password,12),role,provider:role==="PROVIDER"?{create:{displayName:name}}:undefined}});res.status(201).json({user:{id:user.id,name:user.name,email:user.email,role:user.role},token:sign(user)})}catch(e){next(e)}});
-router.post("/login",async(req,res,next)=>{try{const {email,password}=req.body;const user=await prisma.user.findUnique({where:{email:email?.toLowerCase()},include:{provider:true}});if(!user||!(await bcrypt.compare(password,user.passwordHash)))return res.status(401).json({message:"Invalid email or password"});res.json({user:{id:user.id,name:user.name,email:user.email,role:user.role,provider:user.provider},token:sign(user)})}catch(e){next(e)}}); export default router;
+import { Router } from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { prisma } from "../lib/prisma.js";
+import { auth } from "../middleware/auth.js";
+const router=Router(), POLICY_VERSION="2026-10-12-v1";
+const publicUser=u=>({id:u.id,name:u.name,email:u.email,role:u.role,status:u.status,provider:u.provider?{id:u.provider.id,displayName:u.provider.displayName,bio:u.provider.bio,location:u.provider.location,verified:u.provider.verified}:undefined});
+const sign=u=>{if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)throw new Error("JWT_SECRET must be configured with at least 32 characters");return jwt.sign({id:u.id},process.env.JWT_SECRET,{expiresIn:"7d"});};
+router.post("/register",async(req,res,next)=>{try{
+ const name=typeof req.body.name==="string"?req.body.name.trim():"",email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"",password=typeof req.body.password==="string"?req.body.password:"",role=req.body.role||"PARTNER";
+ if(!name||name.length>100||!email||email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!password)return res.status(400).json({message:"Enter a valid name, email, and password."});
+ if(password.length<8||password.length>128)return res.status(400).json({message:"Password must be between 8 and 128 characters."});
+ if(!["PARTNER","PROVIDER"].includes(role))return res.status(400).json({message:"Invalid role."});
+ if(req.body.acceptedPolicies!==true)return res.status(400).json({message:"You must accept the Terms of Service and Privacy Policy."});
+ if(await prisma.user.findUnique({where:{email}}))return res.status(409).json({message:"Email already registered."});
+ const now=new Date(),u=await prisma.user.create({data:{name,email,passwordHash:await bcrypt.hash(password,12),role,provider:role==="PROVIDER"?{create:{displayName:name}}:undefined,policyAcceptances:{create:{policyVersion:POLICY_VERSION,termsAcceptedAt:now,privacyAcceptedAt:now}}},include:{provider:true}});
+ return res.status(201).json({user:publicUser(u),token:sign(u)});
+}catch(e){next(e)}});
+router.post("/login",async(req,res,next)=>{try{
+ const email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"",password=typeof req.body.password==="string"?req.body.password:"";
+ if(!email||!password)return res.status(400).json({message:"Email and password are required."});
+ const u=await prisma.user.findUnique({where:{email},include:{provider:true}});
+ if(!u||!(await bcrypt.compare(password,u.passwordHash)))return res.status(401).json({message:"Invalid email or password."});
+ if(u.status==="SUSPENDED"||u.status==="BANNED")return res.status(403).json({message:"This account is restricted. Contact Bradcall support or submit an appeal."});
+ return res.json({user:publicUser(u),token:sign(u)});
+}catch(e){next(e)}});
+router.get("/me",auth,async(req,res,next)=>{try{const u=await prisma.user.findUnique({where:{id:req.user.id},include:{provider:true}});if(!u)return res.status(404).json({message:"Account not found."});res.json({user:publicUser(u)});}catch(e){next(e)}});
+router.patch("/provider-profile",auth,async(req,res,next)=>{try{
+ if(req.user.role!=="PROVIDER")return res.status(403).json({message:"Only provider accounts can edit a provider profile."});
+ const displayName=typeof req.body.displayName==="string"?req.body.displayName.trim():"",bio=typeof req.body.bio==="string"?req.body.bio.trim():"",location=typeof req.body.location==="string"?req.body.location.trim():"";
+ if(!displayName||displayName.length>100||bio.length>1000||location.length>120)return res.status(400).json({message:"Enter a valid display name, bio, and service area."});
+ const p=await prisma.providerProfile.update({where:{userId:req.user.id},data:{displayName,bio:bio||null,location:location||null}});
+ res.json({provider:{id:p.id,displayName:p.displayName,bio:p.bio,location:p.location,verified:p.verified}});
+}catch(e){next(e)}});
+export default router;
