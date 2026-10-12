@@ -15,7 +15,7 @@ const allowedOrigins=(process.env.CORS_ORIGIN||"http://localhost:5500,http://127
 app.use(cors({origin(origin,callback){if(!origin||allowedOrigins.includes(origin))return callback(null,true);return callback(new Error("Origin not allowed by CORS"));}}));
 app.use(express.json({limit:"1mb",verify:(req,res,buf)=>{req.rawBody=Buffer.from(buf);}}));
 app.get("/api/health",async(req,res)=>{try{await prisma.$queryRawUnsafe("SELECT 1");res.json({ok:true,service:"bradcall-api"})}catch{res.status(503).json({ok:false,service:"bradcall-api",database:"unavailable"})}});
-app.use("/api/auth",authRoutes); app.use("/api",trackingRoutes); app.use("/api/services",serviceRoutes); app.use("/api/requests",requestRoutes); app.use("/api/admin",adminRoutes);
+app.use("/api/auth",authRoutes); app.use("/api/requests",trackingRoutes); app.use("/api/services",serviceRoutes); app.use("/api/requests",requestRoutes); app.use("/api/admin",adminRoutes);
 app.use("/api/payments",paymentRoutes); app.use("/api/communication",communicationRoutes); app.use("/api/trust",trustRoutes);
 app.use((req,res)=>res.status(404).json({message:"Route not found"}));
 app.use((err,req,res,next)=>{console.error(err);res.status(500).json({message:"Internal server error"});});
