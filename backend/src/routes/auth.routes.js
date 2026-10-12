@@ -36,7 +36,7 @@ router.patch("/profile",auth,async(req,res,next)=>{try{
  if(!location||location.length>120)return res.status(400).json({message:"Enter your main area or city (up to 120 characters)."});
  if(req.user.role==="PROVIDER"&&(!displayName||displayName.length>100||bio.length>1000))return res.status(400).json({message:"Enter a business name and keep your description within 1,000 characters."});
  const data={name,phone:phone||null,location,profileCompleted:true};
- if(req.user.role==="PROVIDER")data.provider={update:{displayName,bio:bio||null,location}};
+ if(req.user.role==="PROVIDER")data.provider={upsert:{create:{displayName,bio:bio||null,location},update:{displayName,bio:bio||null,location}}};
  const u=await prisma.user.update({where:{id:req.user.id},data,include:{provider:true}});
  res.json({user:publicUser(u)});
 }catch(e){next(e)}});
