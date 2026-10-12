@@ -3,6 +3,8 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const modal=$("#modal"),roles=$("#roles"),form=$("#form"),dialog=document.querySelector(".dialog");
 const menu=$("#mobile-nav"),hamb=$("#hamb"),mobileClose=$("#mobile-close");
 let lastFocused=null;
+function goServices(q="",locationText=""){const p=new URLSearchParams();if(q)p.set("q",q);if(locationText)p.set("location",locationText);location.href="services.html"+(p.toString()?"?"+p.toString():"");}
+function goRegister(role=""){location.href="register.html"+(role?"?role="+encodeURIComponent(role):"");}
 
 function refreshIcons(){if(window.lucide)window.lucide.createIcons()}
 
@@ -18,8 +20,8 @@ function closeMenu(){
 hamb?.addEventListener("click",()=>menu.hidden?openMenu():closeMenu());
 mobileClose?.addEventListener("click",closeMenu);
 $$(".mobile-nav a").forEach(a=>a.addEventListener("click",closeMenu));
-$("#mobile-login")?.addEventListener("click",()=>{closeMenu();openModal()});
-$("#mobile-join")?.addEventListener("click",()=>{closeMenu();openModal()});
+$("#mobile-login")?.addEventListener("click",()=>{closeMenu();location.href="login.html"});
+$("#mobile-join")?.addEventListener("click",()=>{closeMenu();goRegister()});
 
 function openModal(service="",role=""){
   lastFocused=document.activeElement;
@@ -38,9 +40,9 @@ function closeModal(){
 $("#join").onclick=()=>openModal();$("#login").onclick=()=>openModal();
 $("#provider").onclick=()=>openModal("", "provider");$("#partner").onclick=()=>openModal("", "partner");$("#ctaProvider").onclick=()=>openModal("", "provider");
 $("#close").onclick=closeModal;$$("[data-close-modal]").forEach(el=>el.onclick=closeModal);
-$$(".request").forEach(b=>b.onclick=()=>openModal(b.dataset.service));
-$$("[data-role]").forEach(b=>b.onclick=()=>openModal("",b.dataset.role));
-$$("[data-plan]").forEach(b=>b.onclick=()=>openModal("", "provider"));
+$(".request").forEach(b=>b.addEventListener("click",()=>goServices(b.dataset.service||"")));
+$("[data-role]").forEach(b=>b.addEventListener("click",()=>goRegister(String(b.dataset.role||"PARTNER").toUpperCase()==="PROVIDER"?"PROVIDER":"PARTNER")));
+$("[data-plan]").forEach(b=>b.addEventListener("click",()=>goRegister("PROVIDER")));
 
 function filter(q,location,note){
   q=q.toLowerCase().trim();location=location.toLowerCase().trim();let n=0;
@@ -54,23 +56,18 @@ function filter(q,location,note){
 $("#search-form").addEventListener("submit",e=>{
   e.preventDefault();
   const q=$("#q").value,loc=$("#loc").value;
-  filter(q,loc,loc?"Services near "+loc:"Search results");
-  $("#providers").scrollIntoView({behavior:"smooth",block:"start"});
+  goServices(q,loc);
 });
 $$("[data-q]").forEach(b=>b.onclick=()=>{
-  $("#q").value=b.dataset.q;$("#loc").value="";
-  filter(b.dataset.q,"","Category: "+b.dataset.q);
-  $("#providers").scrollIntoView({behavior:"smooth",block:"start"});
+  goServices(b.dataset.q||"");
 });
-$("#all").onclick=()=>{filter("","","Popular nearby");$("#providers").scrollIntoView({behavior:"smooth",block:"start"})};
-$("#map-explore").onclick=()=>$("#services").scrollIntoView({behavior:"smooth"});
+$("#all")?.addEventListener("click",()=>goServices());
+$("#map-explore")?.addEventListener("click",()=>goServices());
 
 form.addEventListener("submit",e=>{
   e.preventDefault();
   if(!$("#rd").value.trim()){ $("#rd").focus();return }
-  $("#mt").textContent="Request ready";
-  $("#mp").textContent="The frontend flow is ready for the real request API and provider dashboard.";
-  form.hidden=true;
+  goServices($("#rs").value,$("#ra").value);
 });
 
 document.addEventListener("keydown",e=>{
