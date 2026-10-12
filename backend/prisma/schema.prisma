@@ -93,6 +93,7 @@ model User {
  appeals Appeal[]
  policyAcceptances PolicyAcceptance[]
  locationShares RequestLocation[] @relation("LocationShareOwner")
+ reviewsWritten Review[] @relation("ReviewsWritten")
 }
 model ProviderProfile {
  id String @id @default(cuid())
@@ -107,6 +108,7 @@ model ProviderProfile {
  verified Boolean @default(false)
  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  services Service[]
+ reviews Review[] @relation("ProviderReviews")
  requests ServiceRequest[] @relation("ProviderRequests")
  payments Payment[] @relation("ProviderPayments")
 }
@@ -157,6 +159,7 @@ model ServiceRequest {
  supportTickets SupportTicket[]
  moderationCases ModerationCase[]
  locationShares RequestLocation[]
+ review Review?
  @@index([providerId, status])
  @@index([partnerId, createdAt])
  @@index([appointmentAt, status])
@@ -310,4 +313,18 @@ model RequestLocation {
  user User @relation("LocationShareOwner", fields: [userId], references: [id], onDelete: Cascade)
  @@unique([requestId, userId])
  @@index([requestId, updatedAt])
+}
+
+model Review {
+ id String @id @default(cuid())
+ requestId String @unique
+ reviewerId String
+ providerId String
+ rating Int
+ comment String?
+ createdAt DateTime @default(now())
+ request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+ reviewer User @relation("ReviewsWritten", fields: [reviewerId], references: [id], onDelete: Cascade)
+ provider ProviderProfile @relation("ProviderReviews", fields: [providerId], references: [id], onDelete: Cascade)
+ @@index([providerId, createdAt])
 }
