@@ -13,7 +13,7 @@ router.get("/stats", async (req, res, next) => {
     const paidPayments = { status: "PAID" };
     const [
       users, providers, partners, services, activeServices, requests, pendingRequests,
-      paidPaymentCount, paymentVolume, platformCommission, monthlyCommission, pendingPayments
+      paidPaymentCount, paymentVolume, platformCommission, monthlyCommission, cashCommissionDue, pendingPayments
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: "PROVIDER" } }),
@@ -24,8 +24,9 @@ router.get("/stats", async (req, res, next) => {
       prisma.serviceRequest.count({ where: { status: "PENDING" } }),
       prisma.payment.count({ where: paidPayments }),
       prisma.payment.aggregate({ where: paidPayments, _sum: { amountKobo: true } }),
-      prisma.payment.aggregate({ where: paidPayments, _sum: { commissionKobo: true } }),
-      prisma.payment.aggregate({ where: { ...paidPayments, paidAt: { gte: monthStart } }, _sum: { commissionKobo: true } }),
+      prisma.payment.aggregate({ where: { ...paidPayments, method: "PAYSTACK" }, _sum: { commissionKobo: true } }),
+      prisma.payment.aggregate({ where: { ...paidPayments, method: "PAYSTACK", paidAt: { gte: monthStart } }, _sum: { commissionKobo: true } }),
+      prisma.payment.aggregate({ where: { ...paidPayments, method: "CASH" }, _sum: { commissionKobo: true } }),
       prisma.payment.count({ where: { status: "PENDING" } })
     ]);
     res.json({
@@ -34,6 +35,7 @@ router.get("/stats", async (req, res, next) => {
       paymentVolumeKobo: paymentVolume._sum.amountKobo || 0,
       platformCommissionKobo: platformCommission._sum.commissionKobo || 0,
       monthlyCommissionKobo: monthlyCommission._sum.commissionKobo || 0,
+      cashCommissionDueKobo: cashCommissionDue._sum.commissionKobo || 0,
       pendingPayments
     });
   } catch (error) { next(error); }
