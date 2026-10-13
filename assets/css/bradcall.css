@@ -80,3 +80,21 @@ footer{background:#fff;border-top:1px solid var(--line);padding:28px 5%;display:
 .tag{background:var(--yellow);color:var(--ink)}
 .plan.featured{border-color:var(--yellow)}
 .categories button:focus-visible,.quick button:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+
+
+/* Dribbble-inspired polish: generous spacing, clear hierarchy, accessible states. */
+:root{--surface:#fff;--surface-border:#e4eae6;--shadow-soft:0 14px 38px rgba(24,51,45,.07);--radius-card:20px}
+html{scroll-padding-top:90px}
+body{line-height:1.55;-webkit-font-smoothing:antialiased}
+.topbar{border-bottom-color:var(--surface-border)}
+.brand{gap:11px}
+.brand-mark{box-shadow:0 5px 14px rgba(1,158,129,.18)}
+button,a,.provider,.plan,.category,.service-card{transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+.search,.plan,.provider,.category,.service-card,.hero-visual{border-radius:var(--radius-card)}
+.search{box-shadow:0 12px 34px rgba(24,51,45,.07)}
+.search button,.dark,.red,.request{min-height:44px}
+.categories button:hover,.quick button:hover,.provider:hover,.plan:hover{transform:translateY(-2px);box-shadow:var(--shadow-soft)}
+input,select,textarea{max-width:100%}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+@media(max-width:620px){.hero h1{line-height:1.02}.search{padding:8px}.search label{padding:12px}.cta{border-radius:18px}}
