@@ -24,7 +24,7 @@
     ["My bookings", "bookings.html"], ["Map & tracking", "tracking.html"],
     ["Messages", "messages.html"], ["Payments & history", "payments.html"],
     ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"],
-    ["My account", "consumer-dashboard.html#my-account"]
+    ["My account", "consumer-dashboard.html"]
   ];
 
   const nav = document.querySelector(".mp-nav, .topbar nav, header nav");
@@ -45,7 +45,7 @@
     ? [["Home", home], ["Jobs", "bookings.html"], ["Services", "provider-dashboard.html#provider-services"], ["Account", "provider-dashboard.html#provider-profile"]]
     : role === "ADMIN"
       ? [["Overview", home], ["Bookings", "bookings.html"], ["Payments", "payments.html"], ["Trust", "admin-verification.html"]]
-      : [["Home", home], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Account", "consumer-dashboard.html#my-account"]];
+      : [["Home", home], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Account", "consumer-dashboard.html"]];
   const style = document.createElement("style");
   style.textContent = `
     .workspace-mobile-nav{display:none}
