@@ -12,7 +12,15 @@ import trustRoutes from "./routes/trust.routes.js";
 import trackingRoutes from "./routes/tracking.routes.js";
 import reviewRoutes from "./routes/reviews.routes.js";
 const app=express();
-const allowedOrigins=(process.env.CORS_ORIGIN||"http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://127.0.0.1:3000").split(",").map(v=>v.trim()).filter(Boolean);
+const defaultOrigins=[
+  "https://bradcall.vercel.app",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000"
+];
+const configuredOrigins=(process.env.CORS_ORIGIN||"").split(",").map(v=>v.trim()).filter(Boolean);
+const allowedOrigins=[...new Set([...defaultOrigins,...configuredOrigins])];
 app.use(cors({origin(origin,callback){if(!origin||allowedOrigins.includes(origin))return callback(null,true);return callback(new Error("Origin not allowed by CORS"));}}));
 app.use(express.json({limit:"1mb",verify:(req,res,buf)=>{req.rawBody=Buffer.from(buf);}}));
 app.get("/api/health",async(req,res)=>{try{await prisma.$queryRawUnsafe("SELECT 1");res.json({ok:true,service:"bradcall-api"})}catch{res.status(503).json({ok:false,service:"bradcall-api",database:"unavailable"})}});
