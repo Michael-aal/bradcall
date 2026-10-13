@@ -228,7 +228,9 @@
 
     let services = [];
     try {
-      const response = await fetch(API + "/api/services");
+      const params = new URLSearchParams();
+      if (selectedPoint) { params.set("latitude", selectedPoint.lat); params.set("longitude", selectedPoint.lng); params.set("radiusKm", "10"); }
+      const response = await fetch(API + "/api/services" + (params.size ? "?" + params.toString() : ""));
       if (response.ok) services = await response.json();
     } catch {
       say("Map loaded, but Bradcall listings could not be reached. Check that the backend is running.");
@@ -237,7 +239,7 @@
 
     const areaTerm = query.split(",")[0].trim().toLowerCase();
     const cityTerm = query.split(",").slice(-1)[0].trim().toLowerCase();
-    const relevant = services.filter(service => {
+    const relevant = selectedPoint ? services : services.filter(service => {
       const location = String(service.location || "").toLowerCase();
       return location.includes(areaTerm) || (cityTerm && location.includes(cityTerm));
     });
@@ -267,7 +269,23 @@
       providerMessage + (GEOAPIFY_KEY ? " Powered by Geoapify geocoding; map tiles © OpenStreetMap." : " Add a Geoapify key in local config.js to enable autocomplete and directions; map data © OpenStreetMap."));
   }
 
-  if (button) button.addEventListener("click", () => {\n    if (!navigator.geolocation) { say("This browser does not support device location."); return; }\n    button.disabled = true;\n    if (locationStatus) locationStatus.textContent = "Waiting for device location permission…";\n    say("Finding your approximate area…");\n    navigator.geolocation.getCurrentPosition(async pos => {\n      deviceCoordinates = { lat: pos.coords.latitude, lng: pos.coords.longitude };\n      search.value = "Your current area";\n      if (locationStatus) locationStatus.textContent = "Device location enabled. Showing services near your current area.";\n      try { await refresh("Your current area", deviceCoordinates); } catch (error) { say(error.message || "Could not load nearby services."); }\n      finally { button.disabled = false; }\n    }, () => {\n      if (locationStatus) locationStatus.textContent = "Turn on device location in your settings and allow browser access, then try again.";\n      say("Location permission is needed to show nearby service areas.");\n      button.disabled = false;\n    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 });\n  });
+  if (button) button.addEventListener("click", () => {
+    if (!navigator.geolocation) { say("This browser does not support device location."); return; }
+    button.disabled = true;
+    if (locationStatus) locationStatus.textContent = "Waiting for device location permission…";
+    say("Finding your approximate area…");
+    navigator.geolocation.getCurrentPosition(async pos => {
+      deviceCoordinates = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      search.value = "Your current area";
+      if (locationStatus) locationStatus.textContent = "Device location enabled. Showing services near your current area.";
+      try { await refresh("Your current area", deviceCoordinates); } catch (error) { say(error.message || "Could not load nearby services."); }
+      finally { button.disabled = false; }
+    }, () => {
+      if (locationStatus) locationStatus.textContent = "Turn on device location in your settings and allow browser access, then try again.";
+      say("Location permission is needed to show nearby service areas.");
+      button.disabled = false;
+    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 });
+  });
   search.addEventListener("input", () => {
     if (suggestionTimer) clearTimeout(suggestionTimer);
     suggestionTimer = setTimeout(() => autocomplete(search.value).catch(() => {}), 300);
@@ -284,6 +302,7 @@
     }
   });
 
+  search.readOnly = true;
   ensureAutocompleteList();
-  refresh(search.value || "Lagos, Nigeria").catch(error => say(error.message || "Could not load the community map."));
+  initializeMap().then(() => say("Turn on device location to see nearby service areas.")).catch(error => say(error.message || "Could not load the community map."));
 })();
