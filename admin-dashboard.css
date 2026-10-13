@@ -1,0 +1,42 @@
+/* Bradcall admin workspace — Dribbble-inspired polish, preserving the existing green/yellow brand. */
+#dashboard-root[data-page="admin"]{max-width:1320px;padding-top:42px}
+#dashboard-root[data-page="admin"] .dash-head{padding:28px 30px;margin-bottom:22px;border:1px solid #dce9e4;border-radius:22px;background:radial-gradient(ellipse at 100% 0%,rgba(255,191,66,.16),transparent 42%),linear-gradient(135deg,#fff 0%,#f4fbf8 100%)}
+#dashboard-root[data-page="admin"] .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;background:#e4f5ef;color:#087d69;letter-spacing:.12em}
+#dashboard-root[data-page="admin"] .eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:#019e81}
+#dashboard-root[data-page="admin"] .dash-head h1{font-size:clamp(30px,4vw,44px);margin:14px 0 9px}
+#dashboard-root[data-page="admin"] .dash-head p{max-width:620px;line-height:1.65}
+#dashboard-root[data-page="admin"] .dash-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+#dashboard-root[data-page="admin"] .stat-card{position:relative;overflow:hidden;min-height:128px;padding:22px;border-radius:18px;box-shadow:0 7px 24px rgba(24,51,45,.045)}
+#dashboard-root[data-page="admin"] .stat-card:after{content:"";position:absolute;right:-23px;bottom:-35px;width:100px;height:100px;border-radius:50%;background:rgba(1,158,129,.055)}
+#dashboard-root[data-page="admin"] .stat-card span{font-weight:700;letter-spacing:.01em}
+#dashboard-root[data-page="admin"] .stat-card strong{font-size:clamp(27px,3vw,34px);color:#18332d;position:relative;z-index:1}
+#dashboard-root[data-page="admin"] .dash-panel{padding:24px;border-radius:20px;box-shadow:0 7px 24px rgba(24,51,45,.035)}
+#dashboard-root[data-page="admin"] .dash-panel h2{font-size:21px}
+#dashboard-root[data-page="admin"] .dash-panel .hint{line-height:1.6}
+#dashboard-root[data-page="admin"] .dash-table-wrap{border:1px solid #e4ece8;border-radius:13px}
+#dashboard-root[data-page="admin"] .dash-table{min-width:560px}
+#dashboard-root[data-page="admin"] .dash-table th{background:#f7fbf9;padding-top:14px;padding-bottom:14px}
+#dashboard-root[data-page="admin"] .dash-table td{padding-top:14px;padding-bottom:14px}
+#dashboard-root[data-page="admin"] .dash-table tbody tr:hover{background:#f8fcfa}
+#dashboard-root[data-page="admin"] .dash-list{gap:10px}
+#dashboard-root[data-page="admin"] .dash-item{padding:18px;background:linear-gradient(180deg,#fff,#fcfefd)}
+#dashboard-root[data-page="admin"] .dash-item h3{font-size:16px}
+#dashboard-root[data-page="admin"] .dash-item .meta{row-gap:7px}
+#dashboard-root[data-page="admin"] .dash-empty{padding:24px;border-radius:14px}
+@media(max-width:900px){
+ #dashboard-root[data-page="admin"]{padding-top:26px}
+ #dashboard-root[data-page="admin"] .dash-head{padding:23px}
+ #dashboard-root[data-page="admin"] .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+ #dashboard-root[data-page="admin"]{padding:18px 12px 38px}
+ #dashboard-root[data-page="admin"] .dash-head{padding:19px 16px;border-radius:17px}
+ #dashboard-root[data-page="admin"] .dash-head h1{font-size:30px}
+ #dashboard-root[data-page="admin"] .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #dashboard-root[data-page="admin"] .stat-card{padding:14px;min-height:100px;border-radius:14px}
+ #dashboard-root[data-page="admin"] .stat-card span{font-size:12px}
+ #dashboard-root[data-page="admin"] .stat-card strong{font-size:25px;margin-top:7px}
+ #dashboard-root[data-page="admin"] .dash-panel{padding:16px;border-radius:16px}
+ #dashboard-root[data-page="admin"] .dash-table th,#dashboard-root[data-page="admin"] .dash-table td{padding:12px 10px}
+}
+@media(prefers-reduced-motion:reduce){#dashboard-root[data-page="admin"] .stat-card{transition:none}}
