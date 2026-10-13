@@ -40,3 +40,26 @@
  #dashboard-root[data-page="admin"] .dash-table th,#dashboard-root[data-page="admin"] .dash-table td{padding:12px 10px}
 }
 @media(prefers-reduced-motion:reduce){#dashboard-root[data-page="admin"] .stat-card{transition:none}}
+
+/* Financial overview and transaction ledger */
+#dashboard-root[data-page="admin"] .admin-finance-overview{margin-bottom:20px;background:linear-gradient(180deg,#fff,#fbfefc)}
+#dashboard-root[data-page="admin"] .admin-finance-overview .dash-toolbar{align-items:flex-start}
+#dashboard-root[data-page="admin"] #admin-financial-stats{grid-template-columns:repeat(3,minmax(0,1fr));margin:18px 0 8px}
+#dashboard-root[data-page="admin"] #admin-financial-stats .stat-card{min-height:134px}
+#dashboard-root[data-page="admin"] .admin-stat-hint{display:block;color:#71817b;font-size:11px;line-height:1.45;margin-top:8px;position:relative;z-index:1}
+#dashboard-root[data-page="admin"] .admin-finance-note{margin:14px 0 0;padding:12px 14px;border-radius:11px;background:#fff8e8;color:#79591a;font-size:12px;line-height:1.6}
+#dashboard-root[data-page="admin"] .admin-ledger{min-width:1050px}
+#dashboard-root[data-page="admin"] .admin-ledger td{vertical-align:middle}
+#dashboard-root[data-page="admin"] .admin-ref{display:block;max-width:190px;overflow-wrap:anywhere;color:#71817b;font-size:11px;margin-top:4px}
+#dashboard-root[data-page="admin"] .admin-transactions .dash-table-wrap{margin-top:4px}
+@media(max-width:900px){
+ #dashboard-root[data-page="admin"] #admin-financial-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+ #dashboard-root[data-page="admin"] .admin-finance-overview .dash-toolbar{display:block}
+ #dashboard-root[data-page="admin"] .admin-finance-overview .dash-toolbar>.dash-btn{margin-top:12px;width:100%}
+ #dashboard-root[data-page="admin"] #admin-financial-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #dashboard-root[data-page="admin"] #admin-financial-stats .stat-card{min-height:125px;padding:13px}
+ #dashboard-root[data-page="admin"] #admin-financial-stats .stat-card strong{font-size:22px;overflow-wrap:anywhere}
+ #dashboard-root[data-page="admin"] .admin-stat-hint{font-size:10px}
+}
