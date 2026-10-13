@@ -23,8 +23,7 @@
     ["Home", "consumer-dashboard.html"], ["Find services", "services.html"],
     ["My bookings", "bookings.html"], ["Map & tracking", "tracking.html"],
     ["Messages", "messages.html"], ["Payments & history", "payments.html"],
-    ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"],
-    ["Help & disputes", "help-center.html"]
+    ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"]
   ];
 
   const nav = document.querySelector(".mp-nav, .topbar nav, header nav");
