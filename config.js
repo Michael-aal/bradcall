@@ -1,5 +1,9 @@
 (() => {
-  // Add your Geoapify browser key locally. Do not commit a real key to GitHub.\n  // Restrict the key to Geocoding, Autocomplete, and Routing in the Geoapify dashboard.\n  if (!window.BRADCALL_GEOAPIFY_API_KEY) window.BRADCALL_GEOAPIFY_API_KEY = "";\n\n  const metaUrl = document.querySelector('meta[name="bradcall-api-url"]')?.content?.trim();
+  // Add your Geoapify browser key locally. Do not commit a real key to GitHub.
+  // Restrict the key to Geocoding, Autocomplete, and Routing in the Geoapify dashboard.
+  if (!window.BRADCALL_GEOAPIFY_API_KEY) window.BRADCALL_GEOAPIFY_API_KEY = "";
+
+  const metaUrl = document.querySelector('meta[name="bradcall-api-url"]')?.content?.trim();
   if (metaUrl) {
     window.BRADCALL_API_URL = metaUrl.replace(/\/$/, "");
   } else if (!window.BRADCALL_API_URL) {
