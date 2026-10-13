@@ -10,6 +10,7 @@
   const mapNode = $("#community-map-canvas");
   const search = $("#community-map-search");
   const button = $("#community-map-submit");
+  const locationStatus = $("#community-map-location-status");
   const caption = $("#community-map-caption");
   const list = $("#community-map-list");
   if (!mapNode || !search) return;
@@ -19,6 +20,7 @@
   let coverage;
   let routeLayer;
   let searchCenter = { lat: 6.5244, lng: 3.3792 };
+  let deviceCoordinates = null;
   let searchSequence = 0;
   let suggestionTimer;
   let suggestions = [];
@@ -265,7 +267,7 @@
       providerMessage + (GEOAPIFY_KEY ? " Powered by Geoapify geocoding; map tiles © OpenStreetMap." : " Add a Geoapify key in local config.js to enable autocomplete and directions; map data © OpenStreetMap."));
   }
 
-  if (button) button.addEventListener("click", () => refresh(search.value.trim()));
+  if (button) button.addEventListener("click", () => {\n    if (!navigator.geolocation) { say("This browser does not support device location."); return; }\n    button.disabled = true;\n    if (locationStatus) locationStatus.textContent = "Waiting for device location permission…";\n    say("Finding your approximate area…");\n    navigator.geolocation.getCurrentPosition(async pos => {\n      deviceCoordinates = { lat: pos.coords.latitude, lng: pos.coords.longitude };\n      search.value = "Your current area";\n      if (locationStatus) locationStatus.textContent = "Device location enabled. Showing services near your current area.";\n      try { await refresh("Your current area", deviceCoordinates); } catch (error) { say(error.message || "Could not load nearby services."); }\n      finally { button.disabled = false; }\n    }, () => {\n      if (locationStatus) locationStatus.textContent = "Turn on device location in your settings and allow browser access, then try again.";\n      say("Location permission is needed to show nearby service areas.");\n      button.disabled = false;\n    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 });\n  });
   search.addEventListener("input", () => {
     if (suggestionTimer) clearTimeout(suggestionTimer);
     suggestionTimer = setTimeout(() => autocomplete(search.value).catch(() => {}), 300);
