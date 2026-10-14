@@ -27,8 +27,8 @@ function openModal(service="",role=""){
   lastFocused=document.activeElement;
   modal.hidden=false;document.body.classList.add("modal-open");
   roles.hidden=!!service||!!role;form.hidden=!service&&!role;
-  if(service){$("#mt").textContent="Find a service";$("#mp").textContent="Add a few details, then explore matching services near your area."$("#rs").value=service}
-  else if(role){$("#mt").textContent=role==="provider"?"Create your provider profile":"Find a local service";$("#mp").textContent=role==="provider"?"Start with a service profile. Upgrade later when you need more reach.":"Browse nearby services and choose the right provider."$("#rs").value=role==="provider"?"New service profile":"Service request"}
+  if(service){$("#mt").textContent="Find a service";$("#mp").textContent="Add a few details, then explore matching services near your area.";$("#rs").value=service}
+  else if(role){$("#mt").textContent=role==="provider"?"Create your provider profile":"Find a local service";$("#mp").textContent=role==="provider"?"Start with a service profile. Upgrade later when you need more reach.":"Browse nearby services and choose the right provider.";$("#rs").value=role==="provider"?"New service profile":"Service request"}
   else{$("#mt").textContent="Choose your path";$("#mp").textContent="One marketplace. Two ways to use it."}
   requestAnimationFrame(()=>dialog.focus());refreshIcons();
 }
