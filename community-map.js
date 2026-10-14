@@ -280,23 +280,18 @@
     if (sequence !== searchSequence) return;
     renderList(services);
     let marked = 0;
-    for (const service of services.slice(0, 12)) {
+    for (const service of services.slice(0, 100)) {
       if (sequence !== searchSequence) return;
-      const area = String(service.location || service.provider?.location || "").trim();
-      if (!area) continue;
-      try {
-        const point = await geocode(area + ", Nigeria");
-        if (!point || sequence !== searchSequence) continue;
-        addMarker(service, point);
-        marked++;
-      } catch {
-        // A single service area that cannot be geocoded should not break the map.
-      }
+      // The API only exposes coordinates rounded to about 1 km for public map markers.
+      const lat = Number(service.mapLatitude), lng = Number(service.mapLongitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+      addMarker(service, { lat, lng });
+      marked++;
     }
     if (sequence !== searchSequence) return;
     say("Showing " + services.length + " nearby listing" + (services.length === 1 ? "" : "s") +
-      " within 10 km. " + marked + " approximate service-area marker" + (marked === 1 ? "" : "s") +
-      " displayed. Your device location is used for this search and is not displayed as a public marker.");
+      " within 10 km. " + marked + " privacy-rounded service-area marker" + (marked === 1 ? "" : "s") +
+      " displayed. Listings without saved device coordinates remain in the list but do not get a map pin.");
   }
 
   function requestDeviceLocation() {
