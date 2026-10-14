@@ -106,6 +106,7 @@ model ProviderProfile {
  longitude Float?
  serviceRadiusKm Float @default(10)
  available Boolean @default(true)
+ availabilityUpdatedAt DateTime @default(now())
  verified Boolean @default(false)
  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  services Service[]
