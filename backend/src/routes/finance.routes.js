@@ -87,7 +87,7 @@ router.get("/me/summary", async (req, res, next) => {
   try { const data = await personalData(req.user.id); res.json(data.summary); } catch (error) { next(error); }
 });
 router.get("/me/entries", async (req, res, next) => {
-  try { res.json(await prisma.personalFinanceEntry.findMany({ where: { userId: req.user.id }, orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }], take: 100 }); } catch (error) { next(error); }
+  try { res.json(await prisma.personalFinanceEntry.findMany({ where: { userId: req.user.id }, orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }], take: 100 })); } catch (error) { next(error); }
 });
 router.post("/me/entries", async (req, res, next) => {
   try {
