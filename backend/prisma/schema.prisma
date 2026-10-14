@@ -5,6 +5,10 @@ datasource db {
  provider = "postgresql"
  url = env("DATABASE_URL")
 }
+enum ProviderType {
+ INDIVIDUAL
+ COMPANY
+}
 enum Role { 
  PARTNER
  PROVIDER
@@ -99,6 +103,8 @@ model ProviderProfile {
  id String @id @default(cuid())
  userId String @unique
  displayName String
+ providerType ProviderType @default(INDIVIDUAL)
+ primaryCategory String?
  phone String?
  bio String?
  location String?
