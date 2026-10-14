@@ -4,16 +4,25 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { auth } from "../middleware/auth.js";
 const router=Router(), POLICY_VERSION="2026-10-12-v1";
-const publicUser=u=>({id:u.id,name:u.name,email:u.email,role:u.role,status:u.status,provider:u.provider?{id:u.provider.id,displayName:u.provider.displayName,phone:u.provider.phone,bio:u.provider.bio,location:u.provider.location,latitude:u.provider.latitude,longitude:u.provider.longitude,serviceRadiusKm:u.provider.serviceRadiusKm,available:u.provider.available,verified:u.provider.verified}:undefined});
+const publicUser=u=>({id:u.id,name:u.name,email:u.email,role:u.role,status:u.status,provider:u.provider?{id:u.provider.id,displayName:u.provider.displayName,providerType:u.provider.providerType,primaryCategory:u.provider.primaryCategory,phone:u.provider.phone,bio:u.provider.bio,location:u.provider.location,latitude:u.provider.latitude,longitude:u.provider.longitude,serviceRadiusKm:u.provider.serviceRadiusKm,available:u.provider.available,verified:u.provider.verified}:undefined});
 const sign=u=>{if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)throw new Error("JWT_SECRET must be configured with at least 32 characters");return jwt.sign({id:u.id},process.env.JWT_SECRET,{expiresIn:"7d"});};
 router.post("/register",async(req,res,next)=>{try{
  const name=typeof req.body.name==="string"?req.body.name.trim():"",email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"",password=typeof req.body.password==="string"?req.body.password:"",role=req.body.role||"PARTNER";
+ const providerType=role==="PROVIDER"?(req.body.providerType||"INDIVIDUAL"):null;
+ const phone=typeof req.body.phone==="string"?req.body.phone.trim():"",location=typeof req.body.location==="string"?req.body.location.trim():"",primaryCategory=typeof req.body.primaryCategory==="string"?req.body.primaryCategory.trim():"";
  if(!name||name.length>100||!email||email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!password)return res.status(400).json({message:"Enter a valid name, email, and password."});
  if(password.length<8||password.length>128)return res.status(400).json({message:"Password must be between 8 and 128 characters."});
  if(!["PARTNER","PROVIDER"].includes(role))return res.status(400).json({message:"Invalid role."});
+ if(role==="PROVIDER"&&providerType!=="INDIVIDUAL")return res.status(400).json({message:"Choose a supported provider account type."});
+ // Legacy clients may omit providerType; new provider forms must supply the full profile.
+ if(role==="PROVIDER"&&req.body.providerType!==undefined){
+  if(!phone||phone.length>30||!/^\+?[0-9 ()-]{7,30}$/.test(phone))return res.status(400).json({message:"Enter a valid phone number."});
+  if(!location||location.length>120)return res.status(400).json({message:"Enter your service location."});
+  if(!primaryCategory||primaryCategory.length>80)return res.status(400).json({message:"Choose your service category."});
+ }
  if(req.body.acceptedPolicies!==true)return res.status(400).json({message:"You must accept the Terms of Service and Privacy Policy."});
  if(await prisma.user.findUnique({where:{email}}))return res.status(409).json({message:"Email already registered."});
- const now=new Date(),u=await prisma.user.create({data:{name,email,passwordHash:await bcrypt.hash(password,12),role,provider:role==="PROVIDER"?{create:{displayName:name}}:undefined,policyAcceptances:{create:{policyVersion:POLICY_VERSION,termsAcceptedAt:now,privacyAcceptedAt:now}}},include:{provider:true}});
+ const now=new Date(),u=await prisma.user.create({data:{name,email,passwordHash:await bcrypt.hash(password,12),role,provider:role==="PROVIDER"?{create:{displayName:name,providerType:providerType||"INDIVIDUAL",phone:phone||null,location:location||null,primaryCategory:primaryCategory||null}}:undefined,policyAcceptances:{create:{policyVersion:POLICY_VERSION,termsAcceptedAt:now,privacyAcceptedAt:now}}},include:{provider:true}});
  return res.status(201).json({user:publicUser(u),token:sign(u)});
 }catch(e){next(e)}});
 router.post("/login",async(req,res,next)=>{try{

@@ -54,3 +54,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .page-heading p,.auth-intro p{font-size:15px;line-height:1.75}
 @media(max-width:800px){.market-grid{gap:12px}}
 @media(max-width:520px){.market-card{border-radius:16px;padding:18px}.auth-panel{border-radius:18px}}
+
+/* Individual provider registration */
+.provider-fields{border:1px solid var(--brand-line);background:#f7fbf9;border-radius:14px;padding:16px;gap:14px}
+.provider-fields:not([hidden]){display:grid}
+.provider-fields-heading strong{font:800 16px Manrope,sans-serif}
+.provider-fields-heading p,.field-hint{color:#687a73;font-size:12px;line-height:1.5;margin:5px 0 0}
+.provider-fields .field input,.provider-fields .field select{width:100%;border:1px solid #d8e3de;border-radius:10px;padding:13px 14px;background:#fff;color:#18332d;min-height:46px}
+.provider-fields[hidden]{display:none!important}
