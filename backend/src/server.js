@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { prisma } from "./lib/prisma.js";
 import authRoutes from "./routes/auth.routes.js";
+import profileRoutes from "./routes/profile.routes.js";
 import serviceRoutes from "./routes/service.routes.js";
 import requestRoutes from "./routes/request.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
@@ -32,7 +33,7 @@ function isAllowedOrigin(origin){
 app.use(cors({origin(origin,callback){if(!origin||isAllowedOrigin(origin))return callback(null,true);return callback(new Error("Origin not allowed by CORS"));}}));
 app.use(express.json({limit:"1mb",verify:(req,res,buf)=>{req.rawBody=Buffer.from(buf);}}));
 app.get("/api/health",async(req,res)=>{try{await prisma.$queryRawUnsafe("SELECT 1");res.json({ok:true,service:"bradcall-api"})}catch{res.status(503).json({ok:false,service:"bradcall-api",database:"unavailable"})}});
-app.use("/api/auth",authRoutes); app.use("/api/requests",trackingRoutes); app.use("/api/services",serviceRoutes); app.use("/api/requests",requestRoutes); app.use("/api/admin",adminRoutes);
+app.use("/api/auth",authRoutes); app.use("/api/profile",profileRoutes); app.use("/api/requests",trackingRoutes); app.use("/api/services",serviceRoutes); app.use("/api/requests",requestRoutes); app.use("/api/admin",adminRoutes);
 app.use("/api/maps",mapsRoutes); app.use("/api/payments",paymentRoutes); app.use("/api/communication",communicationRoutes); app.use("/api/trust",trustRoutes); app.use("/api/reviews",reviewRoutes);
 app.use((req,res)=>res.status(404).json({message:"Route not found"}));
 app.use((err,req,res,next)=>{console.error(err);res.status(500).json({message:"Internal server error"});});
