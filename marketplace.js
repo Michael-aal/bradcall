@@ -4,14 +4,14 @@ const showError=message=>{const el=$("#form-error");if(el){el.textContent=messag
 const clearError=()=>{const el=$("#form-error");if(el){el.textContent="";el.classList.remove("visible")}};
 const friendlyError=e=>e instanceof TypeError?"Could not reach Bradcall's API at "+API_BASE+". Page origin: "+location.origin+". This usually means a CORS or deployment configuration problem.":e.message||"Something went wrong.";
 const saveSession=d=>{localStorage.setItem("bradcall_token",d.token);localStorage.setItem("bradcall_user",JSON.stringify(d.user))};
-const goForRole=(role,status)=>location.href=(status==="SUSPENDED"||status==="BANNED")?"trust-center.html":role==="PROVIDER"?"provider-dashboard.html":role==="ADMIN"?"admin-dashboard.html":"consumer-dashboard.html";
+const goForRole=(role,status,user)=>location.href=(status==="SUSPENDED"||status==="BANNED")?"trust-center.html":role==="ADMIN"?"admin-dashboard.html":!user?.profileComplete?"profile-setup.html":role==="PROVIDER"?"provider-dashboard.html":"consumer-dashboard.html";
 
 const loginForm=$("#login-form");
 if(loginForm)loginForm.addEventListener("submit",async e=>{
  e.preventDefault();clearError();
  const email=$("#email").value.trim(),password=$("#password").value;
  if(!email||!password)return showError("Enter your email and password.");
- try{const r=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})}),d=await r.json();if(!r.ok)throw Error(d.message||"Unable to log in.");saveSession(d);goForRole(d.user.role,d.user.status)}catch(err){showError(friendlyError(err))}
+ try{const r=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})}),d=await r.json();if(!r.ok)throw Error(d.message||"Unable to log in.");saveSession(d);goForRole(d.user.role,d.user.status,d.user)}catch(err){showError(friendlyError(err))}
 });
 
 const registerForm=$("#register-form");
@@ -39,7 +39,7 @@ if(registerForm){
   if(!acceptedPolicies)return showError("Accept the Terms and Privacy Policy before registering.");
   const payload={name,email,password,role,acceptedPolicies};
   if(role==="PROVIDER")Object.assign(payload,{providerType:"INDIVIDUAL",phone,primaryCategory,location});
-  try{const r=await fetch(API_BASE+"/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),d=await r.json();if(!r.ok)throw Error(d.message||"Unable to create your account.");saveSession(d);goForRole(d.user.role,d.user.status)}catch(err){showError(friendlyError(err))}
+  try{const r=await fetch(API_BASE+"/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),d=await r.json();if(!r.ok)throw Error(d.message||"Unable to create your account.");saveSession(d);goForRole(d.user.role,d.user.status,d.user)}catch(err){showError(friendlyError(err))}
  });
 }
 

@@ -1,4 +1,4 @@
-:root{--brand-green:#019E81;--brand-green-dark:#087d69;--brand-yellow:#FFBF42;--brand-ink:#18332d;--brand-paper:#f7fbf9;--brand-line:#dce9e4}
+:root{--brand-green:#0E9F91;--brand-green-dark:#087C75;--brand-yellow:#D9F36A;--brand-ink:#142D33;--brand-paper:#F4FAFB;--brand-line:#DCE9EC}
 body{background:var(--brand-paper);color:var(--brand-ink)}
 .brand-mark{background:var(--brand-green)!important;color:#fff!important}
 .dark,.auth-submit,.primary-action{background:var(--brand-green)!important;color:#fff!important}
@@ -13,10 +13,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .market-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .market-card{background:#fff;border:1px solid var(--brand-line);border-radius:18px;padding:22px;box-shadow:0 8px 24px #174b3b08}
 .market-card h2,.market-card h3{font-family:Manrope,sans-serif;letter-spacing:-.03em}
-.market-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:#e4f5ef;color:var(--brand-green);margin-bottom:18px}
+.market-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:#DDF7F1;color:var(--brand-green);margin-bottom:18px}
 .market-card p{color:#667771;line-height:1.65}
 .market-card a,.inline-link{color:var(--brand-green-dark);font-weight:800;text-decoration:none}
-.pill{display:inline-flex;border-radius:999px;padding:7px 11px;background:#fff2d2;color:#654a0c;font-size:12px;font-weight:800}
+.pill{display:inline-flex;border-radius:999px;padding:7px 11px;background:#F1F8D6;color:#654a0c;font-size:12px;font-weight:800}
 .auth-wrap{min-height:calc(100vh - 76px);display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,.85fr);gap:56px;align-items:center;max-width:1080px;margin:auto;padding:48px 24px}
 .auth-intro h1{font:800 clamp(34px,5vw,56px)/1.05 Manrope,sans-serif;letter-spacing:-.055em}
 .auth-intro p{color:#62736d;line-height:1.7;max-width:440px}
@@ -26,7 +26,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .auth-form{display:grid;gap:15px}
 .field{display:grid;gap:7px}
 .field label{font-size:13px;font-weight:800}
-.field input,.field select{width:100%;border:1px solid #d8e3de;border-radius:10px;padding:13px 14px;background:#fff;color:#18332d;min-height:46px}
+.field input,.field select{width:100%;border:1px solid #d8e3de;border-radius:10px;padding:13px 14px;background:#fff;color:#142D33;min-height:46px}
 .auth-submit{width:100%;border:0;border-radius:11px;padding:14px;font-weight:800;margin-top:4px}
 .auth-error{display:none;background:#fff0ef;color:#9c3029;border-radius:10px;padding:11px 13px;font-size:13px;line-height:1.5}
 .auth-error.visible{display:block}
@@ -38,13 +38,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:800px){.market-grid{grid-template-columns:1fr 1fr}.auth-wrap{grid-template-columns:1fr;gap:22px;padding-top:32px}.auth-intro{padding:0 4px}.auth-intro h1{font-size:38px}}
 @media(max-width:520px){.market-grid{grid-template-columns:1fr}.page-shell{padding:32px 16px 52px}.auth-panel{padding:22px 18px}.auth-wrap{padding:26px 16px 44px}.role-choice{grid-template-columns:1fr}}
 
-:root{--red:var(--brand-green);--red-soft:#e4f5ef;--dark:#18332d;--paper:var(--brand-paper);--line:var(--brand-line)}
+:root{--red:var(--brand-green);--red-soft:#DDF7F1;--dark:#142D33;--paper:var(--brand-paper);--line:var(--brand-line)}
 
 
 /* Dribbble-inspired marketplace UI refinement */
 .topbar{box-shadow:0 4px 18px rgba(24,51,45,.025)}
 .topbar nav a{padding:10px 12px;border-radius:10px;transition:color .18s ease,background .18s ease}
-.topbar nav a:hover,.topbar nav a[aria-current=page]{background:#e4f5ef;color:var(--brand-green-dark)}
+.topbar nav a:hover,.topbar nav a[aria-current=page]{background:#DDF7F1;color:var(--brand-green-dark)}
 .dark,.auth-submit,.primary-action,.dash-btn{min-height:44px;transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease}
 .dark:hover,.auth-submit:hover,.primary-action:hover,.dash-btn:hover{box-shadow:0 8px 20px rgba(1,158,129,.15)}
 .market-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
