@@ -2,6 +2,7 @@
   "use strict";
 
   const API = (window.BRADCALL_API_URL || (location.hostname === "localhost" || location.hostname === "127.0.0.1" ? "http://localhost:5000" : location.origin)).replace(/\/$/, "");
+  const GOOGLE_KEY = String(window.BRADCALL_GOOGLE_MAPS_API_KEY || "").trim();
   const GEOAPIFY_KEY = String(window.BRADCALL_GEOAPIFY_API_KEY || "").trim();
   const root = document.querySelector("[data-community-map]");
   if (!root) return;
@@ -15,16 +16,17 @@
   const list = $("#community-map-list");
   if (!mapNode || !search) return;
 
+  const DEFAULT_CENTER = { lat: 6.5244, lng: 3.3792 };
   let map;
+  let mapProvider = "leaflet";
   let layer;
   let coverage;
   let routeLayer;
-  let searchCenter = { lat: 6.5244, lng: 3.3792 };
-  let deviceCoordinates = null;
+  let directionsRenderer;
+  let googleGeocoder;
+  let searchCenter = null;
   let searchSequence = 0;
-  let suggestionTimer;
-  let suggestions = [];
-  let autocompleteList;
+  const geocodeCache = new Map();
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -33,276 +35,314 @@
     style: "currency", currency: "NGN", maximumFractionDigits: 0
   }).format(Number(value) || 0);
   const say = message => { if (caption) caption.textContent = message; };
-  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  function loadScript(src, dataAttribute) {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector("script[" + dataAttribute + "]");
+      if (existing) {
+        if (existing.dataset.loaded === "true") return resolve();
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", () => reject(new Error("The map service could not load. Check your connection and API configuration.")), { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.dataset[dataAttribute.replace("data-", "").replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = "true";
+      script.setAttribute(dataAttribute, "true");
+      script.onload = () => { script.dataset.loaded = "true"; resolve(); };
+      script.onerror = () => reject(new Error("The map service could not load. Check your connection and API configuration."));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function loadGoogleMaps() {
+    if (window.google?.maps?.Map) return true;
+    if (!GOOGLE_KEY) return false;
+    await new Promise((resolve, reject) => {
+      if (window.google?.maps?.Map) return resolve();
+      const callbackName = "__bradcallGoogleMapsReady";
+      window[callbackName] = () => { delete window[callbackName]; resolve(); };
+      const existing = document.querySelector('script[data-bradcall-google-maps]');
+      if (existing) {
+        existing.addEventListener("load", () => window.google?.maps?.Map ? resolve() : reject(new Error("Google Maps did not initialize. Check that Maps JavaScript API is enabled.")), { once: true });
+        existing.addEventListener("error", () => reject(new Error("Google Maps could not load. Check the API key and allowed website referrers.")), { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://maps.googleapis.com/maps/api/js?key=" + encodeURIComponent(GOOGLE_KEY) + "&libraries=places&callback=" + callbackName + "&v=weekly";
+      script.async = true;
+      script.defer = true;
+      script.dataset.bradcallGoogleMaps = "true";
+      script.onerror = () => reject(new Error("Google Maps could not load. Check the API key and allowed website referrers."));
+      document.head.appendChild(script);
+    });
+    return Boolean(window.google?.maps?.Map);
+  }
 
   function loadLeaflet() {
     return new Promise((resolve, reject) => {
       if (window.L) return resolve();
-      if (!document.querySelector('link[data-bradcall-leaflet]')) {
+      if (!document.querySelector("link[data-bradcall-leaflet]")) {
         const css = document.createElement("link");
         css.rel = "stylesheet";
         css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
         css.dataset.bradcallLeaflet = "true";
         document.head.appendChild(css);
       }
-      const existing = document.querySelector('script[data-bradcall-leaflet]');
-      if (existing) {
-        existing.addEventListener("load", resolve, { once: true });
-        existing.addEventListener("error", () => reject(new Error("Map library could not load. Check your internet connection.")), { once: true });
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      script.dataset.bradcallLeaflet = "true";
-      script.onload = resolve;
-      script.onerror = () => reject(new Error("Map library could not load. Check your internet connection."));
-      document.head.appendChild(script);
+      loadScript("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js", "data-bradcall-leaflet")
+        .then(resolve).catch(reject);
     });
   }
 
-  function ensureAutocompleteList() {
-    const id = "community-map-suggestions";
-    autocompleteList = document.getElementById(id);
-    if (!autocompleteList) {
-      autocompleteList = document.createElement("datalist");
-      autocompleteList.id = id;
-      document.body.appendChild(autocompleteList);
-    }
-    search.setAttribute("list", id);
-    search.setAttribute("autocomplete", "off");
-  }
-
-  async function geocode(query) {
-    if (GEOAPIFY_KEY) {
-      const url = new URL("https://api.geoapify.com/v1/geocode/search");
-      url.searchParams.set("text", query);
-      url.searchParams.set("limit", "1");
-      url.searchParams.set("format", "json");
-      url.searchParams.set("apiKey", GEOAPIFY_KEY);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Geoapify could not find that area. Check the API key and allowed APIs.");
-      const data = await response.json();
-      const result = data.results?.[0];
-      if (!result) return null;
-      return { lat: Number(result.lat), lng: Number(result.lon), label: result.formatted || query };
-    }
-
-    // Keeps the existing map usable until a local Geoapify key is configured.
-    const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=" + encodeURIComponent(query);
-    const response = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error("Community search is temporarily unavailable.");
-    const data = await response.json();
-    if (!data.length) return null;
-    return { lat: Number(data[0].lat), lng: Number(data[0].lon), label: data[0].display_name };
-  }
-
-  async function autocomplete(query) {
-    if (!GEOAPIFY_KEY || query.trim().length < 3) {
-      suggestions = [];
-      if (autocompleteList) autocompleteList.replaceChildren();
-      return;
-    }
-    const url = new URL("https://api.geoapify.com/v1/geocode/autocomplete");
-    url.searchParams.set("text", query);
-    url.searchParams.set("limit", "6");
-    url.searchParams.set("filter", "countrycode:ng");
-    url.searchParams.set("apiKey", GEOAPIFY_KEY);
-    const response = await fetch(url);
-    if (!response.ok) return;
-    const data = await response.json();
-    suggestions = (data.features || []).map(feature => ({
-      label: feature.properties?.formatted || "",
-      lat: Number(feature.properties?.lat),
-      lng: Number(feature.properties?.lon)
-    })).filter(item => item.label && Number.isFinite(item.lat) && Number.isFinite(item.lng));
-    autocompleteList.replaceChildren(...suggestions.map(item => {
-      const option = document.createElement("option");
-      option.value = item.label;
-      return option;
-    }));
-  }
-
-  function popup(service, point) {
-    const directions = GEOAPIFY_KEY
-      ? '<button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route from this area</button>'
-      : "";
-    return '<div class="map-popup"><strong>' + esc(service.title || service.provider?.displayName || "Local service area") +
-      '</strong><p>' + esc(service.category?.name || "Service provider") + '</p><p>' +
-      esc(service.location || "Service area") + '</p><p>' + money(service.price) +
-      '</p><a href="register.html">Join to request this service</a>' + directions + '</div>';
-  }
-
-  function renderList(services) {
-    if (!list) return;
-    list.innerHTML = services.length
-      ? services.slice(0, 6).map(service => '<article class="map-list-item"><strong>' + esc(service.title) +
-        '</strong><span>' + esc(service.location) + '</span><small>' +
-        esc(service.category?.name || "Service") + " · " + money(service.price) + '</small></article>').join("")
-      : '<div class="dash-empty">No public service listings found for this area yet. Try a nearby neighborhood.</div>';
-  }
-
   async function initializeMap() {
-    await loadLeaflet();
     if (map) return;
-    map = window.L.map(mapNode, { scrollWheelZoom: false }).setView([searchCenter.lat, searchCenter.lng], 12);
+    try {
+      if (await loadGoogleMaps()) {
+        mapProvider = "google";
+        map = new google.maps.Map(mapNode, {
+          center: DEFAULT_CENTER, zoom: 12, mapTypeControl: false,
+          streetViewControl: false, fullscreenControl: true,
+          gestureHandling: "greedy"
+        });
+        googleGeocoder = new google.maps.Geocoder();
+        layer = [];
+        routeLayer = new google.maps.DirectionsRenderer({
+          map, suppressMarkers: false, polylineOptions: { strokeColor: "#019E81", strokeWeight: 5, strokeOpacity: 0.85 }
+        });
+        coverage = new google.maps.Circle({
+          map, center: DEFAULT_CENTER, radius: 3000, strokeColor: "#019E81",
+          strokeOpacity: 0.8, strokeWeight: 2, fillColor: "#019E81", fillOpacity: 0.08
+        });
+        return;
+      }
+    } catch (error) {
+      say(error.message || "Google Maps could not load. Showing the community map fallback.");
+    }
+    mapProvider = "leaflet";
+    await loadLeaflet();
+    map = window.L.map(mapNode, { scrollWheelZoom: false }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 12);
     window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
     }).addTo(map);
     layer = window.L.layerGroup().addTo(map);
     routeLayer = window.L.layerGroup().addTo(map);
-    coverage = window.L.circle([searchCenter.lat, searchCenter.lng], {
-      radius: 3000, color: "#019E81", weight: 2, fillColor: "#019E81", fillOpacity: .08
+    coverage = window.L.circle([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], {
+      radius: 3000, color: "#019E81", weight: 2, fillColor: "#019E81", fillOpacity: 0.08
     }).addTo(map);
     mapNode.addEventListener("click", async event => {
       const routeButton = event.target.closest("[data-route-lat][data-route-lng]");
-      if (!routeButton) return;
-      await showRoute(Number(routeButton.dataset.routeLat), Number(routeButton.dataset.routeLng));
+      if (routeButton) await showRoute(Number(routeButton.dataset.routeLat), Number(routeButton.dataset.routeLng));
     });
   }
 
+  async function geocode(query) {
+    const key = query.trim().toLowerCase();
+    if (geocodeCache.has(key)) return geocodeCache.get(key);
+    let point = null;
+    if (mapProvider === "google" && googleGeocoder) {
+      const result = await googleGeocoder.geocode({ address: query, region: "ng" });
+      const item = result.results?.[0];
+      if (item) point = {
+        lat: item.geometry.location.lat(), lng: item.geometry.location.lng(),
+        label: item.formatted_address || query
+      };
+    } else if (GEOAPIFY_KEY) {
+      const url = new URL("https://api.geoapify.com/v1/geocode/search");
+      url.searchParams.set("text", query);
+      url.searchParams.set("limit", "1");
+      url.searchParams.set("format", "json");
+      url.searchParams.set("apiKey", GEOAPIFY_KEY);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Area lookup is temporarily unavailable.");
+      const data = await response.json();
+      const item = data.results?.[0];
+      if (item) point = { lat: Number(item.lat), lng: Number(item.lon), label: item.formatted || query };
+    } else {
+      const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=" + encodeURIComponent(query);
+      const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error("Area lookup is temporarily unavailable.");
+      const data = await response.json();
+      if (data[0]) point = { lat: Number(data[0].lat), lng: Number(data[0].lon), label: data[0].display_name || query };
+    }
+    if (point && Number.isFinite(point.lat) && Number.isFinite(point.lng)) geocodeCache.set(key, point);
+    return point;
+  }
+
+  function clearMarkers() {
+    if (mapProvider === "google") {
+      layer.forEach(marker => marker.setMap(null));
+      layer = [];
+      routeLayer.set("directions", null);
+    } else {
+      layer.clearLayers();
+      routeLayer.clearLayers();
+    }
+  }
+
+  function addMarker(service, point) {
+    const title = esc(service.title || service.provider?.displayName || "Local service area");
+    const details = '<div class="map-popup"><strong>' + title + '</strong><p>' +
+      esc(service.category?.name || "Service provider") + '</p><p>' +
+      esc(service.location || "Approximate service area") + '</p><p>' + money(service.price) +
+      '</p><a href="register.html">Join to request this service</a><p><a target="_blank" rel="noopener noreferrer" href="' +
+      esc("https://www.google.com/maps/dir/?api=1&destination=" + point.lat + "," + point.lng) +
+      '">Get directions in Google Maps</a></p></div>';
+    if (mapProvider === "google") {
+      const marker = new google.maps.Marker({ map, position: { lat: point.lat, lng: point.lng }, title: service.title || "Service area" });
+      const info = new google.maps.InfoWindow({ content: details });
+      marker.addListener("click", () => info.open({ map, anchor: marker }));
+      layer.push(marker);
+    } else {
+      window.L.marker([point.lat, point.lng]).bindPopup(details).addTo(layer);
+    }
+  }
+
+  function renderList(services) {
+    if (!list) return;
+    list.innerHTML = services.length
+      ? services.slice(0, 6).map(service => '<article class="map-list-item"><strong>' + esc(service.title) +
+        '</strong><span>' + esc(service.location || "Approximate service area") + '</span><small>' +
+        esc(service.category?.name || "Service") + " · " + money(service.price) +
+        (Number.isFinite(service.distanceKm) ? " · " + service.distanceKm + " km away" : "") +
+        '</small></article>').join("")
+      : '<div class="dash-empty">No public service listings found within this area yet. Try again later or check whether providers have enabled availability.</div>';
+  }
+
   async function showRoute(destinationLat, destinationLng) {
-    if (!GEOAPIFY_KEY) {
-      say("Add your Geoapify key to local config.js to enable route planning.");
+    if (!searchCenter || ![searchCenter.lat, searchCenter.lng, destinationLat, destinationLng].every(Number.isFinite)) {
+      say("A valid route location could not be found.");
       return;
     }
-    if (![searchCenter.lat, searchCenter.lng, destinationLat, destinationLng].every(Number.isFinite)) {
-      say("A valid route location could not be found.");
+    const destination = destinationLat + "," + destinationLng;
+    if (mapProvider !== "google") {
+      const url = "https://www.google.com/maps/dir/?api=1&origin=" +
+        encodeURIComponent(searchCenter.lat + "," + searchCenter.lng) + "&destination=" +
+        encodeURIComponent(destination) + "&travelmode=driving";
+      window.open(url, "_blank", "noopener,noreferrer");
+      say("Opened driving directions in Google Maps. Travel times may vary with traffic.");
       return;
     }
     say("Calculating a driving route…");
     try {
-      const url = new URL("https://api.geoapify.com/v1/routing");
-      url.searchParams.set("waypoints", searchCenter.lat + "," + searchCenter.lng + "|" + destinationLat + "," + destinationLng);
-      url.searchParams.set("mode", "drive");
-      url.searchParams.set("type", "short");
-      url.searchParams.set("format", "geojson");
-      url.searchParams.set("apiKey", GEOAPIFY_KEY);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Route request failed. Check that Routing API is enabled for your Geoapify key.");
-      const data = await response.json();
-      const feature = data.features?.[0];
-      if (!feature?.geometry?.coordinates?.length) throw new Error("No driving route was found for those locations.");
-      routeLayer.clearLayers();
-      const line = window.L.geoJSON(feature, { style: { color: "#6B45D9", weight: 5, opacity: .85 } }).addTo(routeLayer);
-      map.fitBounds(line.getBounds(), { padding: [24, 24] });
-      const properties = feature.properties || {};
-      const distanceKm = Number(properties.distance) / 1000;
-      const durationMinutes = Number(properties.time) / 60;
-      const details = [];
-      if (Number.isFinite(distanceKm) && distanceKm > 0) details.push(distanceKm.toFixed(1) + " km");
-      if (Number.isFinite(durationMinutes) && durationMinutes > 0) details.push(Math.round(durationMinutes) + " min estimated driving");
-      say("Driving route from " + (search.value.trim() || "the searched area") + (details.length ? ": " + details.join(" · ") : "") + ". Travel estimates can change with traffic and road conditions.");
-    } catch (error) {
-      say(error.message || "Could not calculate this route right now.");
+      const service = new google.maps.DirectionsService();
+      const result = await service.route({
+        origin: searchCenter, destination: { lat: destinationLat, lng: destinationLng },
+        travelMode: google.maps.TravelMode.DRIVING
+      });
+      routeLayer.setDirections(result);
+      const leg = result.routes?.[0]?.legs?.[0];
+      const summary = [leg?.distance?.text, leg?.duration?.text].filter(Boolean).join(" · ");
+      say("Driving route" + (summary ? ": " + summary : "") + ". Travel estimates can change with traffic and road conditions.");
+    } catch {
+      say("Google Maps could not calculate a route. Try opening directions directly in Google Maps.");
     }
   }
 
-  async function refresh(place, selectedPoint) {
+  async function refresh(selectedPoint) {
     const sequence = ++searchSequence;
-    const query = (place || search.value || "Lagos, Nigeria").trim();
-    if (!query) return;
     await initializeMap();
-    say("Finding the map area for " + query + "…");
-
-    let center = selectedPoint;
-    if (!center) {
-      try {
-        center = await geocode(query.includes("Nigeria") ? query : query + ", Nigeria");
-      } catch (error) {
-        say(error.message);
-        return;
-      }
-    }
-    if (sequence !== searchSequence) return;
-    if (!center) {
-      say("We couldn't find that area. Try a neighborhood name plus its city.");
+    if (!selectedPoint) {
+      say("Turn on device location to find services near you.");
       return;
     }
-    searchCenter = { lat: center.lat, lng: center.lng };
-    map.setView([center.lat, center.lng], 13);
-    coverage.setLatLng([center.lat, center.lng]);
-    coverage.setRadius(3000);
-    layer.clearLayers();
-    routeLayer.clearLayers();
+    searchCenter = { lat: Number(selectedPoint.lat), lng: Number(selectedPoint.lng) };
+    if (mapProvider === "google") {
+      map.setCenter(searchCenter);
+      map.setZoom(13);
+      coverage.setCenter(searchCenter);
+      routeLayer.set("directions", null);
+    } else {
+      map.setView([searchCenter.lat, searchCenter.lng], 13);
+      coverage.setLatLng([searchCenter.lat, searchCenter.lng]);
+      clearMarkers();
+    }
+    if (mapProvider === "google") clearMarkers();
 
+    say("Finding nearby service listings…");
+    const params = new URLSearchParams({
+      latitude: String(searchCenter.lat), longitude: String(searchCenter.lng), radiusKm: "10"
+    });
     let services = [];
     try {
-      const params = new URLSearchParams();
-      if (selectedPoint) { params.set("latitude", selectedPoint.lat); params.set("longitude", selectedPoint.lng); params.set("radiusKm", "10"); }
-      const response = await fetch(API + "/api/services" + (params.size ? "?" + params.toString() : ""));
-      if (response.ok) services = await response.json();
-    } catch {
-      say("Map loaded, but Bradcall listings could not be reached. Check that the backend is running.");
+      const response = await fetch(API + "/api/services?" + params.toString());
+      const data = await response.json().catch(() => []);
+      if (!response.ok) throw new Error(data.message || "Could not load nearby listings.");
+      services = Array.isArray(data) ? data : [];
+    } catch (error) {
+      if (sequence === searchSequence) say(error.message || "Bradcall listings could not be reached. Check the backend connection.");
+      renderList([]);
+      return;
     }
     if (sequence !== searchSequence) return;
-
-    const areaTerm = query.split(",")[0].trim().toLowerCase();
-    const cityTerm = query.split(",").slice(-1)[0].trim().toLowerCase();
-    const relevant = selectedPoint ? services : services.filter(service => {
-      const location = String(service.location || "").toLowerCase();
-      return location.includes(areaTerm) || (cityTerm && location.includes(cityTerm));
-    });
-    renderList(relevant);
-    const seen = new Set();
+    renderList(services);
     let marked = 0;
-    const maxMarkers = 8;
-    for (const service of relevant) {
-      if (marked >= maxMarkers) break;
-      const area = String(service.location || "").trim();
-      if (!area || seen.has(area.toLowerCase())) continue;
-      seen.add(area.toLowerCase());
+    for (const service of services.slice(0, 12)) {
+      if (sequence !== searchSequence) return;
+      const area = String(service.location || service.provider?.location || "").trim();
+      if (!area) continue;
       try {
-        if (!GEOAPIFY_KEY) await wait(1100);
-        const lookup = area.includes(",") ? area + ", Nigeria" :
-          query.toLowerCase().includes(area.toLowerCase()) ? area + ", Lagos, Nigeria" : area + ", " + query + ", Nigeria";
-        const point = await geocode(lookup);
+        const point = await geocode(area + ", Nigeria");
         if (!point || sequence !== searchSequence) continue;
-        window.L.marker([point.lat, point.lng]).bindPopup(popup(service, point)).addTo(layer);
+        addMarker(service, point);
         marked++;
       } catch {
-        // One un-geocodable provider area should not break the rest of the map.
+        // A single service area that cannot be geocoded should not break the map.
       }
     }
-    const providerMessage = marked + " service-area marker" + (marked === 1 ? "" : "s") + " found.";
-    say("Map centered on " + query + ". The shaded circle is approximate, not an official boundary. " +
-      providerMessage + (GEOAPIFY_KEY ? " Powered by Geoapify geocoding; map tiles © OpenStreetMap." : " Add a Geoapify key in local config.js to enable autocomplete and directions; map data © OpenStreetMap."));
+    if (sequence !== searchSequence) return;
+    say("Showing " + services.length + " nearby listing" + (services.length === 1 ? "" : "s") +
+      " within 10 km. " + marked + " approximate service-area marker" + (marked === 1 ? "" : "s") +
+      " displayed. Your device location is used for this search and is not displayed as a public marker.");
   }
 
-  if (button) button.addEventListener("click", () => {
-    if (!navigator.geolocation) { say("This browser does not support device location."); return; }
+  function requestDeviceLocation() {
+    if (!navigator.geolocation) {
+      if (locationStatus) locationStatus.textContent = "This browser does not support device location.";
+      say("This browser does not support device location.");
+      return;
+    }
     button.disabled = true;
     if (locationStatus) locationStatus.textContent = "Waiting for device location permission…";
     say("Finding your approximate area…");
-    navigator.geolocation.getCurrentPosition(async pos => {
-      deviceCoordinates = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    navigator.geolocation.getCurrentPosition(async position => {
+      const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
       search.value = "Your current area";
-      if (locationStatus) locationStatus.textContent = "Device location enabled. Showing services near your current area.";
-      try { await refresh("Your current area", deviceCoordinates); } catch (error) { say(error.message || "Could not load nearby services."); }
-      finally { button.disabled = false; }
+      if (locationStatus) locationStatus.textContent = "Location enabled. Showing nearby services; your exact position is not shown publicly.";
+      try {
+        await initializeMap();
+        if (mapProvider === "google") {
+          const result = await googleGeocoder.geocode({ location: coords });
+          const address = result.results?.[0]?.formatted_address;
+          if (address) search.value = address.split(",").slice(0, 2).join(",").trim();
+        } else {
+          try {
+            const area = await geocode(coords.lat + "," + coords.lng);
+            if (area?.label) search.value = area.label.split(",").slice(0, 2).join(",").trim();
+          } catch {
+            // Coordinates still work even when reverse geocoding is unavailable.
+          }
+        }
+        await refresh(coords);
+      } catch (error) {
+        say(error.message || "Could not load nearby services.");
+        if (locationStatus) locationStatus.textContent = "Location was found, but the map could not load. Please try again.";
+      } finally {
+        button.disabled = false;
+      }
     }, () => {
-      if (locationStatus) locationStatus.textContent = "Turn on device location in your settings and allow browser access, then try again.";
+      if (locationStatus) locationStatus.textContent = "Turn on device location and allow browser access, then try again.";
       say("Location permission is needed to show nearby service areas.");
       button.disabled = false;
     }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 });
-  });
-  search.addEventListener("input", () => {
-    if (suggestionTimer) clearTimeout(suggestionTimer);
-    suggestionTimer = setTimeout(() => autocomplete(search.value).catch(() => {}), 300);
-  });
-  search.addEventListener("change", () => {
-    const match = suggestions.find(item => item.label === search.value);
-    if (match) refresh(search.value, match);
-  });
-  search.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      const match = suggestions.find(item => item.label === search.value);
-      refresh(search.value.trim(), match);
-    }
-  });
+  }
 
+  if (button) button.addEventListener("click", requestDeviceLocation);
   search.readOnly = true;
-  ensureAutocompleteList();
-  initializeMap().then(() => say("Turn on device location to see nearby service areas.")).catch(error => say(error.message || "Could not load the community map."));
+  search.setAttribute("aria-readonly", "true");
+  initializeMap().then(() => {
+    if (!GOOGLE_KEY) say("Map ready. Enable device location to find nearby services. Google Maps can be enabled by adding a restricted browser key in config.js.");
+    else say("Map ready. Enable device location to find nearby services.");
+  }).catch(error => say(error.message || "Could not load the community map."));
 })();
