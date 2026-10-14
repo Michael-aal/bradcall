@@ -3,7 +3,8 @@ ALTER TABLE "User"
   ADD COLUMN "location" TEXT,
   ADD COLUMN "latitude" DOUBLE PRECISION,
   ADD COLUMN "longitude" DOUBLE PRECISION,
-  ADD COLUMN "profileCompletedAt" TIMESTAMP(3);
+  ADD COLUMN "profileCompletedAt" TIMESTAMP(3),
+  ADD COLUMN "interests" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
 
 CREATE TYPE "ProviderType" AS ENUM ('INDIVIDUAL', 'COMPANY');
 
