@@ -71,6 +71,22 @@ router.get("/", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.get("/related", async (req, res, next) => {
+  try {
+    const category = typeof req.query.category === "string" ? req.query.category.trim().slice(0, 80) : "";
+    if (!category) return res.status(400).json({ message: "Choose a service category to discover related services." });
+    const since = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+    const requests = await prisma.serviceRequest.findMany({
+      where: { createdAt: { gte: since }, status: "COMPLETED" },
+      select: { partnerId: true, service: { select: { location: true, category: { select: { name: true } } } } },
+      take: 5000
+    });
+    const { buildRelatedServiceGraph } = await import("../lib/opportunities.js");
+    res.set("Cache-Control", "public, max-age=300");
+    res.json({ lookbackDays: 180, relatedCategories: buildRelatedServiceGraph({ requests, category }) });
+  } catch (error) { next(error); }
+});
+
 router.get("/:id", async (req, res, next) => {
   try {
     const service = await prisma.service.findUnique({
