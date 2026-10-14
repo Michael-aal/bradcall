@@ -3,7 +3,6 @@
 
   const API = (window.BRADCALL_API_URL || (location.hostname === "localhost" || location.hostname === "127.0.0.1" ? "http://localhost:5000" : location.origin)).replace(/\/$/, "");
   const GOOGLE_KEY = String(window.BRADCALL_GOOGLE_MAPS_API_KEY || document.querySelector('meta[name="bradcall-google-maps-key"]')?.content || "").trim();
-  const GEOAPIFY_KEY = String(window.BRADCALL_GEOAPIFY_API_KEY || "").trim();
   const root = document.querySelector("[data-community-map]");
   if (!root) return;
 
@@ -24,6 +23,10 @@
   let routeLayer;
   let directionsRenderer;
   let googleGeocoder;
+  let geoRouteLine = null;
+  let suggestionBox = null;
+  let autocompleteTimer = null;
+  let autocompleteSequence = 0;
   let searchCenter = null;
   let searchSequence = 0;
   const geocodeCache = new Map();
@@ -148,23 +151,19 @@
         lat: item.geometry.location.lat(), lng: item.geometry.location.lng(),
         label: item.formatted_address || query
       };
-    } else if (GEOAPIFY_KEY) {
-      const url = new URL("https://api.geoapify.com/v1/geocode/search");
-      url.searchParams.set("text", query);
-      url.searchParams.set("limit", "1");
-      url.searchParams.set("format", "json");
-      url.searchParams.set("apiKey", GEOAPIFY_KEY);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Area lookup is temporarily unavailable.");
-      const data = await response.json();
-      const item = data.results?.[0];
-      if (item) point = { lat: Number(item.lat), lng: Number(item.lon), label: item.formatted || query };
     } else {
-      const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=" + encodeURIComponent(query);
-      const response = await fetch(url, { headers: { Accept: "application/json" } });
-      if (!response.ok) throw new Error("Area lookup is temporarily unavailable.");
-      const data = await response.json();
-      if (data[0]) point = { lat: Number(data[0].lat), lng: Number(data[0].lon), label: data[0].display_name || query };
+      const response = await fetch(API + "/api/maps/geocode?q=" + encodeURIComponent(query));
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon))) {
+        point = { lat: Number(data.lat), lng: Number(data.lon), label: data.formatted || query };
+      } else {
+        // Keep area search usable if the Geoapify service is not configured or is temporarily down.
+        const fallback = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=" + encodeURIComponent(query), { headers: { Accept: "application/json" } });
+        if (fallback.ok) {
+          const results = await fallback.json();
+          if (results[0]) point = { lat: Number(results[0].lat), lng: Number(results[0].lon), label: results[0].display_name || query };
+        }
+      }
     }
     if (point && Number.isFinite(point.lat) && Number.isFinite(point.lng)) geocodeCache.set(key, point);
     return point;
@@ -215,28 +214,50 @@
       say("A valid route location could not be found.");
       return;
     }
-    const destination = destinationLat + "," + destinationLng;
-    if (mapProvider !== "google") {
-      const url = "https://www.google.com/maps/dir/?api=1&origin=" +
-        encodeURIComponent(searchCenter.lat + "," + searchCenter.lng) + "&destination=" +
-        encodeURIComponent(destination) + "&travelmode=driving";
-      window.open(url, "_blank", "noopener,noreferrer");
-      say("Opened driving directions in Google Maps. Travel times may vary with traffic.");
-      return;
-    }
     say("Calculating a driving route…");
     try {
-      const service = new google.maps.DirectionsService();
-      const result = await service.route({
-        origin: searchCenter, destination: { lat: destinationLat, lng: destinationLng },
-        travelMode: google.maps.TravelMode.DRIVING
+      const response = await fetch(API + "/api/maps/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: { lat: searchCenter.lat, lon: searchCenter.lng },
+          destination: { lat: destinationLat, lon: destinationLng }
+        })
       });
-      routeLayer.setDirections(result);
-      const leg = result.routes?.[0]?.legs?.[0];
-      const summary = [leg?.distance?.text, leg?.duration?.text].filter(Boolean).join(" · ");
-      say("Driving route" + (summary ? ": " + summary : "") + ". Travel estimates can change with traffic and road conditions.");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !Array.isArray(data.coordinates) || !data.coordinates.length) {
+        throw new Error(data.message || "Geoapify routing is unavailable.");
+      }
+      const path = data.coordinates.map(([lon, lat]) => [Number(lat), Number(lon)])
+        .filter(([lat, lon]) => Number.isFinite(lat) && Number.isFinite(lon));
+      if (!path.length) throw new Error("No usable route was returned.");
+      if (mapProvider === "google") {
+        if (geoRouteLine) geoRouteLine.setMap(null);
+        geoRouteLine = new google.maps.Polyline({
+          map, path: path.map(([lat, lng]) => ({ lat, lng })),
+          strokeColor: "#019E81", strokeWeight: 5, strokeOpacity: 0.9
+        });
+        const bounds = new google.maps.LatLngBounds();
+        path.forEach(([lat, lng]) => bounds.extend({ lat, lng }));
+        map.fitBounds(bounds);
+      } else {
+        routeLayer.clearLayers();
+        geoRouteLine = window.L.polyline(path, { color: "#019E81", weight: 5, opacity: 0.9 }).addTo(routeLayer);
+        map.fitBounds(geoRouteLine.getBounds(), { padding: [20, 20] });
+      }
+      const distance = Number(data.distanceMeters);
+      const seconds = Number(data.timeSeconds);
+      const summary = [
+        Number.isFinite(distance) && distance > 0 ? (distance / 1000).toFixed(1) + " km" : "",
+        Number.isFinite(seconds) && seconds > 0 ? Math.round(seconds / 60) + " min" : ""
+      ].filter(Boolean).join(" · ");
+      say("Geoapify driving route" + (summary ? ": " + summary : "") + ". Estimates can change with traffic and road conditions.");
     } catch {
-      say("Google Maps could not calculate a route. Try opening directions directly in Google Maps.");
+      const url = "https://www.google.com/maps/dir/?api=1&origin=" +
+        encodeURIComponent(searchCenter.lat + "," + searchCenter.lng) + "&destination=" +
+        encodeURIComponent(destinationLat + "," + destinationLng) + "&travelmode=driving";
+      window.open(url, "_blank", "noopener,noreferrer");
+      say("Bradcall couldn't calculate an in-map route just now, so directions opened in Google Maps.");
     }
   }
 
@@ -315,10 +336,11 @@
           if (address) search.value = address.split(",").slice(0, 2).join(",").trim();
         } else {
           try {
-            const area = await geocode(coords.lat + "," + coords.lng);
-            if (area?.label) search.value = area.label.split(",").slice(0, 2).join(",").trim();
+            const response = await fetch(API + "/api/maps/reverse?lat=" + encodeURIComponent(coords.lat) + "&lon=" + encodeURIComponent(coords.lng));
+            const area = await response.json();
+            if (response.ok && area.formatted) search.value = area.formatted.split(",").slice(0, 2).join(",").trim();
           } catch {
-            // Coordinates still work even when reverse geocoding is unavailable.
+            // Coordinates still work when reverse geocoding is unavailable.
           }
         }
         await refresh(coords);
@@ -341,10 +363,72 @@
     if (!routeButton || !root.contains(routeButton) && !routeButton.closest(".leaflet-popup, .gm-style")) return;
     showRoute(Number(routeButton.dataset.routeLat), Number(routeButton.dataset.routeLng));
   });
-  search.readOnly = true;
-  search.setAttribute("aria-readonly", "true");
+  search.readOnly = false;
+  search.removeAttribute("aria-readonly");
+  search.setAttribute("autocomplete", "off");
+  search.setAttribute("placeholder", "Search an area or landmark");
+  suggestionBox = document.createElement("div");
+  suggestionBox.className = "community-map-suggestions";
+  suggestionBox.id = "community-map-suggestions";
+  suggestionBox.setAttribute("role", "listbox");
+  suggestionBox.hidden = true;
+  search.insertAdjacentElement("afterend", suggestionBox);
+
+  function hideSuggestions() {
+    if (suggestionBox) {
+      suggestionBox.hidden = true;
+      suggestionBox.innerHTML = "";
+    }
+  }
+
+  async function loadSuggestions(query) {
+    const sequence = ++autocompleteSequence;
+    if (query.trim().length < 2) return hideSuggestions();
+    try {
+      const response = await fetch(API + "/api/maps/autocomplete?q=" + encodeURIComponent(query.trim()));
+      const data = await response.json().catch(() => ({}));
+      if (sequence !== autocompleteSequence || !response.ok) return hideSuggestions();
+      const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+      suggestionBox.innerHTML = suggestions.map((item, index) =>
+        '<button type="button" class="community-map-suggestion" role="option" data-suggestion-index="' + index + '">' + esc(item.formatted) + '</button>'
+      ).join("");
+      suggestionBox.hidden = suggestions.length === 0;
+      suggestionBox._items = suggestions;
+    } catch {
+      hideSuggestions();
+    }
+  }
+
+  search.addEventListener("input", () => {
+    clearTimeout(autocompleteTimer);
+    autocompleteTimer = setTimeout(() => loadSuggestions(search.value), 250);
+  });
+  suggestionBox.addEventListener("click", async event => {
+    const option = event.target.closest("[data-suggestion-index]");
+    if (!option) return;
+    const item = suggestionBox._items?.[Number(option.dataset.suggestionIndex)];
+    if (!item) return;
+    search.value = item.formatted;
+    hideSuggestions();
+    const point = { lat: Number(item.lat), lng: Number(item.lon) };
+    if (Number.isFinite(point.lat) && Number.isFinite(point.lng)) await refresh(point);
+  });
+  search.addEventListener("keydown", async event => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    hideSuggestions();
+    const point = await geocode(search.value);
+    if (point) {
+      search.value = point.label;
+      await refresh({ lat: point.lat, lng: point.lng });
+    } else {
+      say("We couldn't find that area. Try selecting an address suggestion.");
+    }
+  });
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".community-map-search")) hideSuggestions();
+  });
   initializeMap().then(() => {
-    if (!GOOGLE_KEY) say("Map ready. Enable device location to find nearby services. Google Maps can be enabled by adding a restricted browser key in config.js.");
-    else say("Map ready. Enable device location to find nearby services.");
+    say("Map ready. Use device location or search for an area. Geoapify powers address suggestions and in-map driving routes.");
   }).catch(error => say(error.message || "Could not load the community map."));
 })();
