@@ -15,3 +15,8 @@
 .mp-empty{background:#fbfdfc}
 @media(max-width:600px){.mp-top{position:relative}.mp-top>.mp-btn{width:auto}.mp-head{margin-bottom:18px}.mp-panel{border-radius:15px}.mp-actions{gap:8px}}
 @media(prefers-reduced-motion:reduce){.mp-item,.mp-btn{transition:none}}
+
+/* Marketplace sub-pages: unify form controls and prevent narrow-screen overflow. */
+:root{--bc-green:#0E9F91;--bc-yellow:#D9F36A;--bc-ink:#142D33;--bc-muted:#60747A;--bc-line:#DCE9EC;--bc-bg:#F4FAFB}
+html{scroll-padding-top:84px}img,svg,video{max-width:100%}input,select,textarea{max-width:100%;min-width:0}button,a{touch-action:manipulation}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #0E9F91;outline-offset:3px}
+@media(max-width:760px){.mp-shell{width:calc(100% - 28px);padding:22px 0 44px}.mp-top{padding:12px 14px;gap:10px}.mp-nav{max-width:100%;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap}.mp-nav a{flex:0 0 auto}.mp-row{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}.mp-panel,.mp-card{padding:16px}.mp-grid{grid-template-columns:minmax(0,1fr)}.mp-actions,.mp-button-row{display:grid;grid-template-columns:minmax(0,1fr)}.mp-actions>* ,.mp-button-row>*{width:100%;min-height:44px}}
