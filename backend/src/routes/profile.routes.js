@@ -12,7 +12,7 @@ router.get("/", auth, async (req, res, next) => {
     if (!user) return res.status(404).json({ message: "Account not found." });
     res.json({ profile: {
       id: user.id, name: user.name, email: user.email, phone: user.phone,
-      location: user.location, latitude: user.latitude, longitude: user.longitude,
+      location: user.location, latitude: user.latitude, longitude: user.longitude, interests: user.interests,
       profileCompletedAt: user.profileCompletedAt, profileComplete: Boolean(user.profileCompletedAt),
       role: user.role,
       provider: user.provider ? {
@@ -37,6 +37,7 @@ router.patch("/", auth, async (req, res, next) => {
     const providerType = req.body.providerType === "COMPANY" ? "COMPANY" : "INDIVIDUAL";
     const companyName = clean(req.body.companyName, 120);
     const displayName = clean(req.body.displayName, 120) || (providerType === "COMPANY" ? companyName : name);
+    const interests = Array.isArray(req.body.interests) ? [...new Set(req.body.interests.filter(v => typeof v === "string").map(v => v.trim()).filter(Boolean))].slice(0, 20) : [];
     const skills = Array.isArray(req.body.skills) ? [...new Set(req.body.skills.filter(v => typeof v === "string").map(v => v.trim()).filter(Boolean))].slice(0, 20) : [];
     const yearsExperience = req.body.yearsExperience === "" || req.body.yearsExperience == null ? null : Number(req.body.yearsExperience);
     const serviceRadiusKm = req.body.serviceRadiusKm === "" || req.body.serviceRadiusKm == null ? 10 : Number(req.body.serviceRadiusKm);
@@ -64,7 +65,7 @@ router.patch("/", auth, async (req, res, next) => {
       ? Boolean(location && phone && displayName && (providerType !== "COMPANY" || companyName))
       : Boolean(location && phone);
     const user = await prisma.user.update({ where: { id: req.user.id }, data: {
-      name, phone, location, latitude, longitude,
+      name, phone, location, latitude, longitude, interests,
       profileCompletedAt: profileComplete ? new Date() : null
     }});
     let provider = null;
