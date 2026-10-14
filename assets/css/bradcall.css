@@ -248,3 +248,13 @@ footer{gap:14px;padding:24px clamp(18px,4vw,56px)}
   html{scroll-behavior:auto}
   *,*::before,*::after{transition:none!important;animation:none!important}
 }
+
+/* Location search controls: compact, accessible and phone-friendly. */
+.community-map-search{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center}
+.community-map-search input,.community-map-search select{min-width:0;width:100%;min-height:46px;border:1px solid #DCE9EC;border-radius:12px;background:#fff;color:#142D33;padding:11px 13px;font:inherit}
+.community-map-search select{width:auto;max-width:100%;cursor:pointer}
+.community-map-suggestions{position:absolute;z-index:40;top:calc(100% + 4px);left:0;right:0;max-height:250px;overflow:auto;background:#fff;border:1px solid #DCE9EC;border-radius:12px;box-shadow:0 14px 32px rgba(20,45,51,.14);padding:5px}
+.community-map-suggestions[hidden]{display:none}
+.community-map-suggestion{display:block;width:100%;border:0;background:transparent;color:#142D33;text-align:left;padding:11px 12px;border-radius:8px;line-height:1.4;overflow-wrap:anywhere}
+.community-map-suggestion:hover,.community-map-suggestion:focus-visible{background:#DDF7F1;color:#087C75}
+@media(max-width:760px){.community-map-search{grid-template-columns:minmax(0,1fr)}.community-map-search select,.community-map-search button{width:100%;min-height:46px}.community-map-heading p{font-size:14px}.community-map-canvas{height:300px}}
