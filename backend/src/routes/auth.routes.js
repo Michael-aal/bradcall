@@ -32,8 +32,8 @@ router.patch("/provider-profile",auth,async(req,res,next)=>{try{
  const data={displayName,phone:phone||null,bio:bio||null,location:location||null};
  if((req.body.latitude!==undefined&&req.body.latitude!=="")||(req.body.longitude!==undefined&&req.body.longitude!=="")){const lat=Number(req.body.latitude),lon=Number(req.body.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat < -90||lat > 90||lon < -180||lon > 180)return res.status(400).json({message:"The service-area location is invalid."});data.latitude=Math.round(lat*1000)/1000;data.longitude=Math.round(lon*1000)/1000;}
  if(req.body.serviceRadiusKm!==undefined&&req.body.serviceRadiusKm!==""){const radius=Number(req.body.serviceRadiusKm);if(!Number.isFinite(radius)||radius<1||radius>50)return res.status(400).json({message:"Service coverage must be between 1 and 50 km."});data.serviceRadiusKm=radius;}
- if(req.body.available!==undefined){const v=req.body.available;if(![true,false,"true","false"].includes(v))return res.status(400).json({message:"Availability must be true or false."});data.available=v===true||v==="true";}
+ if(req.body.available!==undefined){const v=req.body.available;if(![true,false,"true","false"].includes(v))return res.status(400).json({message:"Availability must be true or false."});data.available=v===true||v==="true";data.availabilityUpdatedAt=new Date();}
  const p=await prisma.providerProfile.update({where:{userId:req.user.id},data});
- res.json({provider:{id:p.id,displayName:p.displayName,phone:p.phone,bio:p.bio,location:p.location,latitude:p.latitude,longitude:p.longitude,serviceRadiusKm:p.serviceRadiusKm,available:p.available,verified:p.verified}});
+ res.json({provider:{id:p.id,displayName:p.displayName,phone:p.phone,bio:p.bio,location:p.location,latitude:p.latitude,longitude:p.longitude,serviceRadiusKm:p.serviceRadiusKm,available:p.available,availabilityUpdatedAt:p.availabilityUpdatedAt,verified:p.verified}});
 }catch(e){next(e)}});
 export default router;
