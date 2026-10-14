@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { auth, roles } from "../middleware/auth.js";
 import { distanceKm, validCoordinates } from "../lib/geo.js";
+import { buildOpportunitySignals } from "../lib/opportunities.js";
 
 const router = Router();
 
@@ -39,7 +40,6 @@ router.get("/opportunities", auth, roles("PROVIDER"), async (req, res, next) => 
         take: 5000
       })
     ]);
-    const { buildOpportunitySignals } = await import("../lib/opportunities.js");
     const providerLocations = [provider.location, ...provider.services.map(service => service.location)].filter(Boolean);
     const opportunities = buildOpportunitySignals({ requests, listings, providerLocations, limit: 10 });
     res.set("Cache-Control", "private, max-age=60");
