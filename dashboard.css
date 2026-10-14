@@ -18,3 +18,29 @@
 .dash-notice{border:1px solid transparent}
 @media(max-width:560px){.dash-shell{padding-top:22px}.dash-head{align-items:stretch}.dash-actions .dash-btn{flex:1}.stat-card{border-radius:14px;min-height:92px}.stat-card span{line-height:1.35}.stat-card strong{margin-top:7px}}
 @media(prefers-reduced-motion:reduce){.stat-card,.dash-panel,.dash-item,.dash-btn{transition:none}}
+
+
+/* Small-screen dashboard safeguards: avoid clipped cards, fields and action rows. */
+.dash-shell, .dash-panel, .dash-layout, .dash-grid, .dash-item, .dash-field { min-width: 0; }
+.dash-grid > *, .dash-layout > * { min-width: 0; }
+.dash-table-wrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.dash-table { min-width: 560px; }
+@media (max-width: 560px) {
+  .dash-shell { width: 100%; padding: 20px 12px calc(36px + env(safe-area-inset-bottom)); }
+  .dash-head h1 { overflow-wrap: anywhere; }
+  .dash-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat-card { padding: 13px 12px; }
+  .stat-card strong { font-size: clamp(21px, 6vw, 25px); overflow-wrap: anywhere; }
+  .dash-panel { padding: 14px 12px; }
+  .dash-toolbar { align-items: flex-start; flex-wrap: wrap; }
+  .dash-search { grid-template-columns: minmax(0, 1fr); }
+  .dash-search > *, .dash-form > *, .dash-actions > * { min-width: 0; width: 100%; }
+  .dash-item-top { min-width: 0; overflow-wrap: anywhere; }
+  .dash-item .item-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-item .item-actions > * { min-width: 0; width: 100%; }
+  .dash-map { height: min(68vh, 340px); min-height: 250px; }
+}
+@media (max-width: 360px) {
+  .dash-grid { grid-template-columns: minmax(0, 1fr); }
+  .dash-item .item-actions { grid-template-columns: minmax(0, 1fr); }
+}
