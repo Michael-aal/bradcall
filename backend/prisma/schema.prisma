@@ -80,6 +80,12 @@ model User {
  name String
  email String @unique
  passwordHash String
+ phone String?
+ location String?
+ latitude Float?
+ longitude Float?
+ interests String[] @default([])
+ profileCompletedAt DateTime?
  role Role @default(PARTNER)
  status AccountStatus @default(ACTIVE)
  createdAt DateTime @default(now())
@@ -106,9 +112,12 @@ model ProviderProfile {
  userId String @unique
  displayName String
  providerType ProviderType @default(INDIVIDUAL)
+ companyName String?
  primaryCategory String?
  phone String?
  bio String?
+ skills String[] @default([])
+ yearsExperience Int?
  location String?
  latitude Float?
  longitude Float?
@@ -116,6 +125,12 @@ model ProviderProfile {
  available Boolean @default(true)
  availabilityUpdatedAt DateTime @default(now())
  verified Boolean @default(false)
+ payoutBankName String?
+ payoutBankCode String?
+ payoutAccountName String?
+ payoutAccountNumberMasked String?
+ paystackRecipientCode String? @unique
+ payoutAccountVerifiedAt DateTime?
  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  services Service[]
  reviews Review[] @relation("ProviderReviews")

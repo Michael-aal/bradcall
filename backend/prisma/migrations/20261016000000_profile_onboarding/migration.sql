@@ -1,0 +1,15 @@
+ALTER TABLE "User"
+  ADD COLUMN "phone" TEXT,
+  ADD COLUMN "location" TEXT,
+  ADD COLUMN "latitude" DOUBLE PRECISION,
+  ADD COLUMN "longitude" DOUBLE PRECISION,
+  ADD COLUMN "profileCompletedAt" TIMESTAMP(3),
+  ADD COLUMN "interests" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
+
+CREATE TYPE "ProviderType" AS ENUM ('INDIVIDUAL', 'COMPANY');
+
+ALTER TABLE "ProviderProfile"
+  ADD COLUMN "providerType" "ProviderType" NOT NULL DEFAULT 'INDIVIDUAL',
+  ADD COLUMN "companyName" TEXT,
+  ADD COLUMN "skills" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+  ADD COLUMN "yearsExperience" INTEGER;
