@@ -10,6 +10,10 @@ enum Role {
  PROVIDER
  ADMIN
 }
+enum ProviderType {
+ INDIVIDUAL
+ COMPANY
+}
 enum RequestStatus {
  PENDING
  ACCEPTED
@@ -76,6 +80,11 @@ model User {
  name String
  email String @unique
  passwordHash String
+ phone String?
+ location String?
+ latitude Float?
+ longitude Float?
+ profileCompletedAt DateTime?
  role Role @default(PARTNER)
  status AccountStatus @default(ACTIVE)
  createdAt DateTime @default(now())
@@ -99,8 +108,12 @@ model ProviderProfile {
  id String @id @default(cuid())
  userId String @unique
  displayName String
+ providerType ProviderType @default(INDIVIDUAL)
+ companyName String?
  phone String?
  bio String?
+ skills String[] @default([])
+ yearsExperience Int?
  location String?
  latitude Float?
  longitude Float?
