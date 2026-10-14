@@ -99,6 +99,7 @@ model ProviderProfile {
  id String @id @default(cuid())
  userId String @unique
  displayName String
+ phone String?
  bio String?
  location String?
  latitude Float?
