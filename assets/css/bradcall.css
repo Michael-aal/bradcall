@@ -258,3 +258,5 @@ footer{gap:14px;padding:24px clamp(18px,4vw,56px)}
 .community-map-suggestion{display:block;width:100%;border:0;background:transparent;color:#142D33;text-align:left;padding:11px 12px;border-radius:8px;line-height:1.4;overflow-wrap:anywhere}
 .community-map-suggestion:hover,.community-map-suggestion:focus-visible{background:#DDF7F1;color:#087C75}
 @media(max-width:760px){.community-map-search{grid-template-columns:minmax(0,1fr)}.community-map-search select,.community-map-search button{width:100%;min-height:46px}.community-map-heading p{font-size:14px}.community-map-canvas{height:300px}}
+
+.sample-disclaimer{max-width:780px;margin:18px 0 0;color:#6b7b7b;font-size:12px;line-height:1.65}
