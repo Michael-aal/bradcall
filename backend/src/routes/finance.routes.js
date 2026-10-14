@@ -5,7 +5,7 @@ import { auth, roles } from "../middleware/auth.js";
 const router = Router();
 const TYPES = new Set(["INCOME", "EXPENSE"]);
 const PERSONAL_CATEGORIES = new Set(["Service income", "Salary", "Sales", "Transport", "Materials", "Data & airtime", "Food", "Rent", "Utilities", "Equipment", "Marketing", "Fees", "Savings", "Other"]);
-const COMPANY_CATEGORIES = new Set(["Commission", "Subscription", "Other income", "Staff", "Hosting & software", "Marketing", "Operations", "Professional services", "Refunds", "Other"]);
+const COMPANY_CATEGORIES = new Set(["Subscription", "Other income", "Staff", "Hosting & software", "Marketing", "Operations", "Professional services", "Refunds", "Other"]);
 const MAX_AMOUNT_KOBO = 100_000_000_000;
 
 function dateOrNull(value) {
