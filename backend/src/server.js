@@ -37,6 +37,6 @@ app.get("/api/health",async(req,res)=>{try{await prisma.$queryRawUnsafe("SELECT 
 app.use("/api/auth",authRoutes); app.use("/api/profile",profileRoutes); app.use("/api/requests",trackingRoutes); app.use("/api/services",serviceRoutes); app.use("/api/requests",requestRoutes); app.use("/api/admin",adminRoutes);
 app.use("/api/maps",mapsRoutes); app.use("/api/payout",payoutRoutes); app.use("/api/payments",paymentRoutes); app.use("/api/communication",communicationRoutes); app.use("/api/trust",trustRoutes); app.use("/api/reviews",reviewRoutes);
 app.use((req,res)=>res.status(404).json({message:"Route not found"}));
-app.use((err,req,res,next)=>{console.error(err);res.status(500).json({message:"Internal server error"});});
+app.use((err,req,res,next)=>{console.error(err);const status=Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500;res.status(status).json({message:status===500?"Internal server error":err.message});});
 const port=Number(process.env.PORT)||5000;
 app.listen(port,()=>console.log("Bradcall API running on port "+port));
