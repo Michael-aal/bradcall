@@ -14,7 +14,7 @@
     ["Jobs & requests", "bookings.html"], ["Map & tracking", "tracking.html"],
     ["Messages", "messages.html"], ["Payments & earnings", "payments.html"],
     ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"],
-    ["My profile", "provider-dashboard.html#provider-profile"]
+    ["My profile", "profile-setup.html?edit=1"]
   ] : role === "ADMIN" ? [
     ["Overview", "admin-dashboard.html"], ["Marketplace", "services.html"],
     ["Verification & trust", "admin-verification.html"], ["Bookings", "bookings.html"],
@@ -41,7 +41,7 @@
   }
 
   const mobileItems = role === "PROVIDER"
-    ? [["Home", home], ["Jobs", "bookings.html"], ["Services", "provider-dashboard.html#provider-services"], ["Account", "provider-dashboard.html#provider-profile"]]
+    ? [["Home", home], ["Jobs", "bookings.html"], ["Services", "provider-dashboard.html#provider-services"], ["Account", "profile-setup.html?edit=1"]]
     : role === "ADMIN"
       ? [["Overview", home], ["Bookings", "bookings.html"], ["Payments", "payments.html"], ["Trust", "admin-verification.html"]]
       : [["Home", home], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Payments", "payments.html"]];
