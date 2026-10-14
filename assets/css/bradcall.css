@@ -1,15 +1,15 @@
-:root{--ink:#171513;--muted:#77716c;--paper:#f7f4ef;--white:#fff;--line:#e5ded6;--green:#019E81;--soft:#f1e4df;--dark:#211c1a;--max:1180px}
+:root{--ink:#171513;--muted:#77716c;--paper:#F4FAFB;--white:#fff;--line:#e5ded6;--green:#0E9F91;--soft:#f1e4df;--dark:#102A33;--max:1180px}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 body.modal-open,body.menu-open{overflow:hidden}
 button,input,textarea{font:inherit}
 button{cursor:pointer}
-button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #019E81;outline-offset:3px}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #0E9F91;outline-offset:3px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .skip-link{position:fixed;left:12px;top:10px;z-index:100;padding:10px 14px;background:var(--ink);color:#fff;border-radius:8px;transform:translateY(-150%);transition:transform .15s}
 .skip-link:focus{transform:none}
-.topbar{height:76px;position:sticky;top:0;z-index:20;background:#f7f4efed;backdrop-filter:blur(18px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5%}
+.topbar{height:76px;position:sticky;top:0;z-index:20;background:#F4FAFBed;backdrop-filter:blur(18px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5%}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-size:20px}
 .brand span{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--green);color:#fff;font-size:10px;font-weight:900}
 .brand strong{font-weight:900;letter-spacing:-.04em}
@@ -62,7 +62,7 @@ nav a{color:#5d5752;text-decoration:none;font-size:13px;font-weight:700}
 .providers{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.provider{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.provider-image{height:185px;display:grid;place-items:center;color:#fff;font-size:42px;font-weight:900}.clean{background:linear-gradient(135deg,#a56f62,#dfb7aa)}.pipe{background:linear-gradient(135deg,#65534e,#b18d81)}.power{background:linear-gradient(135deg,#393330,#92776d)}.provider-image span{border:1px solid #ffffff55;padding:14px;border-radius:50%}
 .provider-body{padding:20px}.verified{color:#367b50;font-weight:850;font-size:10px;display:flex;align-items:center;gap:4px}.verified svg{width:14px;height:14px}.provider-body h3{font-size:18px;margin:10px 0 4px}.provider-body p{color:var(--muted);font-size:13px;margin:0 0 18px}.provider-body>div{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-bottom:16px}.provider-body>div span{display:flex;gap:4px;align-items:center}.provider-body>div svg{width:13px}.provider-body strong{color:var(--ink)}.request{width:100%;border:0;background:var(--soft);color:var(--green);border-radius:10px;padding:11px;font-weight:850}
 .empty{text-align:center;color:var(--muted);padding:45px}
-.dark-section{background:var(--dark);color:#fff;padding:100px max(32px,calc((100% - var(--max))/2));display:grid;grid-template-columns:1fr 1fr;gap:90px}.light{color:#FFBF42}.how-copy p{color:#bcb2ad;max-width:550px;line-height:1.75;margin-top:22px}.how-copy h2{font-size:clamp(42px,5vw,64px);margin-top:15px}.timeline div{border-bottom:1px solid #ffffff18;padding:13px 0 20px}.timeline b{color:#FFBF42;font-size:10px}.timeline h3{margin:8px 0 3px}.timeline p{color:#a9a09b;font-size:12px;margin:0}
+.dark-section{background:var(--dark);color:#fff;padding:100px max(32px,calc((100% - var(--max))/2));display:grid;grid-template-columns:1fr 1fr;gap:90px}.light{color:#D9F36A}.how-copy p{color:#bcb2ad;max-width:550px;line-height:1.75;margin-top:22px}.how-copy h2{font-size:clamp(42px,5vw,64px);margin-top:15px}.timeline div{border-bottom:1px solid #ffffff18;padding:13px 0 20px}.timeline b{color:#D9F36A;font-size:10px}.timeline h3{margin:8px 0 3px}.timeline p{color:#a9a09b;font-size:12px;margin:0}
 .pricing{max-width:var(--max);margin:auto;padding:105px 32px;display:grid;grid-template-columns:.85fr 1.15fr;gap:70px;align-items:center}.pricing-intro p{color:var(--muted);line-height:1.75;max-width:480px;margin:23px 0}.pricing-intro .dark{display:inline-flex;align-items:center;gap:7px}.pricing-intro svg{width:15px}
 .plans{display:grid;grid-template-columns:1fr 1fr;gap:15px}.plan{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;min-height:420px;display:flex;flex-direction:column}.plan.featured{border:2px solid var(--green);transform:translateY(-7px)}.tag{position:absolute;right:16px;top:16px;background:var(--green);color:#fff;border-radius:30px;padding:5px 8px;font-size:8px;font-weight:900;letter-spacing:.1em}.plan small{color:var(--muted);font-size:9px;letter-spacing:.15em;font-weight:900}.plan h3{font-size:25px;margin:9px 0}.price{font-size:27px;font-weight:900;margin:8px 0}.price span{font-size:11px;color:var(--muted);font-weight:500}.plan>div>p:not(.price){color:var(--muted);font-size:12px}.plan ul{padding:0;margin:20px 0 25px;list-style:none;display:grid;gap:11px;color:#4e4945;font-size:12px}.plan li:before{content:"✓";color:var(--green);font-weight:900;margin-right:8px}.plan button{margin-top:auto;border-radius:10px;padding:11px;font-weight:850}.outline{background:#fff;border:1px solid var(--line)}.red{background:var(--green);color:#fff;border:0}
 .cta{max-width:var(--max);margin:0 auto 85px;padding:52px 55px;border-radius:25px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:35px}.cta p{color:#FFF0C2}.cta-actions{display:flex;gap:9px}.light-btn,.ghost-btn{border-radius:10px;padding:12px 17px;font-weight:850}.light-btn{border:0;background:#fff;color:var(--green)}.ghost-btn{border:1px solid #ffffff55;background:transparent;color:#fff}
@@ -74,7 +74,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:28px 5%;display:
 
 
 /* Bradcall brand accents: Glovo-inspired green and warm yellow. */
-:root{--green:#019E81;--green-soft:#E2F5EF;--yellow:#FFBF42}
+:root{--green:#0E9F91;--green-soft:#E2F5EF;--yellow:#D9F36A}
 .brand-mark,.brand span{background:var(--green);color:#fff}
 .dark:not(.dark-section *),.search button,.red{background:var(--green);color:#fff}
 .tag{background:var(--yellow);color:var(--ink)}
@@ -106,11 +106,11 @@ input,select,textarea{max-width:100%}
   --muted:#68716b;
   --paper:#f7f8f5;
   --white:#fff;
-  --line:#e1e7e0;
-  --green:#019e81;
-  --green-soft:#e2f5ef;
-  --yellow:#ffbf42;
-  --dark:#19221e;
+  --line:#DCE9EC;
+  --green:#0E9F91;
+  --green-soft:#DDF7F1;
+  --yellow:#D9F36A;
+  --dark:#102A33;
   --max:1200px;
   --radius-card:22px;
 }
