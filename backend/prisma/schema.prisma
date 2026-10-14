@@ -84,6 +84,7 @@ model User {
  location String?
  latitude Float?
  longitude Float?
+ interests String[] @default([])
  profileCompletedAt DateTime?
  role Role @default(PARTNER)
  status AccountStatus @default(ACTIVE)
