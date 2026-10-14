@@ -54,3 +54,36 @@ export function buildOpportunitySignals({ requests, listings, providerLocations 
     .sort((a, b) => Number(b.localMatch) - Number(a.localMatch) || b.demandPerProvider - a.demandPerProvider || b.recentCustomers - a.recentCustomers)
     .slice(0, Math.max(1, Math.min(20, Number(limit) || 10)));
 }
+
+/**
+ * Finds category pairs that customers have actually booked together in the same
+ * service area. A pair is shown only after at least three distinct customers.
+ */
+export function buildRelatedServiceGraph({ requests, category, limit = 6 }) {
+  const selected = normalise(category);
+  if (!selected) return [];
+  const byCustomerArea = new Map();
+  for (const request of requests) {
+    const name = request.service?.category?.name;
+    const area = request.service?.location;
+    if (!name || !area || !request.partnerId) continue;
+    const key = request.partnerId + "|" + normalise(area);
+    if (!byCustomerArea.has(key)) byCustomerArea.set(key, { partnerId: request.partnerId, area, categories: new Map() });
+    byCustomerArea.get(key).categories.set(normalise(name), name);
+  }
+  const related = new Map();
+  for (const group of byCustomerArea.values()) {
+    if (!group.categories.has(selected)) continue;
+    for (const [key, name] of group.categories.entries()) {
+      if (key === selected) continue;
+      const pairKey = key + "|" + normalise(group.area);
+      if (!related.has(pairKey)) related.set(pairKey, { category: name, area: group.area, customerIds: new Set() });
+      related.get(pairKey).customerIds.add(group.partnerId);
+    }
+  }
+  return [...related.values()]
+    .filter(item => item.customerIds.size >= 3)
+    .map(item => ({ category: item.category, area: item.area, sharedCustomers: item.customerIds.size }))
+    .sort((a, b) => b.sharedCustomers - a.sharedCustomers)
+    .slice(0, Math.max(1, Math.min(12, Number(limit) || 6)));
+}
