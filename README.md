@@ -11,6 +11,12 @@ Bradcall is a local-services marketplace built with plain HTML, CSS, and JavaScr
 - Account registration and login for customers and providers. Admin accounts are provisioned by an operator, not through public registration.
 - Responsive layouts with a green/yellow palette.
 
+## Finance & AI Insights
+
+The Finance page provides separate, authenticated ledgers for each user's own income and expenses and for administrator-managed company records. It charts the last six months, shows expense categories, and can request cautious budgeting observations from OpenRouter using aggregated totals only. It does not connect to bank accounts, verify manually entered cash, or act as escrow. Confirmed Paystack commissions and outstanding cash commissions are shown as distinct measures.
+
+To enable AI insights on Render, set `OPENROUTER_API_KEY` and optionally `OPENROUTER_MODEL`, `OPENROUTER_SITE_URL`, and `OPENROUTER_SITE_NAME`. The key belongs only in the backend environment; never place it in frontend JavaScript. The finance tables are added by the migration in `backend/prisma/migrations/20261014195500_add_finance_ai_insights`.
+
 ## Backend setup
 
 1. Install a supported Node.js LTS release.
