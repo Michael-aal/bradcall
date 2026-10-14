@@ -55,6 +55,27 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:800px){.market-grid{gap:12px}}
 @media(max-width:520px){.market-card{border-radius:16px;padding:18px}.auth-panel{border-radius:18px}}
 
+
+/* Mobile-first navigation and form layout: keep the marketplace usable on narrow screens. */
+@media (max-width: 900px) {
+  .topbar { min-height: 64px; padding-inline: 16px; gap: 10px; }
+  .topbar nav { display: flex; flex-wrap: nowrap; width: 100%; min-width: 0; overflow-x: auto; gap: 6px; padding: 2px 0 6px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+  .topbar nav a { flex: 0 0 auto; white-space: nowrap; font-size: 13px; }
+  .topbar .actions { display: flex; flex: 0 0 auto; }
+}
+@media (max-width: 600px) {
+  .topbar { padding: 12px 14px; }
+  .topbar .brand { flex: 0 0 auto; }
+  .topbar .actions { gap: 6px; }
+  .topbar .actions > * { min-height: 40px; }
+  .page-shell { width: 100%; min-width: 0; }
+  .auth-wrap { min-width: 0; }
+  .auth-intro h1 { font-size: clamp(30px, 9vw, 38px); overflow-wrap: anywhere; }
+  .field input, .field select, .field textarea, .auth-submit { font-size: 16px; }
+  .market-grid { grid-template-columns: minmax(0, 1fr); }
+  .market-card, .auth-panel { min-width: 0; }
+}
+
 /* Individual provider registration */
 .provider-fields{border:1px solid var(--brand-line);background:#f7fbf9;border-radius:14px;padding:16px;gap:14px}
 .provider-fields:not([hidden]){display:grid}
