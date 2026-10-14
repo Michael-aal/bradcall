@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { auth, roles } from "../middleware/auth.js";
 import { distanceKm, validCoordinates } from "../lib/geo.js";
+import { buildOpportunitySignals, buildRelatedServiceGraph } from "../lib/opportunities.js";
 
 const router = Router();
 
@@ -15,6 +16,34 @@ router.get("/mine", auth, roles("PROVIDER", "ADMIN"), async (req, res, next) => 
       include: { provider: { select: { id: true, displayName: true, verified: true } }, category: true },
       orderBy: { createdAt: "desc" }
     }));
+  } catch (error) { next(error); }
+});
+
+router.get("/opportunities", auth, roles("PROVIDER"), async (req, res, next) => {
+  try {
+    const provider = await prisma.providerProfile.findUnique({
+      where: { userId: req.user.id },
+      include: { services: { select: { location: true } } }
+    });
+    if (!provider) return res.status(404).json({ message: "Create your provider profile to see local opportunities." });
+
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [requests, listings] = await Promise.all([
+      prisma.serviceRequest.findMany({
+        where: { createdAt: { gte: since }, status: { in: ["PENDING", "ACCEPTED", "IN_PROGRESS", "COMPLETED"] } },
+        select: { partnerId: true, service: { select: { location: true, category: { select: { name: true } } } } },
+        take: 5000
+      }),
+      prisma.service.findMany({
+        where: { active: true, provider: { available: true } },
+        select: { providerId: true, location: true, category: { select: { name: true } }, provider: { select: { id: true } } },
+        take: 5000
+      })
+    ]);
+    const providerLocations = [provider.location, ...provider.services.map(service => service.location)].filter(Boolean);
+    const opportunities = buildOpportunitySignals({ requests, listings, providerLocations, limit: 10 });
+    res.set("Cache-Control", "private, max-age=60");
+    res.json({ lookbackDays: 30, generatedAt: new Date().toISOString(), opportunities });
   } catch (error) { next(error); }
 });
 
@@ -36,9 +65,25 @@ router.get("/", async (req, res, next) => {
         { category: { name: { contains: q, mode: "insensitive" } } }
       ] } : {})
     };
-    const services = await prisma.service.findMany({where,include:{provider:{select:{id:true,displayName:true,verified:true,location:true,latitude:true,longitude:true,serviceRadiusKm:true,available:true}},category:true},orderBy:{createdAt:"desc"},take:200});
-    const results=services.map(item=>{const p=item.provider;const d=hasCoordinates&&Number.isFinite(p.latitude)&&Number.isFinite(p.longitude)?distanceKm(latitude,longitude,p.latitude,p.longitude):null;const mapLatitude=Number.isFinite(p.latitude)?Math.round(p.latitude*100)/100:undefined,mapLongitude=Number.isFinite(p.longitude)?Math.round(p.longitude*100)/100:undefined;const {latitude:_lat,longitude:_lon,...safeProvider}=p;return {...item,provider:safeProvider,...(mapLatitude===undefined||mapLongitude===undefined?{}:{mapLatitude,mapLongitude}),...(d===null?{}:{distanceKm:Math.round(d*10)/10})};}).filter(item=>!hasCoordinates||(item.distanceKm!==undefined&&item.distanceKm<=radiusKm&&item.distanceKm<=(item.provider.serviceRadiusKm||10))).sort((a,b)=>hasCoordinates?a.distanceKm-b.distanceKm:new Date(b.createdAt)-new Date(a.createdAt));
+    const services = await prisma.service.findMany({where,include:{provider:{select:{id:true,displayName:true,verified:true,location:true,latitude:true,longitude:true,serviceRadiusKm:true,available:true,availabilityUpdatedAt:true,reviews:{select:{rating:true}},requests:{where:{status:"COMPLETED"},select:{id:true}}}},category:true},orderBy:{createdAt:"desc"},take:200});
+    const results=services.map(item=>{const p=item.provider;const d=hasCoordinates&&Number.isFinite(p.latitude)&&Number.isFinite(p.longitude)?distanceKm(latitude,longitude,p.latitude,p.longitude):null;const mapLatitude=Number.isFinite(p.latitude)?Math.round(p.latitude*100)/100:undefined,mapLongitude=Number.isFinite(p.longitude)?Math.round(p.longitude*100)/100:undefined;const reviews=p.reviews||[];const completedJobs=Array.isArray(p.requests)?p.requests.length:0;const averageRating=reviews.length?Math.round(reviews.reduce((sum,review)=>sum+Number(review.rating||0),0)/reviews.length*10)/10:null;const {latitude:_lat,longitude:_lon,reviews:_reviews,requests:_requests,...safeProvider}=p;return {...item,provider:{...safeProvider,averageRating,reviewCount:reviews.length,completedJobs},...(mapLatitude===undefined||mapLongitude===undefined?{}:{mapLatitude,mapLongitude}),...(d===null?{}:{distanceKm:Math.round(d*10)/10})};}).filter(item=>!hasCoordinates||(item.distanceKm!==undefined&&item.distanceKm<=radiusKm&&item.distanceKm<=(item.provider.serviceRadiusKm||10))).sort((a,b)=>hasCoordinates?a.distanceKm-b.distanceKm:new Date(b.createdAt)-new Date(a.createdAt));
     res.json(results.slice(0,100));
+  } catch (error) { next(error); }
+});
+
+router.get("/related", async (req, res, next) => {
+  try {
+    const category = typeof req.query.category === "string" ? req.query.category.trim().slice(0, 80) : "";
+    if (!category) return res.status(400).json({ message: "Choose a service category to discover related services." });
+    const since = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+    const requests = await prisma.serviceRequest.findMany({
+      where: { createdAt: { gte: since }, status: "COMPLETED" },
+      select: { partnerId: true, service: { select: { location: true, category: { select: { name: true } } } } },
+      orderBy: { createdAt: "desc" },
+      take: 5000
+    });
+    res.set("Cache-Control", "public, max-age=300");
+    res.json({ lookbackDays: 180, relatedCategories: buildRelatedServiceGraph({ requests, category }) });
   } catch (error) { next(error); }
 });
 
