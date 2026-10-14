@@ -186,7 +186,7 @@
     const details = '<div class="map-popup"><strong>' + title + '</strong><p>' +
       esc(service.category?.name || "Service provider") + '</p><p>' +
       esc(service.location || "Approximate service area") + '</p><p>' + money(service.price) +
-      '</p><a href="register.html">Join to request this service</a><p><a target="_blank" rel="noopener noreferrer" href="' +
+      '</p><a href="register.html">Join to request this service</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route</button></p><p><a target="_blank" rel="noopener noreferrer" href="' +
       esc("https://www.google.com/maps/dir/?api=1&destination=" + point.lat + "," + point.lng) +
       '">Get directions in Google Maps</a></p></div>';
     if (mapProvider === "google") {
@@ -339,6 +339,11 @@
   }
 
   if (button) button.addEventListener("click", requestDeviceLocation);
+  document.addEventListener("click", event => {
+    const routeButton = event.target.closest("[data-route-lat][data-route-lng]");
+    if (!routeButton || !root.contains(routeButton) && !routeButton.closest(".leaflet-popup, .gm-style")) return;
+    showRoute(Number(routeButton.dataset.routeLat), Number(routeButton.dataset.routeLng));
+  });
   search.readOnly = true;
   search.setAttribute("aria-readonly", "true");
   initializeMap().then(() => {
