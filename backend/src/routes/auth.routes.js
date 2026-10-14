@@ -16,7 +16,7 @@ router.post("/register",async(req,res,next)=>{try{
  if(role==="PROVIDER"&&providerType!=="INDIVIDUAL")return res.status(400).json({message:"Choose a supported provider account type."});
  // Legacy clients may omit providerType; new provider forms must supply the full profile.
  if(role==="PROVIDER"&&req.body.providerType!==undefined){
-  if(!phone||phone.length>30||!/^\\+?[0-9 ()-]{7,30}$/.test(phone))return res.status(400).json({message:"Enter a valid phone number."});
+  if(!phone||phone.length>30||!/^\+?[0-9 ()-]{7,30}$/.test(phone))return res.status(400).json({message:"Enter a valid phone number."});
   if(!location||location.length>120)return res.status(400).json({message:"Enter your service location."});
   if(!primaryCategory||primaryCategory.length>80)return res.status(400).json({message:"Choose your service category."});
  }
