@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Bradcall connects people with local service providers. Discover, compare and request services near you.">
+  <meta name="description" content="Bradcall helps people in Nigeria discover local service providers, compare offers and request help around their area.">
   <meta name="theme-color" content="#F4FAFB">
   <meta property="og:title" content="Bradcall — Find the right service.">
-  <meta property="og:description" content="Discover existing local services, compare providers and send a request.">
+  <meta property="og:description" content="Explore local Nigerian service examples, compare providers and request help around your area.">
   <meta property="og:type" content="website">
   <title>Bradcall — Find the right service. Right around you.</title>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
@@ -43,15 +43,15 @@
 <main id="main-content">
 <section class="hero">
   <div class="hero-copy">
-    <div class="eyebrow"><span aria-hidden="true"></span> SERVICES, WITHOUT THE SEARCH CHAOS</div>
+    <div class="eyebrow"><span aria-hidden="true"></span> LOCAL SERVICES, THE NIGERIAN WAY</div>
     <h1>What needs doing?<br><em>Find who can do it.</em></h1>
-    <p>Discover services around your community, compare the details, and contact the right provider. Bradcall brings local service discovery into one clear experience.</p>
+    <p>Need a plumber in Ikeja, generator repairs in Port Harcourt, or a cleaner in Abuja? Discover local providers, compare their details, and send a service request from one place.</p>
     <form class="search" id="search-form" role="search">
       <label><i data-lucide="search" aria-hidden="true"></i><span class="sr-only">Search a service</span><input id="q" name="service" autocomplete="off" placeholder="Search a service"></label>
-      <label><i data-lucide="map-pin" aria-hidden="true"></i><span class="sr-only">Area or city</span><input id="loc" name="location" autocomplete="address-level2" placeholder="Area or city"></label>
+      <label><i data-lucide="map-pin" aria-hidden="true"></i><span class="sr-only">Area or city</span><input id="loc" name="location" autocomplete="address-level2" placeholder="e.g. Ikeja, Lagos"></label>
       <button id="find" type="submit">Search</button>
     </form>
-    <div class="quick" aria-label="Popular services"><span>Try</span><button type="button" data-q="Cleaning">Cleaning</button><button type="button" data-q="Plumbing">Plumbing</button><button type="button" data-q="Electrical">Electrical</button><button type="button" data-q="Moving">Moving</button></div>
+    <div class="quick" aria-label="Popular services"><span>Try</span><button type="button" data-q="Cleaning">Cleaning</button><button type="button" data-q="Plumbing">Plumbing</button><button type="button" data-q="Electrical">Electrical</button><button type="button" data-q="Generator Repair">Generator repair</button></div>
   </div>
   <div class="hero-art" aria-label="Illustration showing nearby services">
     <div class="map-card">
@@ -80,36 +80,37 @@
     <button type="button" data-q="Cleaning"><span>01</span><b>Cleaning</b><small>Home, office & deep cleaning</small></button>
     <button type="button" data-q="Plumbing"><span>02</span><b>Plumbing</b><small>Repairs, leaks & installation</small></button>
     <button type="button" data-q="Electrical"><span>03</span><b>Electrical</b><small>Wiring, installation & repairs</small></button>
-    <button type="button" data-q="Moving"><span>04</span><b>Moving</b><small>Moving, delivery & setup</small></button>
-    <button type="button" data-q="Painting"><span>05</span><b>Painting</b><small>Interior & exterior work</small></button>
-    <button type="button" data-q="Beauty"><span>06</span><b>Beauty</b><small>Hair, makeup & personal care</small></button>
+    <button type="button" data-q="Generator Repair"><span>04</span><b>Generator repair</b><small>Servicing, faults & maintenance</small></button>
+    <button type="button" data-q="Laundry"><span>05</span><b>Laundry</b><small>Washing, ironing & pickup</small></button>
+    <button type="button" data-q="Beauty"><span>06</span><b>Beauty & grooming</b><small>Hair, makeup & personal care</small></button>
   </div>
 </section>
 
 <section class="section providers-section" id="providers">
-  <div class="section-head"><div><div class="eyebrow">SERVICE PREVIEW</div><h2>Explore what you could book.</h2></div><span id="note" aria-live="polite">Popular nearby</span></div>
+  <div class="section-head"><div><div class="eyebrow">NIGERIAN SERVICE EXAMPLES</div><h2>Everyday help, closer to home.</h2></div><span id="note" aria-live="polite">Illustrative examples</span></div>
   <div class="providers">
-    <article class="provider" data-service="Cleaning" data-location="Lagos">
-      <div class="provider-image clean"><span>BH</span></div><div class="provider-body"><small class="verified">SAMPLE LISTING · CLEANING</small><h3>Home & Office Cleaning</h3><p>BrightHome Services</p><div><span><i data-lucide="map-pin" aria-hidden="true"></i> Lagos</span><strong>Sample from ₦15,000</strong></div><button class="request" data-service="Home & Office Cleaning" type="button">View service</button></div>
+    <article class="provider" data-service="Cleaning" data-location="Ikeja, Lagos">
+      <div class="provider-image clean"><span>BH</span></div><div class="provider-body"><small class="verified">DEMO EXAMPLE · CLEANING</small><h3>Home & Office Cleaning</h3><p>BrightHome Services</p><div><span><i data-lucide="map-pin" aria-hidden="true"></i> Ikeja, Lagos</span><strong>Illustrative price ₦15,000+</strong></div><button class="request" data-service="Home & Office Cleaning" type="button">View service</button></div>
     </article>
-    <article class="provider" data-service="Plumbing" data-location="Ikeja">
-      <div class="provider-image pipe"><span>FF</span></div><div class="provider-body"><small class="verified">SAMPLE LISTING · PLUMBING</small><h3>Plumbing & Pipe Repairs</h3><p>FlowFix Professionals</p><div><span><i data-lucide="map-pin" aria-hidden="true"></i> Ikeja</span><strong>Sample from ₦12,000</strong></div><button class="request" data-service="Plumbing & Pipe Repairs" type="button">View service</button></div>
+    <article class="provider" data-service="Plumbing" data-location="Gwarinpa, Abuja">
+      <div class="provider-image pipe"><span>FF</span></div><div class="provider-body"><small class="verified">DEMO EXAMPLE · PLUMBING</small><h3>Plumbing & Pipe Repairs</h3><p>FlowFix Professionals</p><div><span><i data-lucide="map-pin" aria-hidden="true"></i> Gwarinpa, Abuja</span><strong>Illustrative price ₦12,000+</strong></div><button class="request" data-service="Plumbing & Pipe Repairs" type="button">View service</button></div>
     </article>
-    <article class="provider" data-service="Electrical" data-location="Surulere">
-      <div class="provider-image power"><span>PW</span></div><div class="provider-body"><small class="verified">SAMPLE LISTING · ELECTRICAL</small><h3>Electrical Installation</h3><p>PowerLine Works</p><div><span><i data-lucide="map-pin" aria-hidden="true"></i> Surulere</span><strong>Sample from ₦10,000</strong></div><button class="request" data-service="Electrical Installation" type="button">View service</button></div>
+    <article class="provider" data-service="Generator Repair" data-location="Rumuola, Port Harcourt">
+      <div class="provider-image power"><span>GR</span></div><div class="provider-body"><small class="verified">DEMO EXAMPLE · GENERATOR REPAIR</small><h3>Generator Repairs & Servicing</h3><p>PowerCare Services</p><div><span><i data-lucide="map-pin" aria-hidden="true"></i> Rumuola, Port Harcourt</span><strong>Illustrative price ₦18,000+</strong></div><button class="request" data-service="Generator Repairs & Servicing" type="button">View service</button></div>
     </article>
   </div>
-  <p class="empty" id="empty" hidden>No matching services yet. Try another category or area.</p>
+  <p class="empty" id="empty" hidden>No matching demo examples here. Search the marketplace for more services in your area.</p>
+  <p class="sample-disclaimer">These cards are illustrative examples, not confirmed live providers or quotes. Availability and final prices depend on the provider, job and location.</p>
 </section>
 
-<section class="dark-section" id="how"><div class="how-copy"><div class="eyebrow light">THE BRADCALL LOOP</div><h2>Less searching.<br><em>More doing.</em></h2><p>A service marketplace should feel like a clear path, not a pile of listings. Bradcall is designed around the moment someone needs help and the moment a provider is ready to deliver it.</p></div><div class="timeline"><div><b>01</b><h3>Tell us what you need</h3><p>Search by service and location.</p></div><div><b>02</b><h3>Choose a service</h3><p>Review the provider and offer.</p></div><div><b>03</b><h3>Send your request</h3><p>Describe the job and connect.</p></div><div><b>04</b><h3>Get it done</h3><p>Complete the work and review.</p></div></div></section>
+<section class="dark-section" id="how"><div class="how-copy"><div class="eyebrow light">THE BRADCALL LOOP</div><h2>Less searching.<br><em>More doing.</em></h2><p>From plumbing and generator repairs to cleaning and personal care, Bradcall is designed around the way people find local help across Nigerian neighbourhoods.</p></div><div class="timeline"><div><b>01</b><h3>Tell us what you need</h3><p>Search by service and location.</p></div><div><b>02</b><h3>Choose a service</h3><p>Review the provider and offer.</p></div><div><b>03</b><h3>Send your request</h3><p>Describe the job and connect.</p></div><div><b>04</b><h3>Get it done</h3><p>Complete the work and review.</p></div></div></section>
 
 <section class="pricing" id="pricing"><div class="pricing-intro"><div class="eyebrow">FOR SERVICE PROVIDERS</div><h2>Turn your service into a business.</h2><p>Start free. Upgrade when you need more reach, more listings and more tools to manage your work.</p><button class="dark" id="provider" type="button">Create provider profile <i data-lucide="arrow-right" aria-hidden="true"></i></button></div><div class="plans"><article class="plan"><div><small>STARTER</small><h3>Free</h3><p class="price">₦0 <span>/ month</span></p><p>For providers getting discovered.</p></div><ul><li>1 service listing</li><li>Basic provider profile</li><li>Customer requests</li><li>Standard discovery</li></ul><button class="outline" data-plan="Starter" type="button">Start free</button></article><article class="plan featured"><div class="tag">PROVIDER PRO</div><small>GROW</small><h3>Pro</h3><p class="price">₦5,000 <span>/ month</span></p><p>For providers ready to grow their reach.</p><ul><li>Unlimited service listings</li><li>Enhanced provider profile</li><li>Priority discovery</li><li>Provider insights</li><li>Featured service options</li></ul><button class="red" data-plan="Pro" type="button">Choose Pro</button></article></div></section>
 
 <section class="cta"><div><div class="eyebrow light">READY WHEN YOU ARE</div><h2>Need a service?<br>Know a service?</h2><p>Bradcall gives both sides a place to meet.</p></div><div class="cta-actions"><button class="light-btn" id="partner" type="button">I need a service</button><button class="ghost-btn" id="ctaProvider" type="button">I offer a service</button></div></section>
 </main>
 
-<footer><a class="brand" href="#" aria-label="Bradcall home"><span aria-hidden="true">BC</span><strong>bradcall</strong></a><span>Find it. Request it. Get it done.</span><span>© 2026 Bradcall</span></footer>
+<footer><a class="brand" href="#" aria-label="Bradcall home"><span aria-hidden="true">BC</span><strong>bradcall</strong></a><span>Local services. Clearer connections across Nigeria.</span><span>© 2026 Bradcall</span></footer>
 
 <div class="modal" id="modal" role="presentation" hidden>
   <div class="backdrop" data-close-modal></div>
