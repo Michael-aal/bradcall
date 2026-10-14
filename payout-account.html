@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#F4FAFB">
+<meta name="description" content="Securely set up the bank account for Bradcall provider payouts.">
+<title>Payout account · Bradcall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bradcall.css"><link rel="stylesheet" href="marketplace.css"><link rel="stylesheet" href="payout-account.css"><script src="config.js"></script>
+</head>
+<body class="payout-page" data-workspace="payout-account">
+<header class="topbar payout-topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">B</span><span>bradcall</span></a>
+  <nav aria-label="Main navigation"><a href="provider-dashboard.html">Workspace</a><a href="payments.html">Payments</a></nav>
+  <button class="plain" data-signout type="button">Log out</button>
+</header>
+<main class="payout-shell">
+  <a class="payout-back" href="provider-dashboard.html">← Back to workspace</a>
+  <div class="payout-heading"><span class="payout-kicker">PROVIDER SETTINGS</span><h1>Your payout account</h1><p>Choose your Nigerian bank or supported digital bank. Search by name, verify the account, then save it for your provider profile.</p></div>
+  <div id="payout-message" class="payout-message" role="status" aria-live="polite" hidden></div>
+  <section class="payout-card" aria-labelledby="saved-heading">
+    <div class="payout-card-head"><div><span class="payout-kicker">CURRENT DESTINATION</span><h2 id="saved-heading">Saved account</h2></div><span id="saved-badge" class="payout-badge">Not set up</span></div>
+    <div id="saved-account" class="saved-account"><p class="payout-muted">Checking your saved payout account…</p></div>
+  </section>
+  <section class="payout-card" aria-labelledby="setup-heading">
+    <div class="payout-card-head"><div><span class="payout-kicker">BANK DETAILS</span><h2 id="setup-heading">Add or change an account</h2></div><span class="payout-step">Secure setup</span></div>
+    <form id="payout-form" novalidate>
+      <div class="payout-field">
+        <label for="bank-search">Search Nigerian banks</label>
+        <input id="bank-search" type="search" autocomplete="off" placeholder="Type OPay, PalmPay, UBA, FirstBank…" aria-controls="bank-options" aria-expanded="false" required>
+        <input id="bank-code" type="hidden">
+        <div id="bank-options" class="bank-options" role="listbox" aria-label="Supported Nigerian banks" hidden></div>
+        <small id="bank-help">The list comes from Paystack's current supported-bank directory. Available institutions may vary.</small>
+      </div>
+      <div class="payout-field">
+        <label for="account-number">Account number</label>
+        <div class="account-number-row"><input id="account-number" type="text" inputmode="numeric" autocomplete="off" maxlength="10" pattern="[0-9]{10}" placeholder="Enter 10 digits" required><button id="verify-account" class="payout-button secondary" type="button">Verify account</button></div>
+        <small>Bradcall does not save your full account number.</small>
+      </div>
+      <div id="resolved-account" class="resolved-account" hidden></div>
+      <label id="ownership-row" class="ownership-row" hidden><input id="ownership-confirmed" type="checkbox"><span>I confirm this account belongs to me or my registered business, and the displayed account name is correct.</span></label>
+      <button id="save-account" class="payout-button" type="submit" disabled>Save payout account</button>
+    </form>
+  </section>
+  <section class="payout-notice"><strong>Payment safety note</strong><p>Saving this account does not move money. Provider payouts will remain disabled until Bradcall confirms an approved Paystack payout arrangement and enables the feature.</p></section>
+</main>
+<footer class="payout-footer">Bradcall · Local services, clearer connections.</footer>
+<script src="payout-account.js"></script><script src="workspace-nav.js"></script>
+</body>
+</html>
