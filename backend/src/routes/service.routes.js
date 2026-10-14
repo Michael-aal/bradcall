@@ -79,6 +79,7 @@ router.get("/related", async (req, res, next) => {
     const requests = await prisma.serviceRequest.findMany({
       where: { createdAt: { gte: since }, status: "COMPLETED" },
       select: { partnerId: true, service: { select: { location: true, category: { select: { name: true } } } } },
+      orderBy: { createdAt: "desc" },
       take: 5000
     });
     res.set("Cache-Control", "public, max-age=300");
