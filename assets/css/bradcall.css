@@ -98,3 +98,70 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 input,select,textarea{max-width:100%}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 @media(max-width:620px){.hero h1{line-height:1.02}.search{padding:8px}.search label{padding:12px}.cta{border-radius:18px}}
+
+
+/* Mobile-first landing page refinements: comfortable spacing, readable type and no horizontal overflow. */
+html, body { width: 100%; max-width: 100%; overflow-x: clip; }
+*, *::before, *::after { box-sizing: border-box; }
+.hero, .section, .trust, .dark-section, .pricing, .cta, footer { min-width: 0; }
+.hero-copy, .hero-art, .map-card, .provider, .plan, .category { min-width: 0; }
+.hero h1 { overflow-wrap: anywhere; }
+.search input { min-width: 0; width: 100%; font-size: 16px; }
+@media (max-width: 900px) {
+  .topbar { min-height: 68px; padding: 12px 18px; gap: 10px; }
+  .brand { min-width: 0; }
+  .hamb { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; }
+  .mobile-nav-panel { width: min(100%, 420px); max-height: calc(100dvh - 20px); overflow-y: auto; }
+  .hero { gap: 26px; }
+  .hero-art { width: 100%; max-width: 620px; margin-inline: auto; }
+  .trust { gap: 0; }
+  .trust > div { min-width: 0; }
+}
+@media (max-width: 620px) {
+  .topbar { padding: 10px 14px; }
+  .brand strong { font-size: 1rem; }
+  .hero { padding: 34px 16px 28px; gap: 18px; }
+  .hero h1 { font-size: clamp(34px, 10vw, 46px); line-height: 1.04; letter-spacing: -.055em; }
+  .hero-copy > p { font-size: 15px; line-height: 1.7; }
+  .search { width: 100%; padding: 8px; gap: 0; }
+  .search label { min-width: 0; padding: 11px 9px; }
+  .search button { width: 100%; min-height: 48px; }
+  .quick { gap: 7px; flex-wrap: wrap; }
+  .quick button { min-height: 36px; }
+  .hero-art { height: auto; min-height: 0; padding: 0; }
+  .map-card { width: 100%; height: auto; min-height: 280px; padding: 12px; }
+  .map { height: clamp(175px, 54vw, 220px); }
+  .map-top { gap: 8px; flex-wrap: wrap; }
+  .map-top b { font-size: 13px; }
+  .map-top span { font-size: 10px; }
+  .pin { max-width: 44%; }
+  .pin b { font-size: 10px; }
+  .trust { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 8px 16px; }
+  .trust > div { padding: 16px 10px; }
+  .trust > div:nth-child(odd) { border-left: 0; }
+  .section { padding: 48px 16px; }
+  .section-head { gap: 12px; }
+  .section-head h2, .pricing h2, .dark-section h2 { font-size: clamp(28px, 8vw, 38px); line-height: 1.1; }
+  .categories, .providers, .plans { grid-template-columns: minmax(0, 1fr); }
+  .provider-image { min-height: 120px; }
+  .dark-section { padding: 48px 16px; gap: 24px; }
+  .timeline > div { grid-template-columns: 28px minmax(0, 1fr); gap: 8px; }
+  .timeline > div > svg, .timeline > div > div > svg { display: none; }
+  .pricing { padding: 48px 16px; gap: 26px; }
+  .plan { min-height: 0; padding: 22px; }
+  .plan.featured { transform: none; }
+  .cta { margin: 0 12px 38px; padding: 26px 20px; gap: 20px; }
+  .cta-actions { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); }
+  .cta-actions button { width: 100%; min-height: 46px; }
+  footer { padding: 22px 16px; gap: 12px; align-items: flex-start; }
+  footer > * { min-width: 0; }
+  .dialog { width: calc(100% - 24px); max-height: calc(100dvh - 24px); padding: 26px 18px; }
+  .dialog h2 { font-size: 26px; }
+}
+@media (max-width: 360px) {
+  .hero { padding-inline: 12px; }
+  .hero h1 { font-size: 33px; }
+  .trust { padding-inline: 10px; }
+  .trust > div { padding-inline: 7px; }
+  .map-foot { gap: 8px; flex-wrap: wrap; }
+}
