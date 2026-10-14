@@ -39,3 +39,18 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:520px){.market-grid{grid-template-columns:1fr}.page-shell{padding:32px 16px 52px}.auth-panel{padding:22px 18px}.auth-wrap{padding:26px 16px 44px}.role-choice{grid-template-columns:1fr}}
 
 :root{--red:var(--brand-green);--red-soft:#e4f5ef;--dark:#18332d;--paper:var(--brand-paper);--line:var(--brand-line)}
+
+
+/* Dribbble-inspired marketplace UI refinement */
+.topbar{box-shadow:0 4px 18px rgba(24,51,45,.025)}
+.topbar nav a{padding:10px 12px;border-radius:10px;transition:color .18s ease,background .18s ease}
+.topbar nav a:hover,.topbar nav a[aria-current=page]{background:#e4f5ef;color:var(--brand-green-dark)}
+.dark,.auth-submit,.primary-action,.dash-btn{min-height:44px;transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease}
+.dark:hover,.auth-submit:hover,.primary-action:hover,.dash-btn:hover{box-shadow:0 8px 20px rgba(1,158,129,.15)}
+.market-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.market-card:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(24,51,45,.09);border-color:#b8ded1}
+.auth-panel{box-shadow:0 18px 50px rgba(24,51,45,.07)}
+.auth-panel input:focus,.auth-panel select:focus{border-color:var(--brand-green);box-shadow:0 0 0 4px rgba(1,158,129,.1);outline:none}
+.page-heading p,.auth-intro p{font-size:15px;line-height:1.75}
+@media(max-width:800px){.market-grid{gap:12px}}
+@media(max-width:520px){.market-card{border-radius:16px;padding:18px}.auth-panel{border-radius:18px}}
