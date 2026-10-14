@@ -16,7 +16,7 @@
   const list = $("#community-map-list");
   if (!mapNode || !search) return;
 
-  const DEFAULT_CENTER = { lat: 6.5244, lng: 3.3792 };
+  const DEFAULT_CENTER = { lat: 9.0820, lng: 8.6753 };
   let map;
   let mapProvider = "leaflet";
   let layer;
@@ -101,7 +101,7 @@
       if (await loadGoogleMaps()) {
         mapProvider = "google";
         map = new google.maps.Map(mapNode, {
-          center: DEFAULT_CENTER, zoom: 12, mapTypeControl: false,
+          center: DEFAULT_CENTER, zoom: 6, mapTypeControl: false,
           streetViewControl: false, fullscreenControl: true,
           gestureHandling: "greedy"
         });
@@ -111,7 +111,7 @@
           map, suppressMarkers: false, polylineOptions: { strokeColor: "#019E81", strokeWeight: 5, strokeOpacity: 0.85 }
         });
         coverage = new google.maps.Circle({
-          map, center: DEFAULT_CENTER, radius: 3000, strokeColor: "#019E81",
+          map: null, center: DEFAULT_CENTER, radius: 3000, strokeColor: "#019E81",
           strokeOpacity: 0.8, strokeWeight: 2, fillColor: "#019E81", fillOpacity: 0.08
         });
         return;
@@ -121,7 +121,7 @@
     }
     mapProvider = "leaflet";
     await loadLeaflet();
-    map = window.L.map(mapNode, { scrollWheelZoom: false }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 12);
+    map = window.L.map(mapNode, { scrollWheelZoom: false }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
     window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
@@ -130,7 +130,7 @@
     routeLayer = window.L.layerGroup().addTo(map);
     coverage = window.L.circle([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], {
       radius: 3000, color: "#019E81", weight: 2, fillColor: "#019E81", fillOpacity: 0.08
-    }).addTo(map);
+    });
     mapNode.addEventListener("click", async event => {
       const routeButton = event.target.closest("[data-route-lat][data-route-lng]");
       if (routeButton) await showRoute(Number(routeButton.dataset.routeLat), Number(routeButton.dataset.routeLng));
@@ -252,10 +252,12 @@
       map.setCenter(searchCenter);
       map.setZoom(13);
       coverage.setCenter(searchCenter);
+      coverage.setMap(map);
       routeLayer.set("directions", null);
     } else {
       map.setView([searchCenter.lat, searchCenter.lng], 13);
       coverage.setLatLng([searchCenter.lat, searchCenter.lng]);
+      coverage.addTo(map);
       clearMarkers();
     }
     if (mapProvider === "google") clearMarkers();
