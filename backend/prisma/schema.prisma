@@ -121,6 +121,12 @@ model ProviderProfile {
  serviceRadiusKm Float @default(10)
  available Boolean @default(true)
  verified Boolean @default(false)
+ payoutBankName String?
+ payoutBankCode String?
+ payoutAccountName String?
+ payoutAccountNumberMasked String?
+ paystackRecipientCode String? @unique
+ payoutAccountVerifiedAt DateTime?
  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  services Service[]
  reviews Review[] @relation("ProviderReviews")
