@@ -26,3 +26,16 @@ The initial migration is intended for a new database. If your current database a
 - `/api/services`: public search plus provider-owned listing management.
 - `/api/requests`: customer requests and provider status updates.
 - `/api/admin`: admin-only counts, account listing, and all requests.
+
+## Geoapify maps configuration
+
+Set `MAPS_API_KEY` in the Render environment for the Bradcall backend service. Keep this key server-side; do not paste it into `config.js`, commit it to GitHub, or return it from an API endpoint. After changing environment variables, redeploy/restart the backend service.
+
+The backend exposes these Geoapify-backed endpoints:
+
+- `GET /api/maps/autocomplete?q=...` — Nigerian address and area suggestions.
+- `GET /api/maps/geocode?q=...` — resolve an area or address to coordinates.
+- `GET /api/maps/reverse?lat=...&lon=...` — resolve device coordinates to a readable area.
+- `POST /api/maps/route` — driving route geometry and distance/time summary.
+
+The public map uses Leaflet/OpenStreetMap tiles by default. Geoapify search and route requests are proxied through the backend so the Render key is not exposed in browser code.
