@@ -7,3 +7,34 @@
 .tag{background:var(--yellow);color:var(--ink)}
 .plan.featured{border-color:var(--yellow)}
 .categories button:focus-visible,.quick button:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+
+
+/* Living Bells-inspired mobile tab bar for Bradcall workspace pages. */
+.mobile-tabbar { display:none; }
+@media (max-width:767px) {
+  body { padding-bottom:calc(96px + env(safe-area-inset-bottom)); }
+  .topbar, .mp-top { position:sticky; top:0; z-index:30; }
+  .topbar > nav, .topbar > .actions, .mp-top > .mp-nav, .mp-top > .mp-btn { display:none !important; }
+  .mobile-tabbar {
+    position:fixed; z-index:100; left:10px; right:10px;
+    bottom:calc(9px + env(safe-area-inset-bottom)); min-height:66px;
+    display:flex; align-items:stretch; justify-content:space-between; gap:3px;
+    padding:5px; border:1px solid rgba(225,222,216,.95); border-radius:18px;
+    background:rgba(255,255,255,.96); box-shadow:0 14px 38px rgba(24,51,45,.16);
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  }
+  .mobile-tabbar a {
+    flex:1 1 20%; min-width:0; min-height:54px; border-radius:13px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px; color:#827d78; text-decoration:none; font-size:10px; line-height:1.1;
+    font-weight:750; white-space:nowrap; -webkit-tap-highlight-color:transparent;
+  }
+  .mobile-tabbar .tab-icon { font-size:19px; line-height:1; font-style:normal; }
+  .mobile-tabbar a.is-active { background:var(--green-soft,#e2f5ef); color:#017c66; }
+  .mobile-tabbar a:focus-visible { outline:3px solid var(--yellow,#ffbf42); outline-offset:1px; }
+}
+@media (max-width:360px) {
+  .mobile-tabbar { left:6px; right:6px; gap:1px; padding:4px; }
+  .mobile-tabbar a { font-size:9px; }
+}
+@media (min-width:768px) { .mobile-tabbar { display:none !important; } }
