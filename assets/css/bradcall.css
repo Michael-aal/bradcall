@@ -165,3 +165,66 @@ html, body { width: 100%; max-width: 100%; overflow-x: clip; }
   .trust > div { padding-inline: 7px; }
   .map-foot { gap: 8px; flex-wrap: wrap; }
 }
+
+
+/* Phone navigation inspired by Living Bells: compact floating bottom tabs. */
+.mobile-tabbar { display: none; }
+@media (max-width: 767px) {
+  body { padding-bottom: calc(94px + env(safe-area-inset-bottom)); }
+  .topbar { position: sticky; top: 0; z-index: 30; min-height: 60px; height: 60px; padding: 8px 14px; justify-content: flex-start; background: rgba(247,244,239,.94); }
+  .topbar > nav, .topbar > .actions, .topbar > .hamb { display: none !important; }
+  .brand { gap: 9px; font-size: 18px; }
+  .brand span { width: 32px; height: 32px; border-radius: 10px; }
+  .mobile-tabbar {
+    position: fixed;
+    z-index: 50;
+    left: 10px;
+    right: 10px;
+    bottom: calc(9px + env(safe-area-inset-bottom));
+    min-height: 66px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 3px;
+    padding: 5px;
+    border: 1px solid rgba(225,222,216,.95);
+    border-radius: 18px;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 14px 38px rgba(24,51,45,.16);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .mobile-tab {
+    flex: 1 1 20%;
+    min-width: 0;
+    min-height: 54px;
+    border-radius: 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: #827d78;
+    text-decoration: none;
+    font-size: 10px;
+    line-height: 1.1;
+    font-weight: 750;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-tab i { width: 19px; height: 19px; stroke-width: 2.1; }
+  .mobile-tab.is-active { background: #e2f5ef; color: #017c66; }
+  .mobile-tab:active { transform: scale(.97); }
+  .mobile-tab:focus-visible { outline: 3px solid #ffbf42; outline-offset: 1px; }
+  .mobile-nav { display: none !important; }
+  .hero { scroll-margin-top: 70px; }
+  #services, #how, #pricing, #providers { scroll-margin-top: 72px; }
+}
+@media (max-width: 360px) {
+  .mobile-tabbar { left: 6px; right: 6px; gap: 1px; padding: 4px; }
+  .mobile-tab { font-size: 9px; }
+  .mobile-tab i { width: 18px; height: 18px; }
+}
+@media (min-width: 768px) {
+  .mobile-tabbar { display: none !important; }
+}
