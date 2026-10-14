@@ -13,7 +13,7 @@
     ["Overview", "provider-dashboard.html"], ["My services", "provider-dashboard.html#provider-services"],
     ["Jobs & requests", "bookings.html"], ["Map & tracking", "tracking.html"],
     ["Messages", "messages.html"], ["Payments & earnings", "payments.html"],
-    ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"],
+    ["Payout account", "payout-account.html"], ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"],
     ["My profile", "profile-setup.html?edit=1"]
   ] : role === "ADMIN" ? [
     ["Overview", "admin-dashboard.html"], ["Marketplace", "services.html"],
@@ -41,7 +41,7 @@
   }
 
   const mobileItems = role === "PROVIDER"
-    ? [["Home", home], ["Jobs", "bookings.html"], ["Services", "provider-dashboard.html#provider-services"], ["Account", "profile-setup.html?edit=1"]]
+    ? [["Home", home], ["Jobs", "bookings.html"], ["Services", "provider-dashboard.html#provider-services"], ["Payout", "payout-account.html"], ["Account", "profile-setup.html?edit=1"]]
     : role === "ADMIN"
       ? [["Overview", home], ["Bookings", "bookings.html"], ["Payments", "payments.html"], ["Trust", "admin-verification.html"]]
       : [["Home", home], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Payments", "payments.html"]];
@@ -50,7 +50,7 @@
     .workspace-mobile-nav{display:none}
     @media(max-width:760px){
       body{padding-bottom:78px!important}
-      .workspace-mobile-nav{position:fixed;z-index:1000;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:8px max(8px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);border-top:1px solid #dce9e4;box-shadow:0 -6px 24px rgba(24,51,45,.08);backdrop-filter:blur(12px)}
+      .workspace-mobile-nav{position:fixed;z-index:1000;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:8px max(8px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);border-top:1px solid #dce9e4;box-shadow:0 -6px 24px rgba(24,51,45,.08);backdrop-filter:blur(12px)}
       .workspace-mobile-nav a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:6px 2px;border-radius:10px;color:#52655f;text-decoration:none;font:700 12px/1.2 "DM Sans",system-ui,sans-serif;text-align:center}
       .workspace-mobile-nav a[aria-current=page]{background:#e4f5ef;color:#087d69}
       .workspace-mobile-nav a:focus-visible{outline:3px solid #ffbf42;outline-offset:2px}
