@@ -12,17 +12,17 @@
   const links = role === "PROVIDER" ? [
     ["Overview", "provider-dashboard.html"], ["My services", "provider-dashboard.html#provider-services"],
     ["Jobs & requests", "bookings.html"], ["Map & tracking", "tracking.html"],
-    ["Messages", "messages.html"], ["Payments & earnings", "payments.html"],
+    ["Messages", "messages.html"], ["Payments & earnings", "payments.html"], ["Finance & AI", "finance.html"],
     ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"],
     ["My profile", "provider-dashboard.html#provider-profile"]
   ] : role === "ADMIN" ? [
     ["Overview", "admin-dashboard.html"], ["Marketplace", "services.html"],
     ["Verification & trust", "admin-verification.html"], ["Bookings", "bookings.html"],
-    ["Payments", "payments.html"], ["Support", "help-center.html"]
+    ["Payments", "payments.html"], ["Finance & AI", "finance.html"], ["Support", "help-center.html"]
   ] : [
     ["Home", "consumer-dashboard.html"], ["Find services", "services.html"],
     ["My bookings", "bookings.html"], ["Map & tracking", "tracking.html"],
-    ["Messages", "messages.html"], ["Payments & history", "payments.html"],
+    ["Messages", "messages.html"], ["Payments & history", "payments.html"], ["Finance & AI", "finance.html"],
     ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"]
   ];
 
@@ -41,10 +41,10 @@
   }
 
   const mobileItems = role === "PROVIDER"
-    ? [["Home", home], ["Jobs", "bookings.html"], ["Services", "provider-dashboard.html#provider-services"], ["Account", "provider-dashboard.html#provider-profile"]]
+    ? [["Home", home], ["Jobs", "bookings.html"], ["Finance", "finance.html"], ["Account", "provider-dashboard.html#provider-profile"]]
     : role === "ADMIN"
-      ? [["Overview", home], ["Bookings", "bookings.html"], ["Payments", "payments.html"], ["Trust", "admin-verification.html"]]
-      : [["Home", home], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Payments", "payments.html"]];
+      ? [["Overview", home], ["Bookings", "bookings.html"], ["Finance", "finance.html"], ["Trust", "admin-verification.html"]]
+      : [["Home", home], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Finance", "finance.html"]];
   const style = document.createElement("style");
   style.textContent = `
     .workspace-mobile-nav{display:none}

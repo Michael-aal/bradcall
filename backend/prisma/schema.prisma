@@ -98,6 +98,8 @@ model User {
  policyAcceptances PolicyAcceptance[]
  locationShares RequestLocation[] @relation("LocationShareOwner")
  reviewsWritten Review[] @relation("ReviewsWritten")
+ financeEntries PersonalFinanceEntry[]
+ companyFinanceEntriesCreated CompanyFinanceEntry[] @relation("CompanyFinanceCreator")
 }
 model ProviderProfile {
  id String @id @default(cuid())
@@ -335,4 +337,42 @@ model Review {
  reviewer User @relation("ReviewsWritten", fields: [reviewerId], references: [id], onDelete: Cascade)
  provider ProviderProfile @relation("ProviderReviews", fields: [providerId], references: [id], onDelete: Cascade)
  @@index([providerId, createdAt])
+}
+
+
+enum FinanceEntryType {
+  INCOME
+  EXPENSE
+}
+
+model PersonalFinanceEntry {
+  id          String           @id @default(cuid())
+  userId      String
+  type        FinanceEntryType
+  category    String
+  description String?
+  amountKobo  Int
+  occurredAt  DateTime         @default(now())
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, occurredAt])
+  @@index([userId, type, occurredAt])
+}
+
+model CompanyFinanceEntry {
+  id          String           @id @default(cuid())
+  createdById String
+  type        FinanceEntryType
+  category    String
+  description String?
+  amountKobo  Int
+  occurredAt  DateTime         @default(now())
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  createdBy   User             @relation("CompanyFinanceCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([occurredAt])
+  @@index([type, occurredAt])
 }
