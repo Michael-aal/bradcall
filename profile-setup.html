@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#F4FAFB"><meta name="description" content="Set up your Bradcall profile and service area.">
+<title>Set up your profile · Bradcall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bradcall.css"><link rel="stylesheet" href="marketplace.css"><link rel="stylesheet" href="profile-setup.css"><script src="config.js"></script>
+</head>
+<body class="profile-setup-page">
+<header class="topbar profile-topbar"><a class="brand" href="index.html"><span class="brand-mark">B</span><span>bradcall</span></a><span class="setup-secure"><i data-lucide="shield-check"></i> Your profile, your control</span><button class="plain" data-signout type="button">Log out</button></header>
+<main class="profile-shell">
+  <aside class="profile-intro">
+    <span class="profile-kicker">WELCOME TO BRADCALL</span>
+    <h1>Let's make your profile <em>work for you.</em></h1>
+    <p>Tell us a little about yourself. Your location can fill automatically, and you can change it whenever you need.</p>
+    <div class="profile-promise"><span><i data-lucide="map-pin"></i></span><div><strong>Nearby, not intrusive</strong><small>Discovery uses your approximate service area, not a public pin on your home.</small></div></div>
+    <div class="profile-promise"><span><i data-lucide="sliders-horizontal"></i></span><div><strong>Easy to update</strong><small>Change your contact details, coverage area and services later.</small></div></div>
+  </aside>
+  <section class="profile-card" aria-labelledby="profile-heading">
+    <div class="profile-card-head"><div><div class="profile-kicker">PROFILE SETUP</div><h2 id="profile-heading">Build your profile</h2><p id="step-subtitle">Step 1 of 4 · About you</p></div><div class="profile-avatar" id="avatar" aria-hidden="true">B</div></div>
+    <div class="profile-progress" aria-label="Setup progress"><span id="progress-bar"></span></div>
+    <div id="profile-message" class="profile-message" role="status" hidden></div>
+    <form id="profile-form" novalidate>
+      <section class="profile-step" data-step="0">
+        <h3>First, the basics</h3><p class="step-help">Use the name and phone number customers can recognise.</p>
+        <div class="profile-fields">
+          <div class="profile-field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" maxlength="100" required placeholder="Your full name"></div>
+          <div class="profile-field"><label for="phone">Phone number</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="30" required placeholder="+234 801 234 5678"><small>Used for service communication and accepted bookings.</small></div>
+          <div class="profile-field provider-only"><label>What kind of provider are you?</label><div class="provider-type-choice"><label class="type-choice" id="individual-choice"><input type="radio" name="providerType" value="INDIVIDUAL" checked><span class="type-icon"><i data-lucide="user-round"></i></span><span><strong>Individual</strong><small>I provide services myself.</small></span></label><label class="type-choice" id="company-choice"><input type="radio" name="providerType" value="COMPANY"><span class="type-icon"><i data-lucide="building-2"></i></span><span><strong>Company</strong><small>We work as a business or team.</small></span></label></div></div>
+          <div class="profile-field provider-only" id="company-field" hidden><label for="companyName">Company or business name</label><input id="companyName" name="companyName" maxlength="120" placeholder="Your business name"></div>
+          <div class="profile-field provider-only"><label for="displayName">Name shown to customers</label><input id="displayName" name="displayName" maxlength="120" placeholder="Your name or business name"><small>For an individual, this can be your professional name.</small></div>
+          <div class="profile-field provider-only"><label for="bio">About your service</label><textarea id="bio" name="bio" maxlength="1000" rows="3" placeholder="Your experience, strengths and what customers can expect"></textarea></div>
+          <div class="profile-field provider-only"><label for="yearsExperience">Years of experience (optional)</label><input id="yearsExperience" name="yearsExperience" type="number" min="0" max="80" inputmode="numeric" placeholder="e.g. 3"></div>
+        </div>
+      </section>
+      <section class="profile-step" data-step="1" hidden>
+        <h3>Set your location</h3><p class="step-help">We’ll try to detect your current area. You can always search for a different location.</p>
+        <div class="location-detect-card"><span class="location-icon"><i data-lucide="locate-fixed"></i></span><div><strong>Find my current area</strong><small id="location-status">Allow location access to fill this in automatically.</small></div><button type="button" class="secondary-btn" id="detect-location">Use my location</button></div>
+        <div class="profile-field location-field"><label for="location">Your area, city or town</label><input id="location" name="location" required autocomplete="address-level2" maxlength="200" placeholder="Search a neighbourhood, town or landmark"><div class="suggestions" id="location-suggestions" hidden></div><small>Example: Ikeja, Lagos. Edit this field to choose another service area.</small></div>
+        <div class="profile-fields provider-only">
+          <div class="profile-field"><label for="serviceRadiusKm">How far can you travel?</label><select id="serviceRadiusKm" name="serviceRadiusKm"><option value="3">Within 3 km</option><option value="5">Within 5 km</option><option value="10" selected>Within 10 km</option><option value="20">Within 20 km</option><option value="30">Within 30 km</option><option value="50">Within 50 km</option></select><small>Choose the area you can realistically serve.</small></div>
+          <div class="profile-field"><label for="available">Booking availability</label><select id="available" name="available"><option value="true">Available for new bookings</option><option value="false">Not available right now</option></select></div>
+        </div>
+        <input type="hidden" id="latitude" name="latitude"><input type="hidden" id="longitude" name="longitude">
+      </section>
+      <section class="profile-step" data-step="2" hidden>
+        <div class="provider-only"><h3>What services do you offer?</h3><p class="step-help">Choose all that apply. These help Bradcall match you with relevant customers.</p>
+          <div class="skills-grid" id="skills-grid">
+            <label class="skill-option"><input type="checkbox" name="skills" value="Cleaning"><span><i data-lucide="sparkles"></i>Cleaning</span></label>
+            <label class="skill-option"><input type="checkbox" name="skills" value="Plumbing"><span><i data-lucide="wrench"></i>Plumbing</span></label>
+            <label class="skill-option"><input type="checkbox" name="skills" value="Electrical"><span><i data-lucide="zap"></i>Electrical</span></label>
+            <label class="skill-option"><input type="checkbox" name="skills" value="Moving"><span><i data-lucide="truck"></i>Moving & delivery</span></label>
+            <label class="skill-option"><input type="checkbox" name="skills" value="Painting"><span><i data-lucide="paintbrush"></i>Painting</span></label>
+            <label class="skill-option"><input type="checkbox" name="skills" value="Beauty"><span><i data-lucide="scissors"></i>Beauty & grooming</span></label>
+            <label class="skill-option"><input type="checkbox" name="skills" value="Catering"><span><i data-lucide="utensils"></i>Catering</span></label>
+            <label class="skill-option"><input type="checkbox" name="skills" value="Digital support"><span><i data-lucide="laptop"></i>Digital support</span></label>
+            <label class="skill-option"><input type="checkbox" name="skills" value="Other"><span><i data-lucide="plus"></i>Other</span></label>
+          </div>
+          <div class="first-service"><div class="first-service-heading"><span class="location-icon"><i data-lucide="clipboard-list"></i></span><div><strong>Add your first service (optional)</strong><small>You can publish more services from your dashboard later.</small></div></div>
+            <div class="profile-fields">
+              <div class="profile-field"><label for="serviceTitle">Service title</label><input id="serviceTitle" name="serviceTitle" maxlength="120" placeholder="e.g. Home and office cleaning"></div>
+              <div class="profile-field"><label for="serviceCategory">Category</label><select id="serviceCategory" name="serviceCategory"><option value="">Choose category</option><option>Cleaning</option><option>Plumbing</option><option>Electrical</option><option>Moving</option><option>Painting</option><option>Beauty</option><option>Catering</option><option>Digital support</option><option>Other</option></select></div>
+              <div class="profile-field full-field"><label for="serviceDescription">What does it include?</label><textarea id="serviceDescription" name="serviceDescription" rows="3" maxlength="1500" placeholder="Describe the service and what customers can expect"></textarea></div>
+              <div class="profile-field"><label for="servicePrice">Starting price (₦)</label><input id="servicePrice" name="servicePrice" type="number" min="0" step="100" inputmode="numeric" placeholder="e.g. 15000"></div>
+            </div>
+          </div>
+        </div>
+        <div class="customer-only"><h3>What kind of help do you usually need?</h3><p class="step-help">Optional — choose categories to personalise your browsing.</p><div class="skills-grid customer-interest-grid">
+          <label class="skill-option"><input type="checkbox" name="interests" value="Cleaning"><span><i data-lucide="sparkles"></i>Cleaning</span></label><label class="skill-option"><input type="checkbox" name="interests" value="Plumbing"><span><i data-lucide="wrench"></i>Plumbing</span></label><label class="skill-option"><input type="checkbox" name="interests" value="Electrical"><span><i data-lucide="zap"></i>Electrical</span></label><label class="skill-option"><input type="checkbox" name="interests" value="Moving"><span><i data-lucide="truck"></i>Moving</span></label><label class="skill-option"><input type="checkbox" name="interests" value="Beauty"><span><i data-lucide="scissors"></i>Beauty</span></label><label class="skill-option"><input type="checkbox" name="interests" value="Other"><span><i data-lucide="plus"></i>Other</span></label>
+        </div><p class="optional-note">You can skip this and browse all available services.</p></div>
+      </section>
+      <section class="profile-step" data-step="3" hidden>
+        <h3>Review your details</h3><p class="step-help">Check your profile before saving. You can update these details later.</p>
+        <div class="review-profile" id="review-profile"></div>
+        <div class="privacy-note"><i data-lucide="shield-check"></i><p><strong>Your exact location stays private.</strong><br>Bradcall uses rounded coordinates for nearby discovery. Your exact location is not displayed as a public home pin.</p></div>
+        <label class="profile-consent"><input type="checkbox" id="confirm-details" required><span>I confirm these profile details are accurate and I’m comfortable using this service area for nearby discovery.</span></label>
+      </section>
+      <div class="profile-form-actions"><button type="button" class="secondary-btn" id="back-step" hidden>Back</button><button type="button" class="primary-btn" id="next-step">Continue <i data-lucide="arrow-right"></i></button><button type="submit" class="primary-btn" id="save-profile" hidden>Save profile <i data-lucide="check"></i></button></div>
+      <button class="skip-setup" type="button" id="skip-setup">I'll finish this later</button>
+    </form>
+  </section>
+</main>
+<footer class="site-footer profile-footer">Bradcall · Local services, made simpler.</footer>
+<script src="https://unpkg.com/lucide@latest" defer></script><script src="marketplace.js"></script><script src="profile-setup.js"></script>
+</body></html>
