@@ -2,7 +2,7 @@
   "use strict";
 
   const API = (window.BRADCALL_API_URL || (location.hostname === "localhost" || location.hostname === "127.0.0.1" ? "http://localhost:5000" : location.origin)).replace(/\/$/, "");
-  const GOOGLE_KEY = String(window.BRADCALL_GOOGLE_MAPS_API_KEY || "").trim();
+  const GOOGLE_KEY = String(window.BRADCALL_GOOGLE_MAPS_API_KEY || document.querySelector('meta[name="bradcall-google-maps-key"]')?.content || "").trim();
   const GEOAPIFY_KEY = String(window.BRADCALL_GEOAPIFY_API_KEY || "").trim();
   const root = document.querySelector("[data-community-map]");
   if (!root) return;
