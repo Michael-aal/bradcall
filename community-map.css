@@ -3,7 +3,7 @@
 
 
 .community-map-search { position: relative; }
-.community-map-suggestions { position: absolute; z-index: 1000; left: 0; right: 0; top: calc(100% - 1.5rem); max-height: 16rem; overflow-y: auto; border: 1px solid #d8dce2; border-radius: 12px; background: #fff; box-shadow: 0 12px 28px rgba(20, 24, 32, .14); }
+.community-map-suggestions { position: absolute; z-index: 1000; left: 0; right: 0; top: 3.25rem; max-height: 16rem; overflow-y: auto; border: 1px solid #d8dce2; border-radius: 12px; background: #fff; box-shadow: 0 12px 28px rgba(20, 24, 32, .14); }
 .community-map-suggestions[hidden] { display: none; }
 .community-map-suggestion { display: block; width: 100%; border: 0; border-bottom: 1px solid #eef0f3; padding: .8rem 1rem; background: #fff; color: #20252b; text-align: left; cursor: pointer; font: inherit; }
 .community-map-suggestion:last-child { border-bottom: 0; }
