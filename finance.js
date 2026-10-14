@@ -8,7 +8,7 @@ const moneyKobo=v=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN
 const moneyNaira=v=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(v)||0);
 const date=v=>v?new Date(v).toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"}):"—";
 const personalCategories=["Service income","Salary","Sales","Transport","Materials","Data & airtime","Food","Rent","Utilities","Equipment","Marketing","Fees","Savings","Other"];
-const companyCategories=["Commission","Subscription","Other income","Staff","Hosting & software","Marketing","Operations","Professional services","Refunds","Other"];
+const companyCategories=["Subscription","Other income","Staff","Hosting & software","Marketing","Operations","Professional services","Refunds","Other"];
 let user=null,scope="personal",entries=[],summary=null;
 async function api(path,opts={}){const response=await fetch(API+path,{...opts,headers:{"Content-Type":"application/json",Authorization:"Bearer "+token(),...(opts.headers||{})}});if(response.status===204)return null;const data=await response.json().catch(()=>({message:"Unexpected server response"}));if(!response.ok)throw Error(data.message||"Request failed.");return data;}
 function notice(text,type=""){const el=$("#finance-notice");el.textContent=text;el.className="dash-notice"+(type?" "+type:"");el.hidden=false;}
