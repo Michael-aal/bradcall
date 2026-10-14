@@ -83,19 +83,43 @@
     return Boolean(window.google?.maps?.Map);
   }
 
-  function loadLeaflet() {
-    return new Promise((resolve, reject) => {
-      if (window.L) return resolve();
-      if (!document.querySelector("link[data-bradcall-leaflet]")) {
-        const css = document.createElement("link");
-        css.rel = "stylesheet";
-        css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        css.dataset.bradcallLeaflet = "true";
-        document.head.appendChild(css);
+  async function loadLeaflet() {
+    if (window.L) return;
+
+    // Use a second CDN so a blocked or unavailable unpkg host doesn't leave a blank map.
+    if (!document.querySelector("link[data-bradcall-leaflet-css]")) {
+      const css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css";
+      css.dataset.bradcallLeafletCss = "true";
+      document.head.appendChild(css);
+    }
+
+    const sources = [
+      "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js",
+      "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    ];
+    let lastError;
+    for (const src of sources) {
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src;
+          script.async = true;
+          script.dataset.bradcallLeafletRuntime = "true";
+          script.onload = () => window.L ? resolve() : reject(new Error("Leaflet loaded without initializing."));
+          script.onerror = () => {
+            script.remove();
+            reject(new Error("A map library CDN could not be reached."));
+          };
+          document.head.appendChild(script);
+        });
+        if (window.L) return;
+      } catch (error) {
+        lastError = error;
       }
-      loadScript("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js", "data-bradcall-leaflet")
-        .then(resolve).catch(reject);
-    });
+    }
+    throw lastError || new Error("The map library could not load. Check your internet connection and retry.");
   }
 
   async function initializeMap() {
@@ -125,10 +149,21 @@
     mapProvider = "leaflet";
     await loadLeaflet();
     map = window.L.map(mapNode, { scrollWheelZoom: false }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
-    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    const osmTiles = window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
     }).addTo(map);
+    let tileFallbackUsed = false;
+    osmTiles.once("tileerror", () => {
+      if (tileFallbackUsed) return;
+      tileFallbackUsed = true;
+      map.removeLayer(osmTiles);
+      window.L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        subdomains: "abcd",
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+      }).addTo(map);
+    });
     layer = window.L.layerGroup().addTo(map);
     routeLayer = window.L.layerGroup().addTo(map);
     coverage = window.L.circle([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], {
@@ -430,6 +465,20 @@
     if (!event.target.closest(".community-map-search")) hideSuggestions();
   });
   initializeMap().then(() => {
+    const resizeMap = () => {
+      if (!map) return;
+      if (mapProvider === "google") google.maps.event.trigger(map, "resize");
+      else map.invalidateSize({ pan: false });
+    };
+    window.addEventListener("load", resizeMap, { once: true });
+    window.addEventListener("resize", resizeMap);
+    requestAnimationFrame(() => requestAnimationFrame(resizeMap));
     say("Map ready. Use device location or search for an area. Geoapify powers address suggestions and in-map driving routes.");
-  }).catch(error => say(error.message || "Could not load the community map."));
+  }).catch(error => {
+    say(error.message || "Could not load the community map. Check your connection and reload this page.");
+    if (mapNode) {
+      mapNode.setAttribute("role", "status");
+      mapNode.innerHTML = '<div class="community-map-load-error">The map could not load. Check your internet connection, then reload the page.</div>';
+    }
+  });
 })();

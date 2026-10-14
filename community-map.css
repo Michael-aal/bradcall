@@ -8,3 +8,5 @@
 .community-map-suggestion { display: block; width: 100%; border: 0; border-bottom: 1px solid #eef0f3; padding: .8rem 1rem; background: #fff; color: #20252b; text-align: left; cursor: pointer; font: inherit; }
 .community-map-suggestion:last-child { border-bottom: 0; }
 .community-map-suggestion:hover, .community-map-suggestion:focus { background: #f2faf8; outline: 2px solid #019E81; outline-offset: -2px; }
+
+.community-map-load-error{min-height:inherit;display:grid;place-items:center;padding:24px;text-align:center;color:#52665e;background:linear-gradient(135deg,#edf5f1,#e5efe9);font:600 14px/1.6 'DM Sans',sans-serif}
