@@ -150,9 +150,9 @@ router.post("/insights", async (req, res) => {
     };
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json", "HTTP-Referer": process.env.APP_URL || "https://bradcall.vercel.app", "X-Title": "Bradcall Finance Insights" },
+      headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json", "HTTP-Referer": process.env.OPENROUTER_SITE_URL || process.env.APP_URL || "https://bradcall.vercel.app", "X-OpenRouter-Title": process.env.OPENROUTER_SITE_NAME || "Bradcall Finance Insights" },
       body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+        model: process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-super-120b-a12b:free",
         temperature: 0.2,
         max_tokens: 450,
         messages: [
