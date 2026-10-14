@@ -46,3 +46,20 @@ test("caps result count and tolerates empty data", () => {
   assert.deepEqual(buildOpportunitySignals({ requests: [], listings: [] }), []);
   assert.ok(buildOpportunitySignals({ requests, listings, limit: 100 }).length <= 20);
 });
+
+test("suggests related categories only when at least three distinct customers booked both in one area", async () => {
+  const { buildRelatedServiceGraph } = await import("../src/lib/opportunities.js");
+  const rows = [
+    { partnerId: "c1", service: { location: "Ikeja", category: { name: "Cleaning" } } },
+    { partnerId: "c1", service: { location: "Ikeja", category: { name: "Plumbing" } } },
+    { partnerId: "c2", service: { location: "Ikeja", category: { name: "Cleaning" } } },
+    { partnerId: "c2", service: { location: "Ikeja", category: { name: "Plumbing" } } },
+    { partnerId: "c3", service: { location: "Ikeja", category: { name: "Cleaning" } } },
+    { partnerId: "c3", service: { location: "Ikeja", category: { name: "Plumbing" } } },
+    { partnerId: "c4", service: { location: "Yaba", category: { name: "Cleaning" } } },
+    { partnerId: "c4", service: { location: "Yaba", category: { name: "Painting" } } }
+  ];
+  const result = buildRelatedServiceGraph({ requests: rows, category: "cleaning" });
+  assert.deepEqual(result, [{ category: "Plumbing", area: "Ikeja", sharedCustomers: 3 }]);
+  assert.equal(JSON.stringify(result).includes("partnerId"), false);
+});
