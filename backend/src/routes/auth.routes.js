@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { auth } from "../middleware/auth.js";
 const router=Router(), POLICY_VERSION="2026-10-12-v1";
-const publicUser=u=>({id:u.id,name:u.name,email:u.email,role:u.role,status:u.status,provider:u.provider?{id:u.provider.id,displayName:u.provider.displayName,phone:u.provider.phone,bio:u.provider.bio,location:u.provider.location,latitude:u.provider.latitude,longitude:u.provider.longitude,serviceRadiusKm:u.provider.serviceRadiusKm,available:u.provider.available,verified:u.provider.verified}:undefined});
+const publicUser=u=>({id:u.id,name:u.name,email:u.email,role:u.role,status:u.status,provider:u.provider?{id:u.provider.id,displayName:u.provider.displayName,providerType:u.provider.providerType,primaryCategory:u.provider.primaryCategory,phone:u.provider.phone,bio:u.provider.bio,location:u.provider.location,latitude:u.provider.latitude,longitude:u.provider.longitude,serviceRadiusKm:u.provider.serviceRadiusKm,available:u.provider.available,verified:u.provider.verified}:undefined});
 const sign=u=>{if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)throw new Error("JWT_SECRET must be configured with at least 32 characters");return jwt.sign({id:u.id},process.env.JWT_SECRET,{expiresIn:"7d"});};
 router.post("/register",async(req,res,next)=>{try{
  const name=typeof req.body.name==="string"?req.body.name.trim():"",email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"",password=typeof req.body.password==="string"?req.body.password:"",role=req.body.role||"PARTNER";
