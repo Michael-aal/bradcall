@@ -174,6 +174,7 @@
       layer.forEach(marker => marker.setMap(null));
       layer = [];
       routeLayer.set("directions", null);
+      if (geoRouteLine) { geoRouteLine.setMap(null); geoRouteLine = null; }
     } else {
       layer.clearLayers();
       routeLayer.clearLayers();
