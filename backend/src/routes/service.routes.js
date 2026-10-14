@@ -18,6 +18,35 @@ router.get("/mine", auth, roles("PROVIDER", "ADMIN"), async (req, res, next) => 
   } catch (error) { next(error); }
 });
 
+router.get("/opportunities", auth, roles("PROVIDER"), async (req, res, next) => {
+  try {
+    const provider = await prisma.providerProfile.findUnique({
+      where: { userId: req.user.id },
+      include: { services: { select: { location: true } } }
+    });
+    if (!provider) return res.status(404).json({ message: "Create your provider profile to see local opportunities." });
+
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [requests, listings] = await Promise.all([
+      prisma.serviceRequest.findMany({
+        where: { createdAt: { gte: since }, status: { in: ["PENDING", "ACCEPTED", "IN_PROGRESS", "COMPLETED"] } },
+        select: { partnerId: true, service: { select: { location: true, category: { select: { name: true } } } } },
+        take: 5000
+      }),
+      prisma.service.findMany({
+        where: { active: true, provider: { available: true } },
+        select: { providerId: true, location: true, category: { select: { name: true } }, provider: { select: { id: true } } },
+        take: 5000
+      })
+    ]);
+    const { buildOpportunitySignals } = await import("../lib/opportunities.js");
+    const providerLocations = [provider.location, ...provider.services.map(service => service.location)].filter(Boolean);
+    const opportunities = buildOpportunitySignals({ requests, listings, providerLocations, limit: 10 });
+    res.set("Cache-Control", "private, max-age=60");
+    res.json({ lookbackDays: 30, generatedAt: new Date().toISOString(), opportunities });
+  } catch (error) { next(error); }
+});
+
 router.get("/", async (req, res, next) => {
   try {
     const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
