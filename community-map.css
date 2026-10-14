@@ -9,4 +9,17 @@
 .community-map-suggestion:last-child { border-bottom: 0; }
 .community-map-suggestion:hover, .community-map-suggestion:focus { background: #f2faf8; outline: 2px solid #019E81; outline-offset: -2px; }
 
+
+/* Map controls stack cleanly on touch screens; the map stays within the viewport. */
+.community-map-section, .community-map-lower, .community-map-heading { min-width: 0; }
+.community-map-canvas { width: 100%; max-width: 100%; }
+@media (max-width: 650px) {
+  .community-map-section { margin-inline: 0; }
+  .community-map-search { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; }
+  .community-map-search input, .community-map-search button { width: 100%; min-width: 0; min-height: 46px; font-size: 16px; }
+  .community-map-canvas { height: min(62vh, 330px); min-height: 250px; border-radius: 14px; }
+  .community-map-lower { grid-template-columns: minmax(0, 1fr); }
+  .community-map-key { gap: 8px 12px; }
+}
+
 .community-map-load-error{min-height:inherit;display:grid;place-items:center;padding:24px;text-align:center;color:#52665e;background:linear-gradient(135deg,#edf5f1,#e5efe9);font:600 14px/1.6 'DM Sans',sans-serif}
