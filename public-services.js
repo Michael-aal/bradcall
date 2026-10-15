@@ -27,8 +27,8 @@ async function loadProviders(){const host=$("#provider-directory-results");if(!h
 const viewButtons=[...document.querySelectorAll("[data-market-view]")];let marketView="services";viewButtons.forEach(button=>button.addEventListener("click",()=>{marketView=button.dataset.marketView;viewButtons.forEach(b=>{const active=b.dataset.marketView===marketView;b.classList.toggle("secondary",!active);b.setAttribute("aria-pressed",String(active));});$("#public-service-results").hidden=marketView!=="services";$("#provider-directory-results").hidden=marketView!=="providers";if(marketView==="providers")loadProviders();else load();}));
 
 const searchParams=new URLSearchParams(location.search);if($("#public-service-query")&&searchParams.get("q"))$("#public-service-query").value=searchParams.get("q");
-const form=$("#public-service-search");if(form)form.addEventListener("submit",e=>{e.preventDefault();load();});
-$("#public-service-category")?.addEventListener("change",load);
+const form=$("#public-service-search");if(form)form.addEventListener("submit",e=>{e.preventDefault();marketView==="providers"?loadProviders():load();});
+$("#public-service-category")?.addEventListener("change",()=>marketView==="providers"?loadProviders():load());
 $("#public-service-near-me")?.addEventListener("click",()=>{if(!navigator.geolocation){alert("This browser does not support location services.");return;}$("#public-service-results").innerHTML='<div class="dash-empty">Finding services near your area…</div>';navigator.geolocation.getCurrentPosition(pos=>{nearbyCoordinates={latitude:pos.coords.latitude,longitude:pos.coords.longitude};nearbyRadiusKm=10;load();},()=>{$("#public-service-results").innerHTML='<div class="dash-empty">Location permission was not granted or device location is off. Enable location in your device settings, then try again.</div>';},{enableHighAccuracy:false,timeout:10000,maximumAge:60000});});
 load();
 })();
