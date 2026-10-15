@@ -1,15 +1,22 @@
+-- Safe to retry if a previous deployment applied only part of this migration.
 ALTER TABLE "User"
-  ADD COLUMN "phone" TEXT,
-  ADD COLUMN "location" TEXT,
-  ADD COLUMN "latitude" DOUBLE PRECISION,
-  ADD COLUMN "longitude" DOUBLE PRECISION,
-  ADD COLUMN "profileCompletedAt" TIMESTAMP(3),
-  ADD COLUMN "interests" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
+  ADD COLUMN IF NOT EXISTS "phone" TEXT,
+  ADD COLUMN IF NOT EXISTS "location" TEXT,
+  ADD COLUMN IF NOT EXISTS "latitude" DOUBLE PRECISION,
+  ADD COLUMN IF NOT EXISTS "longitude" DOUBLE PRECISION,
+  ADD COLUMN IF NOT EXISTS "profileCompletedAt" TIMESTAMP(3),
+  ADD COLUMN IF NOT EXISTS "interests" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
 
-CREATE TYPE "ProviderType" AS ENUM ('INDIVIDUAL', 'COMPANY');
+DO $$
+BEGIN
+  CREATE TYPE "ProviderType" AS ENUM ('INDIVIDUAL', 'COMPANY');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
 
 ALTER TABLE "ProviderProfile"
-  ADD COLUMN "providerType" "ProviderType" NOT NULL DEFAULT 'INDIVIDUAL',
-  ADD COLUMN "companyName" TEXT,
-  ADD COLUMN "skills" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
-  ADD COLUMN "yearsExperience" INTEGER;
+  ADD COLUMN IF NOT EXISTS "providerType" "ProviderType" NOT NULL DEFAULT 'INDIVIDUAL',
+  ADD COLUMN IF NOT EXISTS "companyName" TEXT,
+  ADD COLUMN IF NOT EXISTS "skills" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+  ADD COLUMN IF NOT EXISTS "yearsExperience" INTEGER;
