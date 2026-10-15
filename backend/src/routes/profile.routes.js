@@ -11,7 +11,7 @@ router.get("/", auth, async (req, res, next) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id }, include: { provider: true } });
     if (!user) return res.status(404).json({ message: "Account not found." });
     res.json({ profile: {
-      id: user.id, name: user.name, email: user.email, phone: user.phone,
+      id: user.id, name: user.name, email: user.email, phone: user.phone, state: user.state,
       location: user.location, latitude: user.latitude, longitude: user.longitude, interests: user.interests,
       profileCompletedAt: user.profileCompletedAt, profileComplete: Boolean(user.profileCompletedAt),
       role: user.role,
@@ -32,6 +32,7 @@ router.patch("/", auth, async (req, res, next) => {
   try {
     const name = clean(req.body.name, 100);
     const phone = clean(req.body.phone, 30);
+    const state = clean(req.body.state, 80);
     const location = clean(req.body.location, 200);
     const bio = clean(req.body.bio, 1000);
     const providerType = req.body.providerType === "COMPANY" ? "COMPANY" : "INDIVIDUAL";
@@ -52,7 +53,7 @@ router.patch("/", auth, async (req, res, next) => {
       latitude = Math.round(latitude * 1000) / 1000;
       longitude = Math.round(longitude * 1000) / 1000;
     }
-    if (!name || !phone || !location) return res.status(400).json({ message: "Enter your name, phone number, and service area to continue." });
+    if (!name || !phone || !state || !location) return res.status(400).json({ message: "Enter your name, phone number, state, and service area to continue." });
     if (!/^\+?[0-9 ()-]{7,30}$/.test(phone)) return res.status(400).json({ message: "Enter a valid phone number." });
     if (req.user.role === "PROVIDER") {
       if (providerType === "COMPANY" && !companyName) return res.status(400).json({ message: "Enter your company name." });
@@ -65,7 +66,7 @@ router.patch("/", auth, async (req, res, next) => {
       ? Boolean(location && phone && displayName && (providerType !== "COMPANY" || companyName))
       : Boolean(location && phone);
     const user = await prisma.user.update({ where: { id: req.user.id }, data: {
-      name, phone, location, latitude, longitude, interests,
+      name, phone, state, location, latitude, longitude, interests,
       profileCompletedAt: profileComplete ? new Date() : null
     }});
     let provider = null;
@@ -77,7 +78,7 @@ router.patch("/", auth, async (req, res, next) => {
       }});
     }
     res.json({ profile: {
-      id: user.id, name: user.name, email: user.email, phone: user.phone,
+      id: user.id, name: user.name, email: user.email, phone: user.phone, state: user.state,
       location: user.location, latitude: user.latitude, longitude: user.longitude,
       profileCompletedAt: user.profileCompletedAt, profileComplete: Boolean(user.profileCompletedAt),
       role: user.role,
