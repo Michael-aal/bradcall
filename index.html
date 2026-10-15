@@ -5,17 +5,17 @@
 <meta name="description" content="Find trusted local services or turn your skills into work with Bradcall, a Nigerian community marketplace.">
 <meta name="theme-color" content="#092b20"><meta property="og:title" content="Bradcall — Your skill. Your hustle. Your people."><meta property="og:description" content="Find local help or get discovered for the work you do. Built for Nigeria.">
 <title>Bradcall — Your skill. Your hustle. Your people.</title>
-<link rel="preconnect" href="https://images.unsplash.com"><link rel="stylesheet" href="assets/css/bradcall.css"><script src="https://unpkg.com/lucide@latest" defer></script>
+<link rel="preconnect" href="https://images.unsplash.com"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/bradcall.css"><link rel="stylesheet" href="community-map.css"><script src="https://unpkg.com/lucide@latest" defer></script>
 </head>
 <body class="bradcall-home">
 <a class="skip-link" href="#main-content">Skip to content</a>
 <header class="topbar home-topbar">
 <a class="brand" href="index.html" aria-label="Bradcall home"><span aria-hidden="true">B</span><strong>bradcall</strong></a>
-<nav id="desktop-nav" aria-label="Primary navigation"><a href="#explore">Explore</a><a href="#how">How it works</a><a href="#earn">Earn with Bradcall</a></nav>
+<nav id="desktop-nav" aria-label="Primary navigation"><a href="#live-map">Map</a><a href="#explore">Explore</a><a href="#how">How it works</a><a href="#earn">Earn with Bradcall</a></nav>
 <div class="actions"><a class="home-login" href="login.html">Log in</a><a class="home-join" href="register.html">Get started <i data-lucide="arrow-up-right"></i></a></div>
 <button class="hamb" id="hamb" type="button" aria-label="Open navigation" aria-controls="mobile-nav" aria-expanded="false"><i data-lucide="menu"></i></button>
 </header>
-<div class="mobile-nav" id="mobile-nav" hidden><div class="mobile-nav-panel"><div class="mobile-nav-head"><strong>Menu</strong><button id="mobile-close" type="button" aria-label="Close navigation"><i data-lucide="x"></i></button></div><nav aria-label="Mobile navigation"><a href="#explore">Explore services</a><a href="#how">How it works</a><a href="#earn">Earn with Bradcall</a></nav><div class="mobile-actions"><a class="home-login" href="login.html">Log in</a><a class="home-join" href="register.html">Get started</a></div></div></div>
+<div class="mobile-nav" id="mobile-nav" hidden><div class="mobile-nav-panel"><div class="mobile-nav-head"><strong>Menu</strong><button id="mobile-close" type="button" aria-label="Close navigation"><i data-lucide="x"></i></button></div><nav aria-label="Mobile navigation"><a href="#live-map">Explore the map</a><a href="#explore">Explore services</a><a href="#how">How it works</a><a href="#earn">Earn with Bradcall</a></nav><div class="mobile-actions"><a class="home-login" href="login.html">Log in</a><a class="home-join" href="register.html">Get started</a></div></div></div>
 <main id="main-content">
 <section class="hero home-hero">
 <div class="hero-copy">
@@ -31,6 +31,12 @@
 <div class="hero-photo-small"><img src="https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=650&q=85" alt="Skilled tradesperson working on a home project" loading="lazy"></div>
 <div class="hero-sticker"><i data-lucide="handshake"></i><span>One community.<br><b>Plenty ways to earn.</b></span></div>
 </div>
+</section>
+<section class="community-map-section home-community-map" data-community-map id="live-map">
+<div class="community-map-heading"><div><div class="eyebrow">DISCOVER NEAR YOU</div><h2>Find active service providers around you</h2><p>Explore the map, search an area, and open a provider profile before you book. Your precise location is never shown publicly.</p></div></div>
+<div class="community-map-search"><input id="community-map-search" aria-label="Search an area or landmark" placeholder="Search an area, street or landmark" autocomplete="off"><select id="community-map-radius" aria-label="Search radius"><option value="5">Within 5 km</option><option value="10" selected>Within 10 km</option><option value="25">Within 25 km</option><option value="50">Within 50 km</option></select><button id="community-map-submit" class="dark" type="button">Use my location</button><p id="community-map-location-status">Allow location access to centre the map on your area, or search for a place above.</p></div>
+<div class="community-map-key"><span><i></i> Available providers</span><span><i class="coverage"></i> Approximate service radius</span></div>
+<div class="community-map-workspace"><aside class="community-map-sidepanel" aria-label="Nearby provider results"><div class="community-map-sidehead"><h3>Providers in this area</h3><span>Live listings</span></div><div id="community-map-list"><div class="map-empty-state">Move the map or search an area to discover available providers.</div></div><p id="community-map-caption" class="community-map-caption" role="status">Loading community map…</p><div class="map-privacy-note">Pins show approximate service areas, not private home addresses. Only available providers with saved coordinates appear as map pins.</div></aside><div id="community-map-canvas" class="community-map-canvas" role="application" aria-label="Wide interactive map of nearby service providers"></div></div>
 </section>
 <section class="value-strip" aria-label="Bradcall principles"><div><span>01</span><b>Find local people</b><small>Search by skill, service and area.</small></div><div><span>02</span><b>Show what you can do</b><small>Publish real services and get discovered.</small></div><div><span>03</span><b>Connect directly</b><small>Discuss the work and agree on details.</small></div><div><span>04</span><b>Build your reputation</b><small>Grow through real completed jobs and reviews.</small></div></section>
 <section class="section home-explore" id="explore"><div class="section-head"><div><div class="eyebrow">EXPLORE THE COMMUNITY</div><h2>Somebody for the job.<br><em>Somewhere near you.</em></h2><p>Browse by the kind of help you need. These categories help you search; actual service listings below come from Bradcall.</p></div><a class="section-link" href="services.html">Explore marketplace <i data-lucide="arrow-up-right"></i></a></div>
@@ -48,5 +54,5 @@
 <section class="cta home-final"><div><div class="eyebrow light">ONE COMMUNITY. MANY SKILLS.</div><h2>Wetin you need?<br>Wetin you fit offer?</h2><p>Start from where you are. Find help or put your skill in front of people who need it.</p></div><div class="cta-actions"><a class="home-join" href="services.html">I need a service</a><a class="home-outline" href="register.html?role=PROVIDER">I offer a service</a></div></section>
 </main>
 <footer class="home-footer"><a class="brand" href="index.html"><span>B</span><strong>bradcall</strong></a><span>Local services. Clearer connections across Nigeria.</span><div><a href="policies.html">Policies</a><a href="help-center.html">Help</a><span>© 2026 Bradcall</span></div></footer>
-<script src="config.js"></script><script src="assets/js/bradcall.js" defer></script>
+<script src="config.js"></script><script src="community-map.js" defer></script><script src="assets/js/bradcall.js" defer></script>
 </body></html>
