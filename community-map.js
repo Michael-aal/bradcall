@@ -31,6 +31,7 @@
   let searchCenter = null;
   let searchRadiusKm = 10;
   let searchSequence = 0;
+  let viewportTimer = null;
   const geocodeCache = new Map();
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -152,7 +153,7 @@
     }
     mapProvider = "leaflet";
     await loadLeaflet();
-    map = window.L.map(mapNode, { scrollWheelZoom: false }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
+    map = window.L.map(mapNode, { scrollWheelZoom: true }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
     const osmTiles = window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
@@ -324,7 +325,7 @@
     }
   }
 
-  async function refresh(selectedPoint) {
+  async function refresh(selectedPoint, preserveViewport = false) {
     const sequence = ++searchSequence;
     await initializeMap();
     if (!selectedPoint) {
@@ -334,14 +335,16 @@
     searchCenter = { lat: Number(selectedPoint.lat), lng: Number(selectedPoint.lng) };
     searchRadiusKm = selectedRadius();
     if (mapProvider === "google") {
-      map.setCenter(searchCenter);
-      map.setZoom(zoomForRadius(searchRadiusKm));
+      if (!preserveViewport) {
+        map.setCenter(searchCenter);
+        map.setZoom(zoomForRadius(searchRadiusKm));
+      }
       coverage.setCenter(searchCenter);
       coverage.setRadius(searchRadiusKm * 1000);
       coverage.setMap(map);
       routeLayer.set("directions", null);
     } else {
-      map.setView([searchCenter.lat, searchCenter.lng], zoomForRadius(searchRadiusKm));
+      if (!preserveViewport) map.setView([searchCenter.lat, searchCenter.lng], zoomForRadius(searchRadiusKm));
       coverage.setLatLng([searchCenter.lat, searchCenter.lng]);
       coverage.setRadius(searchRadiusKm * 1000);
       coverage.addTo(map);
@@ -383,6 +386,27 @@
     say("Showing " + markedProviders.size + " available provider" + (markedProviders.size === 1 ? "" : "s") +
       " within " + searchRadiusKm + " km. " + marked + " privacy-rounded service-area marker" + (marked === 1 ? "" : "s") +
       " displayed. Listings without saved device coordinates remain in the list but do not get a map pin.");
+  }
+
+  function refreshFromViewport() {
+    clearTimeout(viewportTimer);
+    viewportTimer = setTimeout(() => {
+      if (!map) return;
+      const center = mapProvider === "google" ? map.getCenter() : map.getCenter();
+      const point = mapProvider === "google"
+        ? { lat: center?.lat(), lng: center?.lng() }
+        : { lat: center?.lat, lng: center?.lng };
+      const zoom = Number(mapProvider === "google" ? map.getZoom() : map.getZoom());
+      if (!Number.isFinite(point.lat) || !Number.isFinite(point.lng) || !Number.isFinite(zoom)) return;
+      const radius = zoom >= 13 ? 5 : zoom >= 11 ? 10 : zoom >= 9 ? 25 : 50;
+      const sameCentre = searchCenter &&
+        Math.abs(point.lat - searchCenter.lat) < 0.005 &&
+        Math.abs(point.lng - searchCenter.lng) < 0.005;
+      if (sameCentre && radius === searchRadiusKm) return;
+      searchRadiusKm = radius;
+      if (radiusSelect) radiusSelect.value = String(radius);
+      refresh(point, true);
+    }, 450);
   }
 
   function requestDeviceLocation() {
@@ -507,8 +531,10 @@
     };
     window.addEventListener("load", resizeMap, { once: true });
     window.addEventListener("resize", resizeMap);
+    if (mapProvider === "google") map.addListener("idle", refreshFromViewport);
+    else map.on("moveend zoomend", refreshFromViewport);
     requestAnimationFrame(() => requestAnimationFrame(resizeMap));
-    say("Map ready. Use device location or search for an area. Geoapify powers address suggestions and in-map driving routes.");
+    say("Map ready. Search an area or use your location, then pan and zoom to discover providers in each area. Geoapify powers address suggestions and in-map driving routes.");
     // Centre automatically only when the visitor has already granted location access.
     if (navigator.permissions?.query) {
       navigator.permissions.query({ name: "geolocation" }).then(permission => {
