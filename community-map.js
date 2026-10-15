@@ -444,9 +444,14 @@
       } finally {
         button.disabled = false;
       }
-    }, () => {
-      if (locationStatus) locationStatus.textContent = "Turn on device location and allow browser access, then try again.";
-      say("Location permission is needed to show nearby service areas.");
+    }, error => {
+      const message = error?.code === 1
+        ? "Location permission is off. Search an area or enable location in your browser settings."
+        : error?.code === 3
+          ? "Location lookup timed out. Try again or search for an area."
+          : "We couldn't determine your location. Try again or search for an area.";
+      if (locationStatus) locationStatus.textContent = message;
+      say(message);
       button.disabled = false;
     }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 });
   }
@@ -478,19 +483,30 @@
 
   async function loadSuggestions(query) {
     const sequence = ++autocompleteSequence;
-    if (query.trim().length < 2) return hideSuggestions();
+    const term = query.trim();
+    if (term.length < 2) return hideSuggestions();
     try {
-      const response = await fetch(API + "/api/maps/autocomplete?q=" + encodeURIComponent(query.trim()));
+      const response = await fetch(API + "/api/maps/autocomplete?q=" + encodeURIComponent(term));
       const data = await response.json().catch(() => ({}));
-      if (sequence !== autocompleteSequence || !response.ok) return hideSuggestions();
+      if (sequence !== autocompleteSequence) return;
+      if (!response.ok) {
+        hideSuggestions();
+        say(response.status === 503
+          ? "The base map still works, but area search is not configured on the backend. Check Render's MAPS_API_KEY."
+          : "Area suggestions are temporarily unavailable. You can still use your location or move around the map.");
+        return;
+      }
       const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
       suggestionBox.innerHTML = suggestions.map((item, index) =>
         '<button type="button" class="community-map-suggestion" role="option" data-suggestion-index="' + index + '">' + esc(item.formatted) + '</button>'
       ).join("");
       suggestionBox.hidden = suggestions.length === 0;
       suggestionBox._items = suggestions;
+      if (!suggestions.length) say("No matching areas found. Try a nearby landmark or town.");
     } catch {
+      if (sequence !== autocompleteSequence) return;
       hideSuggestions();
+      say("Area suggestions could not connect. The base map still works; try your location or move around the map.");
     }
   }
 
@@ -534,12 +550,19 @@
     if (mapProvider === "google") map.addListener("idle", refreshFromViewport);
     else map.on("moveend zoomend", refreshFromViewport);
     requestAnimationFrame(() => requestAnimationFrame(resizeMap));
-    say("Map ready. Search an area or use your location, then pan and zoom to discover providers in each area. Geoapify powers address suggestions and in-map driving routes.");
-    // Centre automatically only when the visitor has already granted location access.
+    say("Map ready. The base map works independently; Geoapify powers area search and driving routes. Allow location to see nearby providers, or search any area.");
+    // This page is explicitly a nearby-services map, so ask for location on entry.
+    // The browser controls permission; a denied permission never blocks manual area search.
     if (navigator.permissions?.query) {
       navigator.permissions.query({ name: "geolocation" }).then(permission => {
-        if (permission.state === "granted") requestDeviceLocation();
-      }).catch(() => {});
+        if (permission.state === "denied") {
+          if (locationStatus) locationStatus.textContent = "Location is blocked in browser settings. Search an area to explore services.";
+          return;
+        }
+        requestDeviceLocation();
+      }).catch(() => requestDeviceLocation());
+    } else {
+      requestDeviceLocation();
     }
   }).catch(error => {
     say(error.message || "Could not load the community map. Check your connection and reload this page.");
