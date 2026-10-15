@@ -15,7 +15,7 @@ async function deliverVerification(user,method,code){
   return;
  }
  if(!process.env.TERMII_API_KEY||!process.env.TERMII_SENDER_ID)throw new Error("SMS verification delivery is not configured.");
- const phone=String(user.phone||"").replace(/[^+\\d]/g,"");
+ const phone=String(user.phone||"").replace(/[^+\d]/g,"");
  const normalized=phone.startsWith("+")?phone.slice(1):phone.startsWith("0")?"234"+phone.slice(1):phone;
  const response=await fetch("https://api.ng.termii.com/api/sms/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to:normalized,from:process.env.TERMII_SENDER_ID,sms:text,type:"plain",channel:process.env.TERMII_CHANNEL||"generic",api_key:process.env.TERMII_API_KEY})});
  if(!response.ok)throw new Error("SMS verification delivery failed.");
@@ -34,15 +34,15 @@ router.post("/register",async(req,res,next)=>{try{
  const providerType=role==="PROVIDER"?(req.body.providerType||"INDIVIDUAL"):null;
  const phone=typeof req.body.phone==="string"?req.body.phone.trim():"",state=typeof req.body.state==="string"?req.body.state.trim():"",location=typeof req.body.location==="string"?req.body.location.trim():"",primaryCategory=typeof req.body.primaryCategory==="string"?req.body.primaryCategory.trim():"";
  const verificationMethod=req.body.verificationMethod==="PHONE"?"PHONE":"EMAIL";
- if(!name||name.length>100||!email||email.length>254||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||!password)return res.status(400).json({message:"Enter a valid name, email, and password."});
+ if(!name||name.length>100||!email||email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!password)return res.status(400).json({message:"Enter a valid name, email, and password."});
  if(password.length<8||password.length>128)return res.status(400).json({message:"Password must be between 8 and 128 characters."});
  if(!["PARTNER","PROVIDER"].includes(role))return res.status(400).json({message:"Invalid role."});
  if(!["EMAIL","PHONE"].includes(verificationMethod))return res.status(400).json({message:"Choose email or phone verification."});
  if(!state||state.length>80)return res.status(400).json({message:"Choose your state."});
  if(!location||location.length>120)return res.status(400).json({message:"Enter your town or area."});
- if(verificationMethod==="PHONE"&&(!phone||!/^\\+?[0-9 ()-]{7,30}$/.test(phone)))return res.status(400).json({message:"Enter a valid phone number to verify by SMS."});
+ if(verificationMethod==="PHONE"&&(!phone||!/^\+?[0-9 ()-]{7,30}$/.test(phone)))return res.status(400).json({message:"Enter a valid phone number to verify by SMS."});
  if(role==="PROVIDER"&&providerType!=="INDIVIDUAL")return res.status(400).json({message:"Choose a supported provider account type."});
- if(role==="PROVIDER"&&(!phone||phone.length>30||!/^\\+?[0-9 ()-]{7,30}$/.test(phone)))return res.status(400).json({message:"Enter a valid provider phone number."});
+ if(role==="PROVIDER"&&(!phone||phone.length>30||!/^\+?[0-9 ()-]{7,30}$/.test(phone)))return res.status(400).json({message:"Enter a valid provider phone number."});
  if(role==="PROVIDER"&&(!location||location.length>120||!primaryCategory||primaryCategory.length>80))return res.status(400).json({message:"Enter your service location and choose a service category."});
  if(req.body.acceptedPolicies!==true)return res.status(400).json({message:"You must accept the Terms of Service and Privacy Policy."});
  if(await prisma.user.findUnique({where:{email}}))return res.status(409).json({message:"Email already registered. Try logging in or verifying the existing account."});
@@ -52,7 +52,7 @@ router.post("/register",async(req,res,next)=>{try{
 }catch(e){next(e)}});
 router.post("/verify",async(req,res,next)=>{try{
  const email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"",code=typeof req.body.code==="string"?req.body.code.trim():"";
- if(!email||!/^\\d{6}$/.test(code))return res.status(400).json({message:"Enter your email and the six-digit verification code."});
+ if(!email||!/^\d{6}$/.test(code))return res.status(400).json({message:"Enter your email and the six-digit verification code."});
  const user=await prisma.user.findUnique({where:{email}});if(!user||!user.verificationRequired)return res.status(400).json({message:"No pending verification was found for this account."});
  const verified=user.verificationMethod==="PHONE"?user.phoneVerifiedAt:user.emailVerifiedAt;if(verified)return res.json({verified:true,message:"This account is already verified."});
  if(!user.verificationCodeHash||!user.verificationExpiresAt||user.verificationExpiresAt<new Date())return res.status(400).json({message:"This code has expired. Request a new code."});
