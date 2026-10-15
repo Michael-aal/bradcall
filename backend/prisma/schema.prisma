@@ -81,6 +81,7 @@ model User {
  email String @unique
  passwordHash String
  phone String?
+ state String?
  location String?
  latitude Float?
  longitude Float?
