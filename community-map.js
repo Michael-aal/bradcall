@@ -98,10 +98,16 @@
       css.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css";
       css.dataset.bradcallLeafletCss = "true";
       document.head.appendChild(css);
+      const fallbackCss = document.createElement("link");
+      fallbackCss.rel = "stylesheet";
+      fallbackCss.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css";
+      fallbackCss.dataset.bradcallLeafletCssFallback = "true";
+      document.head.appendChild(fallbackCss);
     }
 
     const sources = [
       "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js",
       "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     ];
     let lastError;
