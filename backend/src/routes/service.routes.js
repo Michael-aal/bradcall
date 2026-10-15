@@ -93,6 +93,37 @@ router.get("/providers", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.get("/providers/:id", async (req, res, next) => {
+  try {
+    const provider = await prisma.providerProfile.findUnique({
+      where: { id: req.params.id },
+      include: {
+        user: { select: { state: true } },
+        services: { where: { active: true }, include: { category: true }, orderBy: { createdAt: "desc" }, take: 50 },
+        reviews: { select: { rating: true, comment: true, createdAt: true }, orderBy: { createdAt: "desc" }, take: 30 },
+        requests: { where: { status: "COMPLETED" }, select: { id: true }, take: 5000 }
+      }
+    });
+    if (!provider) return res.status(404).json({ message: "Provider profile not found." });
+    const reviews = provider.reviews || [];
+    const { latitude, longitude, phone, payoutAccountNumberMasked, paystackRecipientCode, user, ...safe } = provider;
+    res.set("Cache-Control", "public, max-age=60");
+    res.json({
+      id: safe.id, displayName: safe.displayName, providerType: safe.providerType,
+      companyName: safe.companyName, primaryCategory: safe.primaryCategory, bio: safe.bio,
+      skills: safe.skills, yearsExperience: safe.yearsExperience,
+      location: [safe.location, user?.state].filter(Boolean).join(", "),
+      serviceRadiusKm: safe.serviceRadiusKm, available: safe.available, verified: safe.verified,
+      availabilityUpdatedAt: safe.availabilityUpdatedAt,
+      services: safe.services,
+      completedJobs: (provider.requests || []).length,
+      reviewCount: reviews.length,
+      averageRating: reviews.length ? Math.round(reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length * 10) / 10 : null,
+      reviews: reviews.map(review => ({ rating: review.rating, comment: review.comment, createdAt: review.createdAt }))
+    });
+  } catch (error) { next(error); }
+});
+
 router.get("/", async (req, res, next) => {
   try {
     const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
