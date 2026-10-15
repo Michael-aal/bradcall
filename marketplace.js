@@ -11,7 +11,7 @@ if(loginForm)loginForm.addEventListener("submit",async e=>{
  e.preventDefault();clearError();
  const email=$("#email").value.trim(),password=$("#password").value;
  if(!email||!password)return showError("Enter your email and password.");
- try{const r=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})}),d=await r.json();if(!r.ok){if(r.status===403&&d.code==="VERIFICATION_REQUIRED"){location.href="verify.html?email="+encodeURIComponent(email);return}throw Error(d.message||"Unable to log in.")}saveSession(d);goForRole(d.user.role,d.user.status,d.user)}catch(err){showError(friendlyError(err))}
+ try{const r=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})}),d=await r.json();if(!r.ok){if(r.status===403&&d.code==="VERIFICATION_REQUIRED"){location.href="verify.html?email="+encodeURIComponent(email)+"&method="+encodeURIComponent(d.method||"EMAIL");return}throw Error(d.message||"Unable to log in.")}saveSession(d);goForRole(d.user.role,d.user.status,d.user)}catch(err){showError(friendlyError(err))}
 });
 
 const registerForm=$("#register-form");
