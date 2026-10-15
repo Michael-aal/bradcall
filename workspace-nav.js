@@ -40,14 +40,12 @@
     }
   }
 
-  const mobileItems = role === "PROVIDER"
-    ? [["Home", home], ["Jobs", "bookings.html"], ["Finance", "finance.html"], ["Payout", "payout-account.html"], ["Account", "profile-setup.html?edit=1"]]
-    : role === "ADMIN"
-      ? [["Overview", home], ["Bookings", "bookings.html"], ["Finance", "finance.html"], ["Trust", "admin-verification.html"]]
-      : [["Home", home], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Finance", "finance.html"]];
+  const mobileItems = role === "ADMIN"
+    ? [["Home", home], ["Bookings", "bookings.html"], ["Trust", "admin-verification.html"], ["Messages", "messages.html"], ["Profile", "profile-setup.html?edit=1"]]
+    : [["Explore", "services.html"], ["Bookings", "bookings.html"], ["My tasks", "tasks.html"], ["Messages", "messages.html"], ["Profile", "profile-setup.html?edit=1"]];
   const style = document.createElement("style");
   style.textContent = `
-    .workspace-mobile-nav{display:none}
+    .mobile-tabbar{display:none!important}.workspace-mobile-nav{display:none}
     @media(max-width:760px){
       body{padding-bottom:78px!important}
       .workspace-mobile-nav{position:fixed;z-index:1000;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:8px max(8px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);border-top:1px solid #dce9e4;box-shadow:0 -6px 24px rgba(24,51,45,.08);backdrop-filter:blur(12px)}
