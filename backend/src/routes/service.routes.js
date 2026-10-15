@@ -66,6 +66,7 @@ router.get("/providers", async (req, res, next) => {
       where,
       include: {
         services: { where: { active: true }, select: { id: true, title: true, price: true, category: { select: { name: true } } }, take: 8 },
+        user: { select: { state: true } },
         reviews: { select: { rating: true }, take: 500 },
         requests: { where: { status: "COMPLETED" }, select: { id: true }, take: 5000 }
       },
@@ -77,7 +78,7 @@ router.get("/providers", async (req, res, next) => {
       const { latitude, longitude, phone, payoutAccountNumberMasked, paystackRecipientCode, ...safe } = p;
       return { id: safe.id, displayName: safe.displayName, providerType: safe.providerType, companyName: safe.companyName,
         primaryCategory: safe.primaryCategory, bio: safe.bio, skills: safe.skills, yearsExperience: safe.yearsExperience,
-        location: safe.location, serviceRadiusKm: safe.serviceRadiusKm, available: safe.available, verified: safe.verified,
+        location: [safe.location, safe.user?.state].filter(Boolean).join(", "), serviceRadiusKm: safe.serviceRadiusKm, available: safe.available, verified: safe.verified,
         availabilityUpdatedAt: safe.availabilityUpdatedAt, services: safe.services,
         completedJobs: (p.requests || []).length, reviewCount: ratings.length,
         averageRating: ratings.length ? Math.round(ratings.reduce((sum, r) => sum + Number(r.rating || 0), 0) / ratings.length * 10) / 10 : null
