@@ -74,7 +74,7 @@ router.post("/login",async(req,res,next)=>{try{
  const u=await prisma.user.findUnique({where:{email},include:{provider:true}});
  if(!u||!(await bcrypt.compare(password,u.passwordHash)))return res.status(401).json({message:"Invalid email or password."});
  if(u.status==="SUSPENDED"||u.status==="BANNED")return res.status(403).json({message:"This account is restricted. Contact Bradcall support or submit an appeal."});
- if(u.verificationRequired&&!(u.verificationMethod==="PHONE"?u.phoneVerifiedAt:u.emailVerifiedAt))return res.status(403).json({code:"VERIFICATION_REQUIRED",message:"Verify your "+(u.verificationMethod==="PHONE"?"phone number":"email address")+" before logging in."});
+ if(u.verificationRequired&&!(u.verificationMethod==="PHONE"?u.phoneVerifiedAt:u.emailVerifiedAt))return res.status(403).json({code:"VERIFICATION_REQUIRED",method:u.verificationMethod,message:"Verify your "+(u.verificationMethod==="PHONE"?"phone number":"email address")+" before logging in."});
  return res.json({user:publicUser(u),token:sign(u)});
 }catch(e){next(e)}});
 router.get("/me",auth,async(req,res,next)=>{try{const u=await prisma.user.findUnique({where:{id:req.user.id},include:{provider:true}});if(!u)return res.status(404).json({message:"Account not found."});res.json({user:publicUser(u)});}catch(e){next(e)}});
