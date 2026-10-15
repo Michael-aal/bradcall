@@ -98,7 +98,7 @@ router.get("/providers/:id", async (req, res, next) => {
     const provider = await prisma.providerProfile.findUnique({
       where: { id: req.params.id },
       include: {
-        user: { select: { state: true } },
+        user: { select: { state: true, status: true } },
         services: { where: { active: true }, include: { category: true }, orderBy: { createdAt: "desc" }, take: 50 },
         reviews: { select: { rating: true, comment: true, createdAt: true }, orderBy: { createdAt: "desc" }, take: 30 },
         requests: { where: { status: "COMPLETED" }, select: { id: true }, take: 5000 }
