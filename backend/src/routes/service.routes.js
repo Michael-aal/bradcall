@@ -65,7 +65,7 @@ router.get("/providers", async (req, res, next) => {
       { location: { contains: q, mode: "insensitive" } },
       { user: { is: { state: { contains: q, mode: "insensitive" } } } }
     ] });
-    const where = { available: true, ...(filters.length ? { AND: filters } : {}) };
+    const where = { ...(filters.length ? { AND: filters } : {}) };
     const profiles = await prisma.providerProfile.findMany({
       where,
       include: {
