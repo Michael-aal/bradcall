@@ -65,12 +65,12 @@ router.get("/providers", async (req, res, next) => {
       { location: { contains: q, mode: "insensitive" } },
       { user: { is: { state: { contains: q, mode: "insensitive" } } } }
     ] });
-    const where = { ...(filters.length ? { AND: filters } : {}) };
+    const where = { user: { is: { status: "ACTIVE" } }, ...(filters.length ? { AND: filters } : {}) };
     const profiles = await prisma.providerProfile.findMany({
       where,
       include: {
         services: { where: { active: true }, select: { id: true, title: true, price: true, category: { select: { name: true } } }, take: 8 },
-        user: { select: { state: true } },
+        user: { select: { state: true, status: true } },
         reviews: { select: { rating: true }, take: 500 },
         requests: { where: { status: "COMPLETED" }, select: { id: true }, take: 5000 }
       },
@@ -105,6 +105,7 @@ router.get("/providers/:id", async (req, res, next) => {
       }
     });
     if (!provider) return res.status(404).json({ message: "Provider profile not found." });
+    if (provider.user?.status !== "ACTIVE") return res.status(404).json({ message: "Provider profile not found." });
     const reviews = provider.reviews || [];
     const { latitude, longitude, phone, payoutAccountNumberMasked, paystackRecipientCode, user, ...safe } = provider;
     res.set("Cache-Control", "public, max-age=60");
@@ -133,7 +134,7 @@ router.get("/", async (req, res, next) => {
     const latitude = Number(req.query.latitude), longitude = Number(req.query.longitude);
     const radiusKm = Math.min(50, Math.max(1, Number(req.query.radiusKm) || 10));
     if (hasCoordinates && !validCoordinates(latitude, longitude)) return res.status(400).json({ message: "A valid latitude and longitude are required for nearby search." });
-    const where = { active: true, provider: { available: true },
+    const where = { active: true, provider: { is: { available: true, user: { is: { status: "ACTIVE" } } } },
       ...(category ? { category: { name: { contains: category, mode: "insensitive" } } } : {}),
       ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
       ...(q ? { OR: [
