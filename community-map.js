@@ -483,6 +483,12 @@
     window.addEventListener("resize", resizeMap);
     requestAnimationFrame(() => requestAnimationFrame(resizeMap));
     say("Map ready. Use device location or search for an area. Geoapify powers address suggestions and in-map driving routes.");
+    // Centre automatically only when the visitor has already granted location access.
+    if (navigator.permissions?.query) {
+      navigator.permissions.query({ name: "geolocation" }).then(permission => {
+        if (permission.state === "granted") requestDeviceLocation();
+      }).catch(() => {});
+    }
   }).catch(error => {
     say(error.message || "Could not load the community map. Check your connection and reload this page.");
     if (mapNode) {
