@@ -553,15 +553,25 @@
     say("Map ready. The base map works independently; Geoapify powers area search and driving routes. Allow location to see nearby providers, or search any area.");
     // This page is explicitly a nearby-services map, so ask for location on entry.
     // The browser controls permission; a denied permission never blocks manual area search.
+    const locationPrompted = localStorage.getItem("bradcall_map_location_prompted_v1") === "1";
     if (navigator.permissions?.query) {
       navigator.permissions.query({ name: "geolocation" }).then(permission => {
         if (permission.state === "denied") {
           if (locationStatus) locationStatus.textContent = "Location is blocked in browser settings. Search an area to explore services.";
           return;
         }
-        requestDeviceLocation();
-      }).catch(() => requestDeviceLocation());
-    } else {
+        if (permission.state === "granted" || !locationPrompted) {
+          if (permission.state !== "granted") localStorage.setItem("bradcall_map_location_prompted_v1", "1");
+          requestDeviceLocation();
+        }
+      }).catch(() => {
+        if (!locationPrompted) {
+          localStorage.setItem("bradcall_map_location_prompted_v1", "1");
+          requestDeviceLocation();
+        }
+      });
+    } else if (!locationPrompted) {
+      localStorage.setItem("bradcall_map_location_prompted_v1", "1");
       requestDeviceLocation();
     }
   }).catch(error => {
