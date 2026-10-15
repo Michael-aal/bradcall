@@ -222,10 +222,11 @@
 
   function addMarker(service, point) {
     const title = esc(service.title || service.provider?.displayName || "Local service area");
+    const profileHref = "provider-profile.html?id=" + encodeURIComponent(service.provider?.id || "") + "&service=" + encodeURIComponent(service.id || "");
     const details = '<div class="map-popup"><strong>' + title + '</strong><p>' +
       esc(service.category?.name || "Service provider") + '</p><p>' +
       esc(service.location || "Approximate service area") + '</p><p>' + money(service.price) +
-      '</p><a href="register.html">Join to request this service</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route</button></p><p><a target="_blank" rel="noopener noreferrer" href="' +
+      '</p><a class="map-profile-link" href="' + esc(profileHref) + '">View provider profile</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route</button></p><p><a target="_blank" rel="noopener noreferrer" href="' +
       esc("https://www.google.com/maps/dir/?api=1&destination=" + point.lat + "," + point.lng) +
       '">Get directions in Google Maps</a></p></div>';
     if (mapProvider === "google") {
@@ -241,12 +242,12 @@
   function renderList(services) {
     if (!list) return;
     list.innerHTML = services.length
-      ? services.slice(0, 6).map(service => '<article class="map-list-item"><strong>' + esc(service.title) +
-        '</strong><span>' + esc(service.location || "Approximate service area") + '</span><small>' +
-        esc(service.category?.name || "Service") + " · " + money(service.price) +
+      ? services.slice(0, 30).map(service => '<article class="map-list-item"><div class="map-list-top"><strong>' + esc(service.provider?.displayName || service.title || "Service provider") +
+        '</strong><span class="map-available-dot" aria-label="Available"></span></div><span>' + esc(service.title || service.category?.name || "Service") + '</span><small>' +
+        esc(service.location || "Approximate service area") + " · " + esc(service.category?.name || "Service") + " · " + money(service.price) +
         (Number.isFinite(service.distanceKm) ? " · " + service.distanceKm + " km away" : "") +
-        '</small></article>').join("")
-      : '<div class="dash-empty">No public service listings found within this area yet. Try again later or check whether providers have enabled availability.</div>';
+        '</small><a class="map-profile-link" href="provider-profile.html?id=' + encodeURIComponent(service.provider?.id || "") + '&service=' + encodeURIComponent(service.id || '') + '">View profile <span aria-hidden="true">→</span></a></article>').join("")
+      : '<div class="dash-empty">No available providers with live listings were found in this area. Search a wider area or check back later.</div>';
   }
 
   async function showRoute(destinationLat, destinationLng) {
@@ -354,7 +355,7 @@
     }
     if (sequence !== searchSequence) return;
     say("Showing " + services.length + " nearby listing" + (services.length === 1 ? "" : "s") +
-      " within 10 km. " + marked + " privacy-rounded service-area marker" + (marked === 1 ? "" : "s") +
+      " within " + searchRadiusKm + " km. " + marked + " privacy-rounded service-area marker" + (marked === 1 ? "" : "s") +
       " displayed. Listings without saved device coordinates remain in the list but do not get a map pin.");
   }
 
@@ -401,6 +402,7 @@
   }
 
   if (button) button.addEventListener("click", requestDeviceLocation);
+  radiusSelect?.addEventListener("change", () => { if (searchCenter) refresh(searchCenter); });
   document.addEventListener("click", event => {
     const routeButton = event.target.closest("[data-route-lat][data-route-lng]");
     if (!routeButton || !root.contains(routeButton) && !routeButton.closest(".leaflet-popup, .gm-style")) return;
