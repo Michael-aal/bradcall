@@ -241,13 +241,24 @@
 
   function renderList(services) {
     if (!list) return;
-    list.innerHTML = services.length
-      ? services.slice(0, 30).map(service => '<article class="map-list-item"><div class="map-list-top"><strong>' + esc(service.provider?.displayName || service.title || "Service provider") +
-        '</strong><span class="map-available-dot" aria-label="Available"></span></div><span>' + esc(service.title || service.category?.name || "Service") + '</span><small>' +
-        esc(service.location || "Approximate service area") + " · " + esc(service.category?.name || "Service") + " · " + money(service.price) +
+    const unique = [];
+    const seen = new Set();
+    for (const service of services) {
+      const id = service.provider?.id || service.id;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      unique.push(service);
+    }
+    list.innerHTML = unique.length
+      ? unique.slice(0, 30).map(service => {
+        const count = services.filter(item => item.provider?.id && item.provider.id === service.provider?.id).length;
+        return '<article class="map-list-item"><div class="map-list-top"><strong>' + esc(service.provider?.displayName || service.title || "Service provider") +
+        '</strong><span class="map-available-dot" aria-label="Available"></span></div><span>' + esc(service.provider?.primaryCategory || service.category?.name || service.title || "Service provider") + '</span><small>' +
+        esc(service.location || service.provider?.location || "Approximate service area") + " · " + count + (count === 1 ? " service" : " services") +
         (Number.isFinite(service.distanceKm) ? " · " + service.distanceKm + " km away" : "") +
-        '</small><a class="map-profile-link" href="provider-profile.html?id=' + encodeURIComponent(service.provider?.id || "") + '&service=' + encodeURIComponent(service.id || '') + '">View profile <span aria-hidden="true">→</span></a></article>').join("")
-      : '<div class="dash-empty">No available providers with live listings were found in this area. Search a wider area or check back later.</div>';
+        '</small><a class="map-profile-link" href="provider-profile.html?id=' + encodeURIComponent(service.provider?.id || "") + '&service=' + encodeURIComponent(service.id || '') + '">View profile <span aria-hidden="true">→</span></a></article>';
+      }).join("")
+      : '<div class="map-empty-state">No available providers with live listings were found in this area. Search a wider area or check back later.</div>';
   }
 
   async function showRoute(destinationLat, destinationLng) {
@@ -345,8 +356,12 @@
     if (sequence !== searchSequence) return;
     renderList(services);
     let marked = 0;
-    for (const service of services.slice(0, 100)) {
+    const markedProviders = new Set();
+    for (const service of services.slice(0, 200)) {
       if (sequence !== searchSequence) return;
+      const providerId = service.provider?.id || service.id;
+      if (markedProviders.has(providerId)) continue;
+      markedProviders.add(providerId);
       // The API only exposes coordinates rounded to about 1 km for public map markers.
       const lat = Number(service.mapLatitude), lng = Number(service.mapLongitude);
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
@@ -354,7 +369,7 @@
       marked++;
     }
     if (sequence !== searchSequence) return;
-    say("Showing " + services.length + " nearby listing" + (services.length === 1 ? "" : "s") +
+    say("Showing " + markedProviders.size + " available provider" + (markedProviders.size === 1 ? "" : "s") +
       " within " + searchRadiusKm + " km. " + marked + " privacy-rounded service-area marker" + (marked === 1 ? "" : "s") +
       " displayed. Listings without saved device coordinates remain in the list but do not get a map pin.");
   }
