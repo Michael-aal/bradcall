@@ -11,35 +11,38 @@ if(loginForm)loginForm.addEventListener("submit",async e=>{
  e.preventDefault();clearError();
  const email=$("#email").value.trim(),password=$("#password").value;
  if(!email||!password)return showError("Enter your email and password.");
- try{const r=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})}),d=await r.json();if(!r.ok)throw Error(d.message||"Unable to log in.");saveSession(d);goForRole(d.user.role,d.user.status,d.user)}catch(err){showError(friendlyError(err))}
+ try{const r=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})}),d=await r.json();if(!r.ok){if(r.status===403&&d.code==="VERIFICATION_REQUIRED"){location.href="verify.html?email="+encodeURIComponent(email)+"&method="+encodeURIComponent(d.method||"EMAIL");return}throw Error(d.message||"Unable to log in.")}saveSession(d);goForRole(d.user.role,d.user.status,d.user)}catch(err){showError(friendlyError(err))}
 });
 
 const registerForm=$("#register-form");
-const providerFields=$("#provider-fields"),phoneField=$("#phone"),categoryField=$("#primary-category"),locationField=$("#location");
+const providerFields=$("#provider-fields"),phoneField=$("#phone"),categoryField=$("#primary-category"),locationField=$("#location"),stateField=$("#state"),verificationField=$("#verification-method");
 function syncProviderFields(){
  const isProvider=document.querySelector('input[name="role"]:checked')?.value==="PROVIDER";
  if(providerFields)providerFields.hidden=!isProvider;
- [phoneField,categoryField,locationField].forEach(field=>{if(field)field.required=isProvider});
+ if(phoneField)phoneField.required=isProvider||(verificationField?.value==="PHONE");if(categoryField)categoryField.required=isProvider;if(locationField)locationField.required=true;
 }
 if(registerForm){
  document.querySelectorAll('input[name="role"]').forEach(option=>option.addEventListener("change",syncProviderFields));
+ verificationField?.addEventListener("change",syncProviderFields);
  syncProviderFields();
  registerForm.addEventListener("submit",async e=>{
   e.preventDefault();clearError();
   const name=$("#name").value.trim(),email=$("#email").value.trim(),password=$("#password").value,confirm=$("#confirm-password").value;
   const role=document.querySelector('input[name="role"]:checked')?.value||"PARTNER";
   const acceptedPolicies=$("#accepted-policies")?.checked===true;
-  const phone=phoneField?.value.trim()||"",primaryCategory=categoryField?.value.trim()||"",location=locationField?.value.trim()||"";
+  const phone=phoneField?.value.trim()||"",primaryCategory=categoryField?.value.trim()||"",area=locationField?.value.trim()||"",state=stateField?.value||"",verificationMethod=verificationField?.value||"EMAIL";
   if(!name||!email||!password||!confirm)return showError("Complete all required fields.");
   if(password.length<8)return showError("Use a password with at least 8 characters.");
   if(password.length>128)return showError("Password must be no longer than 128 characters.");
   if(password!==confirm)return showError("Your passwords do not match.");
-  if(role==="PROVIDER"&&(!phone||!primaryCategory||!location))return showError("Complete your phone number, service category, and service location.");
+  if(!state||!area)return showError("Choose your state and enter your town or area.");
+  if(verificationMethod==="PHONE"&&!phone)return showError("Enter a phone number to receive your verification code.");
+  if(role==="PROVIDER"&&(!phone||!primaryCategory||!area))return showError("Complete your phone number, service category, and service location.");
   if(role==="PROVIDER"&&!/^\+?[0-9 ()-]{7,30}$/.test(phone))return showError("Enter a valid phone number.");
   if(!acceptedPolicies)return showError("Accept the Terms and Privacy Policy before registering.");
-  const payload={name,email,password,role,acceptedPolicies};
-  if(role==="PROVIDER")Object.assign(payload,{providerType:"INDIVIDUAL",phone,primaryCategory,location});
-  try{const r=await fetch(API_BASE+"/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),d=await r.json();if(!r.ok)throw Error(d.message||"Unable to create your account.");saveSession(d);goForRole(d.user.role,d.user.status,d.user)}catch(err){showError(friendlyError(err))}
+  const payload={name,email,password,role,acceptedPolicies,phone,state,location:area,verificationMethod};
+  if(role==="PROVIDER")Object.assign(payload,{providerType:"INDIVIDUAL",primaryCategory});
+  try{const r=await fetch(API_BASE+"/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),d=await r.json();if(!r.ok)throw Error(d.message||"Unable to create your account.");window.location.href="verify.html?email="+encodeURIComponent(d.email||email)+"&method="+encodeURIComponent(d.method||verificationMethod)+(d.deliveryPending?"&pending=1":"");}catch(err){showError(friendlyError(err))}
  });
 }
 
@@ -49,4 +52,23 @@ if(registerForm&&["PARTNER","PROVIDER"].includes(requestedRole)){
  const option=document.querySelector('input[name="role"][value="'+requestedRole+'"]');
  if(option)option.checked=true;
  syncProviderFields();
+}
+
+const verifyForm=$("#verify-form");
+if(verifyForm){
+ const params=new URLSearchParams(window.location.search),emailInput=$("#verify-email"),codeInput=$("#verify-code"),message=$("#verify-error"),copy=$("#verify-copy");
+ emailInput.value=params.get("email")||"";
+ const method=params.get("method")==="PHONE"?"SMS":"email";
+ if(copy)copy.textContent=params.get("pending")==="1"?"Your account was created, but the code could not be delivered. Check your details and try sending a new code.":"Enter the code sent using "+method+" verification.";
+ const showVerifyError=(text)=>{message.textContent=text;message.classList.add("visible")};
+ verifyForm.addEventListener("submit",async event=>{
+  event.preventDefault();message.classList.remove("visible");
+  const email=emailInput.value.trim(),code=codeInput.value.trim();
+  try{const response=await fetch(API_BASE+"/api/auth/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})}),data=await response.json();if(!response.ok)throw Error(data.message||"Could not verify this code.");copy.textContent="Your contact is verified. You can now log in to Bradcall.";verifyForm.hidden=true;$("#resend-code").hidden=true;const link=document.createElement("a");link.className="auth-submit";link.style.display="block";link.style.textAlign="center";link.style.textDecoration="none";link.href="login.html";link.textContent="Continue to log in";verifyForm.after(link);}catch(error){showVerifyError(error.message||"Could not verify this code.");}
+ });
+ $("#resend-code").addEventListener("click",async()=>{
+  message.classList.remove("visible");const email=emailInput.value.trim();if(!email)return showVerifyError("Enter the email address used to register.");
+  const button=$("#resend-code");button.disabled=true;button.textContent="Sending…";
+  try{const response=await fetch(API_BASE+"/api/auth/resend-verification",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})}),data=await response.json();if(!response.ok)throw Error(data.message||"Could not send a new code.");copy.textContent=data.message||"A new code was requested.";}catch(error){showVerifyError(error.message||"Could not send a new code.");}finally{button.disabled=false;button.textContent="Send a new code";}
+ });
 }

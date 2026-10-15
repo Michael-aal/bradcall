@@ -83,3 +83,5 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .provider-fields-heading p,.field-hint{color:#687a73;font-size:12px;line-height:1.5;margin:5px 0 0}
 .provider-fields .field input,.provider-fields .field select{width:100%;border:1px solid #d8e3de;border-radius:10px;padding:13px 14px;background:#fff;color:#18332d;min-height:46px}
 .provider-fields[hidden]{display:none!important}
+
+.marketplace-view-switch{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}.marketplace-view-switch .dash-btn{min-width:140px}@media(max-width:520px){.marketplace-view-switch .dash-btn{flex:1}}

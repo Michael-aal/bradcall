@@ -81,11 +81,20 @@ model User {
  email String @unique
  passwordHash String
  phone String?
+ state String?
  location String?
  latitude Float?
  longitude Float?
  interests String[] @default([])
  profileCompletedAt DateTime?
+ verificationRequired Boolean @default(false)
+ verificationMethod String?
+ emailVerifiedAt DateTime?
+ phoneVerifiedAt DateTime?
+ verificationCodeHash String?
+ verificationExpiresAt DateTime?
+ verificationSentAt DateTime?
+ verificationAttempts Int @default(0)
  role Role @default(PARTNER)
  status AccountStatus @default(ACTIVE)
  createdAt DateTime @default(now())

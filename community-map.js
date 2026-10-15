@@ -31,6 +31,7 @@
   let searchCenter = null;
   let searchRadiusKm = 10;
   let searchSequence = 0;
+  let viewportTimer = null;
   const geocodeCache = new Map();
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -41,7 +42,7 @@
   }).format(Number(value) || 0);
   const say = message => { if (caption) caption.textContent = message; };
   const selectedRadius = () => { const value = Number(radiusSelect?.value || 10); return [5, 10, 25, 50].includes(value) ? value : 10; };
-  const zoomForRadius = km => km <= 5 ? 13 : km <= 10 ? 12 : km <= 25 ? 10 : 9;
+  const zoomForRadius = km => km <= 5 ? 13 : km <= 10 ? 12 : km <= 25 ? 10 : 8;
 
   function loadScript(src, dataAttribute) {
     return new Promise((resolve, reject) => {
@@ -152,7 +153,7 @@
     }
     mapProvider = "leaflet";
     await loadLeaflet();
-    map = window.L.map(mapNode, { scrollWheelZoom: false }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
+    map = window.L.map(mapNode, { scrollWheelZoom: true }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
     const osmTiles = window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
@@ -222,31 +223,54 @@
 
   function addMarker(service, point) {
     const title = esc(service.title || service.provider?.displayName || "Local service area");
+    const profileHref = "provider-profile.html?id=" + encodeURIComponent(service.provider?.id || "") + "&service=" + encodeURIComponent(service.id || "");
     const details = '<div class="map-popup"><strong>' + title + '</strong><p>' +
       esc(service.category?.name || "Service provider") + '</p><p>' +
       esc(service.location || "Approximate service area") + '</p><p>' + money(service.price) +
-      '</p><a href="register.html">Join to request this service</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route</button></p><p><a target="_blank" rel="noopener noreferrer" href="' +
+      '</p><a class="map-profile-link" href="' + esc(profileHref) + '">View provider profile</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route</button></p><p><a target="_blank" rel="noopener noreferrer" href="' +
       esc("https://www.google.com/maps/dir/?api=1&destination=" + point.lat + "," + point.lng) +
       '">Get directions in Google Maps</a></p></div>';
+    const initial = esc(String(service.provider?.displayName || service.title || "P").trim().slice(0, 1).toUpperCase());
     if (mapProvider === "google") {
-      const marker = new google.maps.Marker({ map, position: { lat: point.lat, lng: point.lng }, title: service.title || "Service area" });
+      const marker = new google.maps.Marker({
+        map, position: { lat: point.lat, lng: point.lng },
+        title: service.provider?.displayName || service.title || "Available provider",
+        label: { text: initial, color: "#092417", fontWeight: "800", fontSize: "12px" },
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 18, fillColor: "#B7F36B", fillOpacity: 1, strokeColor: "#0B3422", strokeWeight: 3 }
+      });
       const info = new google.maps.InfoWindow({ content: details });
       marker.addListener("click", () => info.open({ map, anchor: marker }));
       layer.push(marker);
     } else {
-      window.L.marker([point.lat, point.lng]).bindPopup(details).addTo(layer);
+      const icon = window.L.divIcon({
+        className: "provider-marker-wrap",
+        html: '<span class="provider-map-marker"><b>' + initial + '</b><i aria-hidden="true"></i></span>',
+        iconSize: [42, 42], iconAnchor: [21, 21], popupAnchor: [0, -20]
+      });
+      window.L.marker([point.lat, point.lng], { icon, title: service.provider?.displayName || service.title || "Available provider" }).bindPopup(details).addTo(layer);
     }
   }
 
   function renderList(services) {
     if (!list) return;
-    list.innerHTML = services.length
-      ? services.slice(0, 6).map(service => '<article class="map-list-item"><strong>' + esc(service.title) +
-        '</strong><span>' + esc(service.location || "Approximate service area") + '</span><small>' +
-        esc(service.category?.name || "Service") + " · " + money(service.price) +
+    const unique = [];
+    const seen = new Set();
+    for (const service of services) {
+      const id = service.provider?.id || service.id;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      unique.push(service);
+    }
+    list.innerHTML = unique.length
+      ? unique.slice(0, 30).map(service => {
+        const count = services.filter(item => item.provider?.id && item.provider.id === service.provider?.id).length;
+        return '<article class="map-list-item"><div class="map-list-top"><strong>' + esc(service.provider?.displayName || service.title || "Service provider") +
+        '</strong><span class="map-available-dot" aria-label="Available"></span></div><span>' + esc(service.provider?.primaryCategory || service.category?.name || service.title || "Service provider") + '</span><small>' +
+        esc(service.location || service.provider?.location || "Approximate service area") + " · " + count + (count === 1 ? " service" : " services") +
         (Number.isFinite(service.distanceKm) ? " · " + service.distanceKm + " km away" : "") +
-        '</small></article>').join("")
-      : '<div class="dash-empty">No public service listings found within this area yet. Try again later or check whether providers have enabled availability.</div>';
+        '</small><a class="map-profile-link" href="provider-profile.html?id=' + encodeURIComponent(service.provider?.id || "") + '&service=' + encodeURIComponent(service.id || '') + '">View profile <span aria-hidden="true">→</span></a></article>';
+      }).join("")
+      : '<div class="map-empty-state">No available providers with live listings were found in this area. Search a wider area or check back later.</div>';
   }
 
   async function showRoute(destinationLat, destinationLng) {
@@ -301,7 +325,7 @@
     }
   }
 
-  async function refresh(selectedPoint) {
+  async function refresh(selectedPoint, preserveViewport = false) {
     const sequence = ++searchSequence;
     await initializeMap();
     if (!selectedPoint) {
@@ -311,14 +335,16 @@
     searchCenter = { lat: Number(selectedPoint.lat), lng: Number(selectedPoint.lng) };
     searchRadiusKm = selectedRadius();
     if (mapProvider === "google") {
-      map.setCenter(searchCenter);
-      map.setZoom(zoomForRadius(searchRadiusKm));
+      if (!preserveViewport) {
+        map.setCenter(searchCenter);
+        map.setZoom(zoomForRadius(searchRadiusKm));
+      }
       coverage.setCenter(searchCenter);
       coverage.setRadius(searchRadiusKm * 1000);
       coverage.setMap(map);
       routeLayer.set("directions", null);
     } else {
-      map.setView([searchCenter.lat, searchCenter.lng], zoomForRadius(searchRadiusKm));
+      if (!preserveViewport) map.setView([searchCenter.lat, searchCenter.lng], zoomForRadius(searchRadiusKm));
       coverage.setLatLng([searchCenter.lat, searchCenter.lng]);
       coverage.setRadius(searchRadiusKm * 1000);
       coverage.addTo(map);
@@ -344,8 +370,12 @@
     if (sequence !== searchSequence) return;
     renderList(services);
     let marked = 0;
-    for (const service of services.slice(0, 100)) {
+    const markedProviders = new Set();
+    for (const service of services.slice(0, 200)) {
       if (sequence !== searchSequence) return;
+      const providerId = service.provider?.id || service.id;
+      if (markedProviders.has(providerId)) continue;
+      markedProviders.add(providerId);
       // The API only exposes coordinates rounded to about 1 km for public map markers.
       const lat = Number(service.mapLatitude), lng = Number(service.mapLongitude);
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
@@ -353,9 +383,30 @@
       marked++;
     }
     if (sequence !== searchSequence) return;
-    say("Showing " + services.length + " nearby listing" + (services.length === 1 ? "" : "s") +
-      " within 10 km. " + marked + " privacy-rounded service-area marker" + (marked === 1 ? "" : "s") +
+    say("Showing " + markedProviders.size + " available provider" + (markedProviders.size === 1 ? "" : "s") +
+      " within " + searchRadiusKm + " km. " + marked + " privacy-rounded service-area marker" + (marked === 1 ? "" : "s") +
       " displayed. Listings without saved device coordinates remain in the list but do not get a map pin.");
+  }
+
+  function refreshFromViewport() {
+    clearTimeout(viewportTimer);
+    viewportTimer = setTimeout(() => {
+      if (!map) return;
+      const center = mapProvider === "google" ? map.getCenter() : map.getCenter();
+      const point = mapProvider === "google"
+        ? { lat: center?.lat(), lng: center?.lng() }
+        : { lat: center?.lat, lng: center?.lng };
+      const zoom = Number(mapProvider === "google" ? map.getZoom() : map.getZoom());
+      if (!Number.isFinite(point.lat) || !Number.isFinite(point.lng) || !Number.isFinite(zoom)) return;
+      const radius = zoom >= 13 ? 5 : zoom >= 11 ? 10 : zoom >= 9 ? 25 : 50;
+      const sameCentre = searchCenter &&
+        Math.abs(point.lat - searchCenter.lat) < 0.005 &&
+        Math.abs(point.lng - searchCenter.lng) < 0.005;
+      if (sameCentre && radius === searchRadiusKm) return;
+      searchRadiusKm = radius;
+      if (radiusSelect) radiusSelect.value = String(radius);
+      refresh(point, true);
+    }, 450);
   }
 
   function requestDeviceLocation() {
@@ -401,6 +452,7 @@
   }
 
   if (button) button.addEventListener("click", requestDeviceLocation);
+  radiusSelect?.addEventListener("change", () => { if (searchCenter) refresh(searchCenter); });
   document.addEventListener("click", event => {
     const routeButton = event.target.closest("[data-route-lat][data-route-lng]");
     if (!routeButton || !root.contains(routeButton) && !routeButton.closest(".leaflet-popup, .gm-style")) return;
@@ -479,8 +531,16 @@
     };
     window.addEventListener("load", resizeMap, { once: true });
     window.addEventListener("resize", resizeMap);
+    if (mapProvider === "google") map.addListener("idle", refreshFromViewport);
+    else map.on("moveend zoomend", refreshFromViewport);
     requestAnimationFrame(() => requestAnimationFrame(resizeMap));
-    say("Map ready. Use device location or search for an area. Geoapify powers address suggestions and in-map driving routes.");
+    say("Map ready. Search an area or use your location, then pan and zoom to discover providers in each area. Geoapify powers address suggestions and in-map driving routes.");
+    // Centre automatically only when the visitor has already granted location access.
+    if (navigator.permissions?.query) {
+      navigator.permissions.query({ name: "geolocation" }).then(permission => {
+        if (permission.state === "granted") requestDeviceLocation();
+      }).catch(() => {});
+    }
   }).catch(error => {
     say(error.message || "Could not load the community map. Check your connection and reload this page.");
     if (mapNode) {

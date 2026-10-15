@@ -7,7 +7,20 @@ router.post("/",roles("PARTNER"),async(req,res,next)=>{try{
  if(!serviceId||!details||details.length>3000||location.length>120)return res.status(400).json({message:"A service, request description (up to 3000 characters), and valid location are required."});
  const service=await prisma.service.findFirst({where:{id:serviceId,active:true}});if(!service)return res.status(404).json({message:"Service not found or unavailable."});
  const appointmentAt=req.body.appointmentAt?new Date(req.body.appointmentAt):null;if(appointmentAt&&Number.isNaN(appointmentAt.getTime()))return res.status(400).json({message:"Appointment date is invalid."});
- const r=await prisma.serviceRequest.create({data:{serviceId,partnerId:req.user.id,providerId:service.providerId,details,location:location||service.location,appointmentAt},include:{service:true,provider:{select:{id:true,displayName:true}}}});
+ const r=await prisma.$transaction(async tx => {
+  const request = await tx.serviceRequest.create({
+   data: { serviceId, partnerId: req.user.id, providerId: service.providerId, details, location: location || service.location, appointmentAt },
+   include: { service: true, provider: { select: { id: true, displayName: true } } }
+  });
+  await tx.message.create({
+   data: {
+    requestId: request.id,
+    senderId: req.user.id,
+    body: "Booking request sent for " + request.service.title + ".\nDetails: " + details + "\nArea: " + (location || service.location)
+   }
+  });
+  return request;
+ });
  res.status(201).json(r);
 }catch(e){next(e)}});
 router.get("/",async(req,res,next)=>{try{let where={};if(req.user.role==="PROVIDER"){const p=await prisma.providerProfile.findUnique({where:{userId:req.user.id}});if(!p)return res.json([]);where={providerId:p.id};}else if(req.user.role==="PARTNER")where={partnerId:req.user.id};res.json(await prisma.serviceRequest.findMany({where,include:{service:true,partner:{select:{id:true,name:true}},provider:{include:{user:{select:{id:true,name:true}}}},payments:{orderBy:{createdAt:"desc"},take:3}},orderBy:{createdAt:"desc"},take:100}));}catch(e){next(e)}});
