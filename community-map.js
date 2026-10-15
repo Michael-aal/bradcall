@@ -229,13 +229,24 @@
       '</p><a class="map-profile-link" href="' + esc(profileHref) + '">View provider profile</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route</button></p><p><a target="_blank" rel="noopener noreferrer" href="' +
       esc("https://www.google.com/maps/dir/?api=1&destination=" + point.lat + "," + point.lng) +
       '">Get directions in Google Maps</a></p></div>';
+    const initial = esc(String(service.provider?.displayName || service.title || "P").trim().slice(0, 1).toUpperCase());
     if (mapProvider === "google") {
-      const marker = new google.maps.Marker({ map, position: { lat: point.lat, lng: point.lng }, title: service.title || "Service area" });
+      const marker = new google.maps.Marker({
+        map, position: { lat: point.lat, lng: point.lng },
+        title: service.provider?.displayName || service.title || "Available provider",
+        label: { text: initial, color: "#092417", fontWeight: "800", fontSize: "12px" },
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 18, fillColor: "#B7F36B", fillOpacity: 1, strokeColor: "#0B3422", strokeWeight: 3 }
+      });
       const info = new google.maps.InfoWindow({ content: details });
       marker.addListener("click", () => info.open({ map, anchor: marker }));
       layer.push(marker);
     } else {
-      window.L.marker([point.lat, point.lng]).bindPopup(details).addTo(layer);
+      const icon = window.L.divIcon({
+        className: "provider-marker-wrap",
+        html: '<span class="provider-map-marker"><b>' + initial + '</b><i aria-hidden="true"></i></span>',
+        iconSize: [42, 42], iconAnchor: [21, 21], popupAnchor: [0, -20]
+      });
+      window.L.marker([point.lat, point.lng], { icon, title: service.provider?.displayName || service.title || "Available provider" }).bindPopup(details).addTo(layer);
     }
   }
 
