@@ -42,7 +42,7 @@
   }).format(Number(value) || 0);
   const say = message => { if (caption) caption.textContent = message; };
   const selectedRadius = () => { const value = Number(radiusSelect?.value || 10); return [5, 10, 25, 50].includes(value) ? value : 10; };
-  const zoomForRadius = km => km <= 5 ? 13 : km <= 10 ? 12 : km <= 25 ? 10 : 9;
+  const zoomForRadius = km => km <= 5 ? 13 : km <= 10 ? 12 : km <= 25 ? 10 : 8;
 
   function loadScript(src, dataAttribute) {
     return new Promise((resolve, reject) => {
