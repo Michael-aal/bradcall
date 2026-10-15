@@ -52,16 +52,20 @@ router.get("/providers", async (req, res, next) => {
     const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
     const category = typeof req.query.category === "string" ? req.query.category.trim().slice(0, 80) : "";
     const location = typeof req.query.location === "string" ? req.query.location.trim().slice(0, 120) : "";
-    const where = { available: true,
-      ...(category ? { primaryCategory: { contains: category, mode: "insensitive" } } : {}),
-      ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
-      ...(q ? { OR: [
-        { displayName: { contains: q, mode: "insensitive" } },
-        { bio: { contains: q, mode: "insensitive" } },
-        { primaryCategory: { contains: q, mode: "insensitive" } },
-        { location: { contains: q, mode: "insensitive" } }
-      ] } : {})
-    };
+    const filters = [];
+    if (category) filters.push({ primaryCategory: { contains: category, mode: "insensitive" } });
+    if (location) filters.push({ OR: [
+      { location: { contains: location, mode: "insensitive" } },
+      { user: { is: { state: { contains: location, mode: "insensitive" } } } }
+    ] });
+    if (q) filters.push({ OR: [
+      { displayName: { contains: q, mode: "insensitive" } },
+      { bio: { contains: q, mode: "insensitive" } },
+      { primaryCategory: { contains: q, mode: "insensitive" } },
+      { location: { contains: q, mode: "insensitive" } },
+      { user: { is: { state: { contains: q, mode: "insensitive" } } } }
+    ] });
+    const where = { available: true, ...(filters.length ? { AND: filters } : {}) };
     const profiles = await prisma.providerProfile.findMany({
       where,
       include: {
