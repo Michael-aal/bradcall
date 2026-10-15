@@ -47,6 +47,47 @@ router.get("/opportunities", auth, roles("PROVIDER"), async (req, res, next) => 
   } catch (error) { next(error); }
 });
 
+router.get("/providers", async (req, res, next) => {
+  try {
+    const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
+    const category = typeof req.query.category === "string" ? req.query.category.trim().slice(0, 80) : "";
+    const location = typeof req.query.location === "string" ? req.query.location.trim().slice(0, 120) : "";
+    const where = { available: true,
+      ...(category ? { primaryCategory: { contains: category, mode: "insensitive" } } : {}),
+      ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
+      ...(q ? { OR: [
+        { displayName: { contains: q, mode: "insensitive" } },
+        { bio: { contains: q, mode: "insensitive" } },
+        { primaryCategory: { contains: q, mode: "insensitive" } },
+        { location: { contains: q, mode: "insensitive" } }
+      ] } : {})
+    };
+    const profiles = await prisma.providerProfile.findMany({
+      where,
+      include: {
+        services: { where: { active: true }, select: { id: true, title: true, price: true, category: { select: { name: true } } }, take: 8 },
+        reviews: { select: { rating: true }, take: 500 },
+        requests: { where: { status: "COMPLETED" }, select: { id: true }, take: 5000 }
+      },
+      orderBy: { availabilityUpdatedAt: "desc" },
+      take: 100
+    });
+    const results = profiles.map(p => {
+      const ratings = p.reviews || [];
+      const { latitude, longitude, phone, payoutAccountNumberMasked, paystackRecipientCode, ...safe } = p;
+      return { id: safe.id, displayName: safe.displayName, providerType: safe.providerType, companyName: safe.companyName,
+        primaryCategory: safe.primaryCategory, bio: safe.bio, skills: safe.skills, yearsExperience: safe.yearsExperience,
+        location: safe.location, serviceRadiusKm: safe.serviceRadiusKm, available: safe.available, verified: safe.verified,
+        availabilityUpdatedAt: safe.availabilityUpdatedAt, services: safe.services,
+        completedJobs: (p.requests || []).length, reviewCount: ratings.length,
+        averageRating: ratings.length ? Math.round(ratings.reduce((sum, r) => sum + Number(r.rating || 0), 0) / ratings.length * 10) / 10 : null
+      };
+    });
+    res.set("Cache-Control", "public, max-age=60");
+    res.json(results);
+  } catch (error) { next(error); }
+});
+
 router.get("/", async (req, res, next) => {
   try {
     const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
