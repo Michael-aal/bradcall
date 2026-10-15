@@ -80,16 +80,18 @@
     css.textContent='#bradcall-permission-prompt{position:fixed;inset:0;z-index:2000;background:#142d3377;display:grid;place-items:center;padding:18px}.bc-permission-card{width:min(100%,460px);background:#fff;border-radius:22px;padding:26px;box-shadow:0 24px 80px #142d3333;color:#142d33}.bc-permission-kicker{font-size:11px;font-weight:900;letter-spacing:.12em;color:#087c75}.bc-permission-card h2{font-size:25px;line-height:1.1;margin:10px 0}.bc-permission-card p{line-height:1.6;color:#62736d}.bc-permission-actions{display:grid;gap:9px;margin-top:18px}.bc-permission-actions button{min-height:46px;border:0;border-radius:11px;background:#0e9f91;color:#fff;font-weight:800;padding:12px}.bc-permission-actions button[data-permission="later"]{background:#eef5f3;color:#142d33}.bc-permission-status{font-size:12px}';
     document.head.append(css);
     document.body.append(overlay);
-    const done=new Set();
+    const done=new Set();if(localStorage.getItem("bradcall_location_permission_prompted_v1"))done.add("location");if(localStorage.getItem("bradcall_notification_permission_prompted_v1"))done.add("notifications");if(done.size===2){localStorage.setItem("bradcall_permissions_prompted_v1","1");overlay.remove();}
     const finish=()=>{if(done.has("location")&&done.has("notifications")){localStorage.setItem("bradcall_permissions_prompted_v1","1");overlay.remove();}};
     overlay.querySelectorAll("button").forEach(button=>button.addEventListener("click",()=>{
       const action=button.dataset.permission,status=overlay.querySelector(".bc-permission-status");
-      if(action==="later"){localStorage.setItem("bradcall_permissions_prompted_v1","1");overlay.remove();return;}
+      if(action==="later"){localStorage.setItem("bradcall_location_permission_prompted_v1","1");localStorage.setItem("bradcall_notification_permission_prompted_v1","1");localStorage.setItem("bradcall_permissions_prompted_v1","1");overlay.remove();return;}
       button.disabled=true;
       if(action==="location"){
+        localStorage.setItem("bradcall_location_permission_prompted_v1","1");
         if(!navigator.geolocation){status.textContent="This browser does not support device location.";done.add("location");}
         else navigator.geolocation.getCurrentPosition(()=>{status.textContent="Location permission granted. Bradcall only uses location for nearby matching when you choose it.";done.add("location");finish();},()=>{status.textContent="Location was not allowed. You can still search by state and area.";done.add("location");finish();},{enableHighAccuracy:false,timeout:10000,maximumAge:60000});
       }else{
+        localStorage.setItem("bradcall_notification_permission_prompted_v1","1");
         if(!("Notification" in window)){status.textContent="This browser does not support notifications.";done.add("notifications");}
         else Notification.requestPermission().then(permission=>{status.textContent=permission==="granted"?"Notifications enabled.":"Notifications not enabled. You can still use Bradcall normally.";done.add("notifications");finish();}).catch(()=>{done.add("notifications");finish();});
       }
