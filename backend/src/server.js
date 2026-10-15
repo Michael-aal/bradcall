@@ -15,6 +15,7 @@ import trackingRoutes from "./routes/tracking.routes.js";
 import reviewRoutes from "./routes/reviews.routes.js";
 import mapsRoutes from "./routes/maps.routes.js";
 import financeRoutes from "./routes/finance.routes.js";
+import providerAnalyticsRoutes from "./routes/provider-analytics.routes.js";
 const app=express();
 const defaultOrigins=[
   "https://bradcall.vercel.app",
@@ -35,7 +36,7 @@ function isAllowedOrigin(origin){
 app.use(cors({origin(origin,callback){if(!origin||isAllowedOrigin(origin))return callback(null,true);return callback(new Error("Origin not allowed by CORS"));}}));
 app.use(express.json({limit:"1mb",verify:(req,res,buf)=>{req.rawBody=Buffer.from(buf);}}));
 app.get("/api/health",async(req,res)=>{try{await prisma.$queryRawUnsafe("SELECT 1");res.json({ok:true,service:"bradcall-api"})}catch{res.status(503).json({ok:false,service:"bradcall-api",database:"unavailable"})}});
-app.use("/api/auth",authRoutes); app.use("/api/profile",profileRoutes); app.use("/api/payout",payoutRoutes); app.use("/api/requests",trackingRoutes); app.use("/api/services",serviceRoutes); app.use("/api/requests",requestRoutes); app.use("/api/admin",adminRoutes);
+app.use("/api/services/analytics",providerAnalyticsRoutes); app.use("/api/auth",authRoutes); app.use("/api/profile",profileRoutes); app.use("/api/payout",payoutRoutes); app.use("/api/requests",trackingRoutes); app.use("/api/services",serviceRoutes); app.use("/api/requests",requestRoutes); app.use("/api/admin",adminRoutes);
 app.use("/api/maps",mapsRoutes); app.use("/api/finance",financeRoutes); app.use("/api/payments",paymentRoutes); app.use("/api/communication",communicationRoutes); app.use("/api/trust",trustRoutes); app.use("/api/reviews",reviewRoutes);
 app.use((req,res)=>res.status(404).json({message:"Route not found"}));
 app.use((err,req,res,next)=>{console.error(err);const status=Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500;res.status(status).json({message:status===500?"Internal server error":err.message});});
