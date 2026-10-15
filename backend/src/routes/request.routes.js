@@ -5,7 +5,7 @@ const router=Router();router.use(auth);
 router.post("/",roles("PARTNER"),async(req,res,next)=>{try{
  const serviceId=typeof req.body.serviceId==="string"?req.body.serviceId.trim():"",details=typeof req.body.details==="string"?req.body.details.trim():"",location=typeof req.body.location==="string"?req.body.location.trim():"";
  if(!serviceId||!details||details.length>3000||location.length>120)return res.status(400).json({message:"A service, request description (up to 3000 characters), and valid location are required."});
- const service=await prisma.service.findFirst({where:{id:serviceId,active:true}});if(!service)return res.status(404).json({message:"Service not found or unavailable."});
+ const service=await prisma.service.findFirst({where:{id:serviceId,active:true},include:{provider:{select:{id:true,userId:true,available:true,user:{select:{status:true}}}}}});if(!service||!service.provider?.available||service.provider.user?.status!=="ACTIVE")return res.status(404).json({message:"This service is not currently available for booking."});if(service.provider.userId===req.user.id)return res.status(409).json({message:"You cannot book your own service listing."});
  const appointmentAt=req.body.appointmentAt?new Date(req.body.appointmentAt):null;if(appointmentAt&&Number.isNaN(appointmentAt.getTime()))return res.status(400).json({message:"Appointment date is invalid."});
  const r=await prisma.$transaction(async tx => {
   const request = await tx.serviceRequest.create({
