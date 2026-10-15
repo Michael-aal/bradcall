@@ -9,21 +9,24 @@
 
   const role = user.role;
   const home = role === "PROVIDER" ? "provider-dashboard.html" : role === "ADMIN" ? "admin-dashboard.html" : "consumer-dashboard.html";
-  const links = role === "PROVIDER" ? [
-    ["Overview", "provider-dashboard.html"], ["My services", "provider-dashboard.html#provider-services"],
-    ["Jobs & requests", "bookings.html"], ["Map & tracking", "tracking.html"],
-    ["Messages", "messages.html"], ["Payments & earnings", "payments.html"], ["Finance & AI", "finance.html"],
-    ["Payout account", "payout-account.html"], ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"],
-    ["My profile", "profile-setup.html?edit=1"]
-  ] : role === "ADMIN" ? [
+  const company = role === "PROVIDER" && String(user.provider?.providerType || user.providerType || "").toUpperCase() === "COMPANY";
+  const links = role === "ADMIN" ? [
     ["Overview", "admin-dashboard.html"], ["Marketplace", "services.html"],
     ["Verification & trust", "admin-verification.html"], ["Bookings", "bookings.html"],
-    ["Payments", "payments.html"], ["Finance & AI", "finance.html"], ["Support", "help-center.html"]
+    ["Payments", "payments.html"], ["Support", "help-center.html"]
+  ] : company ? [
+    ["Company overview", "provider-dashboard.html"], ["Service catalogue", "provider-dashboard.html#provider-services"],
+    ["Customer requests", "bookings.html"], ["Messages", "messages.html"],
+    ["Company finance", "finance.html"], ["Payout account", "payout-account.html"],
+    ["Company profile", "profile-setup.html?edit=1"], ["Help", "help-center.html"]
+  ] : role === "PROVIDER" ? [
+    ["Overview", "provider-dashboard.html"], ["Explore services", "services.html"],
+    ["My listings", "provider-dashboard.html#provider-services"], ["Jobs & requests", "bookings.html"],
+    ["Messages", "messages.html"], ["Payments", "payments.html"], ["My profile", "profile-setup.html?edit=1"]
   ] : [
-    ["Home", "consumer-dashboard.html"], ["Find services", "services.html"],
-    ["My bookings", "bookings.html"], ["Map & tracking", "tracking.html"],
-    ["Messages", "messages.html"], ["Payments & history", "payments.html"], ["Finance & AI", "finance.html"],
-    ["Reviews", "reviews.html"], ["Help & disputes", "help-center.html"]
+    ["Home", "consumer-dashboard.html"], ["Explore services", "services.html"],
+    ["My bookings", "bookings.html"], ["Messages", "messages.html"],
+    ["My profile", "profile-setup.html?edit=1"], ["Help", "help-center.html"]
   ];
 
   const nav = document.querySelector(".mp-nav, .topbar nav, header nav");
@@ -41,8 +44,12 @@
   }
 
   const mobileItems = role === "ADMIN"
-    ? [["Home", home], ["Bookings", "bookings.html"], ["Trust", "admin-verification.html"], ["Messages", "messages.html"], ["Profile", "profile-setup.html?edit=1"]]
-    : [["Explore", "services.html"], ["Bookings", "bookings.html"], ["My tasks", "tasks.html"], ["Messages", "messages.html"], ["Profile", "profile-setup.html?edit=1"]];
+    ? [["Home", home], ["Marketplace", "services.html"], ["Trust", "admin-verification.html"], ["Bookings", "bookings.html"], ["Profile", "profile-setup.html?edit=1"]]
+    : company
+      ? [["Overview", home], ["Listings", "provider-dashboard.html#provider-services"], ["Requests", "bookings.html"], ["Messages", "messages.html"], ["Company", "profile-setup.html?edit=1"]]
+      : role === "PROVIDER"
+        ? [["Overview", home], ["Explore", "services.html"], ["Jobs", "bookings.html"], ["Messages", "messages.html"], ["Profile", "profile-setup.html?edit=1"]]
+        : [["Home", home], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Messages", "messages.html"], ["Profile", "profile-setup.html?edit=1"]];
   const style = document.createElement("style");
   style.textContent = `
     .mobile-tabbar{display:none!important}.workspace-mobile-nav{display:none}
