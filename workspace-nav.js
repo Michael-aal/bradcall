@@ -54,6 +54,7 @@
   style.textContent = `
     .mobile-tabbar{display:none!important}
     .workspace-mobile-nav,.workspace-mobile-header,.workspace-mobile-drawer{display:none}
+    .workspace-mobile-drawer:not([hidden]){display:block}
     .workspace-mobile-header{box-sizing:border-box}
     .workspace-mobile-header .workspace-brand{display:flex;align-items:center;gap:9px;color:#f6fff8;text-decoration:none;font:800 19px/1 "Manrope","DM Sans",system-ui,sans-serif;letter-spacing:-.045em}
     .workspace-mobile-header .workspace-brand-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#b7f36b;color:#102a20;font:900 17px/1 "Manrope","DM Sans",system-ui,sans-serif}
