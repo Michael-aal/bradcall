@@ -17,11 +17,9 @@
 
   const DEFAULT_CENTER = { lat: 9.0820, lng: 8.6753 };
   let map;
-  let mapProvider = "leaflet";
   let layer;
   let coverage;
   let routeLayer;
-  let googleGeocoder;
   let geoRouteLine = null;
   let suggestionBox = null;
   let autocompleteTimer = null;
@@ -91,7 +89,6 @@
 
   async function initializeMap() {
     if (map) return;
-    mapProvider = "leaflet";
     await loadLeaflet();
     map = window.L.map(mapNode, { scrollWheelZoom: true }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
 
@@ -123,41 +120,19 @@
     const key = query.trim().toLowerCase();
     if (geocodeCache.has(key)) return geocodeCache.get(key);
     let point = null;
-    if (mapProvider === "google" && googleGeocoder) {
-      const result = await googleGeocoder.geocode({ address: query, region: "ng" });
-      const item = result.results?.[0];
-      if (item) point = {
-        lat: item.geometry.location.lat(), lng: item.geometry.location.lng(),
-        label: item.formatted_address || query
-      };
-    } else {
-      const response = await fetch(API + "/api/maps/geocode?q=" + encodeURIComponent(query));
-      const data = await response.json().catch(() => ({}));
-      if (response.ok && Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon))) {
-        point = { lat: Number(data.lat), lng: Number(data.lon), label: data.formatted || query };
-      } else {
-        // Keep area search usable if the Geoapify service is not configured or is temporarily down.
-        const fallback = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ng&q=" + encodeURIComponent(query), { headers: { Accept: "application/json" } });
-        if (fallback.ok) {
-          const results = await fallback.json();
-          if (results[0]) point = { lat: Number(results[0].lat), lng: Number(results[0].lon), label: results[0].display_name || query };
-        }
-      }
+    const response = await fetch(API + "/api/maps/geocode?q=" + encodeURIComponent(query));
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon))) {
+      point = { lat: Number(data.lat), lng: Number(data.lon), label: data.formatted || query };
     }
     if (point && Number.isFinite(point.lat) && Number.isFinite(point.lng)) geocodeCache.set(key, point);
     return point;
   }
 
   function clearMarkers() {
-    if (mapProvider === "google") {
-      layer.forEach(marker => marker.setMap(null));
-      layer = [];
-      routeLayer.set("directions", null);
-      if (geoRouteLine) { geoRouteLine.setMap(null); geoRouteLine = null; }
-    } else {
-      layer.clearLayers();
-      routeLayer.clearLayers();
-    }
+    layer.clearLayers();
+    routeLayer.clearLayers();
+    geoRouteLine = null;
   }
 
   function addMarker(service, point) {
@@ -168,24 +143,14 @@
       esc(service.location || "Approximate service area") + '</p><p>' + money(service.price) +
       '</p><a class="map-profile-link" href="' + esc(profileHref) + '">View provider profile</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show Geoapify driving route</button></p></div>';
     const initial = esc(String(service.provider?.displayName || service.title || "P").trim().slice(0, 1).toUpperCase());
-    if (mapProvider === "google") {
-      const marker = new google.maps.Marker({
-        map, position: { lat: point.lat, lng: point.lng },
-        title: service.provider?.displayName || service.title || "Available provider",
-        label: { text: initial, color: "#092417", fontWeight: "800", fontSize: "12px" },
-        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 18, fillColor: "#B7F36B", fillOpacity: 1, strokeColor: "#0B3422", strokeWeight: 3 }
-      });
-      const info = new google.maps.InfoWindow({ content: details });
-      marker.addListener("click", () => info.open({ map, anchor: marker }));
-      layer.push(marker);
-    } else {
-      const icon = window.L.divIcon({
-        className: "provider-marker-wrap",
-        html: '<span class="provider-map-marker"><b>' + initial + '</b><i aria-hidden="true"></i></span>',
-        iconSize: [42, 42], iconAnchor: [21, 21], popupAnchor: [0, -20]
-      });
-      window.L.marker([point.lat, point.lng], { icon, title: service.provider?.displayName || service.title || "Available provider" }).bindPopup(details).addTo(layer);
-    }
+    const icon = window.L.divIcon({
+      className: "provider-marker-wrap",
+      html: '<span class="provider-map-marker"><b>' + initial + '</b><i aria-hidden="true"></i></span>',
+      iconSize: [42, 42], iconAnchor: [21, 21], popupAnchor: [0, -20]
+    });
+    window.L.marker([point.lat, point.lng], {
+      icon, title: service.provider?.displayName || service.title || "Available provider"
+    }).bindPopup(details).addTo(layer);
   }
 
   function renderList(services) {
@@ -215,7 +180,7 @@
       say("A valid route location could not be found.");
       return;
     }
-    say("Calculating a driving route…");
+    say("Calculating a Geoapify driving route…");
     try {
       const response = await fetch(API + "/api/maps/route", {
         method: "POST",
@@ -232,20 +197,9 @@
       const path = data.coordinates.map(([lon, lat]) => [Number(lat), Number(lon)])
         .filter(([lat, lon]) => Number.isFinite(lat) && Number.isFinite(lon));
       if (!path.length) throw new Error("No usable route was returned.");
-      if (mapProvider === "google") {
-        if (geoRouteLine) geoRouteLine.setMap(null);
-        geoRouteLine = new google.maps.Polyline({
-          map, path: path.map(([lat, lng]) => ({ lat, lng })),
-          strokeColor: "#0E9F91", strokeWeight: 5, strokeOpacity: 0.9
-        });
-        const bounds = new google.maps.LatLngBounds();
-        path.forEach(([lat, lng]) => bounds.extend({ lat, lng }));
-        map.fitBounds(bounds);
-      } else {
-        routeLayer.clearLayers();
-        geoRouteLine = window.L.polyline(path, { color: "#0E9F91", weight: 5, opacity: 0.9 }).addTo(routeLayer);
-        map.fitBounds(geoRouteLine.getBounds(), { padding: [20, 20] });
-      }
+      routeLayer.clearLayers();
+      geoRouteLine = window.L.polyline(path, { color: "#0E9F91", weight: 5, opacity: 0.9 }).addTo(routeLayer);
+      map.fitBounds(geoRouteLine.getBounds(), { padding: [20, 20] });
       const distance = Number(data.distanceMeters);
       const seconds = Number(data.timeSeconds);
       const summary = [
@@ -267,23 +221,11 @@
     }
     searchCenter = { lat: Number(selectedPoint.lat), lng: Number(selectedPoint.lng) };
     searchRadiusKm = selectedRadius();
-    if (mapProvider === "google") {
-      if (!preserveViewport) {
-        map.setCenter(searchCenter);
-        map.setZoom(zoomForRadius(searchRadiusKm));
-      }
-      coverage.setCenter(searchCenter);
-      coverage.setRadius(searchRadiusKm * 1000);
-      coverage.setMap(map);
-      routeLayer.set("directions", null);
-    } else {
-      if (!preserveViewport) map.setView([searchCenter.lat, searchCenter.lng], zoomForRadius(searchRadiusKm));
-      coverage.setLatLng([searchCenter.lat, searchCenter.lng]);
-      coverage.setRadius(searchRadiusKm * 1000);
-      coverage.addTo(map);
-      clearMarkers();
-    }
-    if (mapProvider === "google") clearMarkers();
+    if (!preserveViewport) map.setView([searchCenter.lat, searchCenter.lng], zoomForRadius(searchRadiusKm));
+    coverage.setLatLng([searchCenter.lat, searchCenter.lng]);
+    coverage.setRadius(searchRadiusKm * 1000);
+    coverage.addTo(map);
+    clearMarkers();
 
     say("Finding nearby service listings…");
     const params = new URLSearchParams({
@@ -325,11 +267,9 @@
     clearTimeout(viewportTimer);
     viewportTimer = setTimeout(() => {
       if (!map) return;
-      const center = mapProvider === "google" ? map.getCenter() : map.getCenter();
-      const point = mapProvider === "google"
-        ? { lat: center?.lat(), lng: center?.lng() }
-        : { lat: center?.lat, lng: center?.lng };
-      const zoom = Number(mapProvider === "google" ? map.getZoom() : map.getZoom());
+      const center = map.getCenter();
+      const point = { lat: center?.lat, lng: center?.lng };
+      const zoom = Number(map.getZoom());
       if (!Number.isFinite(point.lat) || !Number.isFinite(point.lng) || !Number.isFinite(zoom)) return;
       const radius = zoom >= 13 ? 5 : zoom >= 11 ? 10 : zoom >= 9 ? 25 : 50;
       const sameCentre = searchCenter &&
@@ -357,18 +297,12 @@
       if (locationStatus) locationStatus.textContent = "Location enabled. Showing nearby services; your exact position is not shown publicly.";
       try {
         await initializeMap();
-        if (mapProvider === "google") {
-          const result = await googleGeocoder.geocode({ location: coords });
-          const address = result.results?.[0]?.formatted_address;
-          if (address) search.value = address.split(",").slice(0, 2).join(",").trim();
-        } else {
-          try {
-            const response = await fetch(API + "/api/maps/reverse?lat=" + encodeURIComponent(coords.lat) + "&lon=" + encodeURIComponent(coords.lng));
-            const area = await response.json();
-            if (response.ok && area.formatted) search.value = area.formatted.split(",").slice(0, 2).join(",").trim();
-          } catch {
-            // Coordinates still work when reverse geocoding is unavailable.
-          }
+        try {
+          const response = await fetch(API + "/api/maps/reverse?lat=" + encodeURIComponent(coords.lat) + "&lon=" + encodeURIComponent(coords.lng));
+          const area = await response.json();
+          if (response.ok && area.formatted) search.value = area.formatted.split(",").slice(0, 2).join(",").trim();
+        } catch {
+          // Coordinates still work when reverse geocoding is unavailable.
         }
         await refresh(coords);
       } catch (error) {
@@ -475,13 +409,11 @@
   initializeMap().then(() => {
     const resizeMap = () => {
       if (!map) return;
-      if (mapProvider === "google") google.maps.event.trigger(map, "resize");
-      else map.invalidateSize({ pan: false });
+      map.invalidateSize({ pan: false });
     };
     window.addEventListener("load", resizeMap, { once: true });
     window.addEventListener("resize", resizeMap);
-    if (mapProvider === "google") map.addListener("idle", refreshFromViewport);
-    else map.on("moveend zoomend", refreshFromViewport);
+    map.on("moveend zoomend", refreshFromViewport);
     requestAnimationFrame(() => requestAnimationFrame(resizeMap));
     say("Map ready. The base map works independently; Geoapify powers area search and driving routes. Allow location to see nearby providers, or search any area.");
     // This page is explicitly a nearby-services map, so ask for location on entry.
