@@ -27,6 +27,17 @@ function requireKey(res) {
   return false;
 }
 
+// Safe diagnostics: report configuration state only; never return the secret.
+router.get("/status", (_req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json({
+    provider: "Geoapify",
+    configured: Boolean(getApiKey()),
+    baseMapRequiresKey: false,
+    features: { autocomplete: Boolean(getApiKey()), geocoding: Boolean(getApiKey()), routing: Boolean(getApiKey()) }
+  });
+});
+
 router.get("/autocomplete", async (req, res) => {
   if (!requireKey(res)) return;
   const text = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
