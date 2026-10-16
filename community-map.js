@@ -102,7 +102,7 @@
       say("Geoapify map tiles could not load. Check the Render MAPS_API_KEY and backend logs.");
     });
     geoapifyTiles.once("load", () => {
-      say("Street map ready. Use the map control to switch between Street and Satellite.");
+      say("Street map ready. Use the visible selector to switch between Normal map and Satellite map.");
     });
 
     // Satellite imagery is proxied by the backend so the MapTiler key never
@@ -116,10 +116,12 @@
     satelliteTiles.on("tileerror", () => {
       say("Satellite imagery could not load. Check the Render MAPTILER_API_KEY and MapTiler account limits.");
     });
+    // Keep the base-map selector visible so users can switch map styles
+    // without hunting for a hidden layers icon, including on mobile.
     window.L.control.layers(
-      { "Street": geoapifyTiles, "Satellite": satelliteTiles },
+      { "Normal map": geoapifyTiles, "Satellite map": satelliteTiles },
       null,
-      { collapsed: true }
+      { collapsed: false, position: "topright" }
     ).addTo(map);
     map.setMaxZoom(20);
 
