@@ -4,7 +4,7 @@ const showError=message=>{const el=$("#form-error");if(el){el.textContent=messag
 const clearError=()=>{const el=$("#form-error");if(el){el.textContent="";el.classList.remove("visible")}};
 const friendlyError=e=>e instanceof TypeError?"Could not reach Bradcall's API at "+API_BASE+". Page origin: "+location.origin+". This usually means a CORS or deployment configuration problem.":e.message||"Something went wrong.";
 const saveSession=d=>{localStorage.setItem("bradcall_token",d.token);localStorage.setItem("bradcall_user",JSON.stringify(d.user))};
-const goForRole=(role,status,user)=>location.href=(status==="SUSPENDED"||status==="BANNED")?"trust-center.html":role==="ADMIN"?"admin-dashboard.html":role==="PROVIDER"?"provider-dashboard.html":role==="PARTNER"||role==="CUSTOMER"||role==="CONSUMER"?"consumer-dashboard.html":!user?.profileComplete?"profile-setup.html":"index.html";
+const goForRole=(role,status,user)=>{const normalized=String(role||"").trim().toUpperCase();const target=(status==="SUSPENDED"||status==="BANNED")?"trust-center.html":normalized==="ADMIN"?"admin-dashboard.html":normalized==="PROVIDER"?"provider-dashboard.html":["PARTNER","CUSTOMER","CONSUMER"].includes(normalized)?"consumer-dashboard.html":"profile-setup.html";location.replace(target);};
 
 const loginForm=$("#login-form");
 if(loginForm)loginForm.addEventListener("submit",async e=>{
