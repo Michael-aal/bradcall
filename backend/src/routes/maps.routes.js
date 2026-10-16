@@ -61,14 +61,22 @@ router.get("/tiles/:z/:x/:y.png", async (req, res) => {
   }
 });
 
-// Safe diagnostics: report configuration state only; never return the secret.
+// Safe diagnostics: report configuration state only; never return secrets.
 router.get("/status", (_req, res) => {
   res.set("Cache-Control", "no-store");
   res.json({
     provider: "Geoapify",
     configured: Boolean(getApiKey()),
     baseMapRequiresKey: true,
-    features: { tiles: Boolean(getApiKey()), autocomplete: Boolean(getApiKey()), geocoding: Boolean(getApiKey()), routing: Boolean(getApiKey()) }
+    satelliteProvider: "MapTiler",
+    satelliteConfigured: Boolean(process.env.MAPTILER_API_KEY?.trim()),
+    features: {
+      tiles: Boolean(getApiKey()),
+      autocomplete: Boolean(getApiKey()),
+      geocoding: Boolean(getApiKey()),
+      routing: Boolean(getApiKey()),
+      satellite: Boolean(process.env.MAPTILER_API_KEY?.trim())
+    }
   });
 });
 
