@@ -96,3 +96,13 @@ input,select,textarea{max-width:100%;min-width:0}button,a{touch-action:manipulat
 /* Key-free map preview used only if all interactive-map CDNs fail. */
 .community-map-fallback-frame{display:block;width:100%;height:100%;min-height:280px;border:0;border-radius:inherit;background:#eaf2ee}
 .community-map-load-error{display:grid;place-items:center;min-height:280px;padding:20px;color:#40564d;text-align:center}
+
+
+/* Always-visible base-map selector: Normal map (Geoapify) or Satellite map (MapTiler). */
+.community-map-canvas .leaflet-control-layers{border:1px solid #d7e4da;border-radius:12px;box-shadow:0 8px 24px rgba(7,27,20,.18);background:rgba(255,255,255,.97);color:#102a1d;font:600 12px/1.5 'DM Sans',sans-serif}
+.community-map-canvas .leaflet-control-layers-expanded{padding:10px 12px}
+.community-map-canvas .leaflet-control-layers-list{margin:0}
+.community-map-canvas .leaflet-control-layers-base label{display:flex;align-items:center;gap:7px;padding:4px 0;cursor:pointer;white-space:nowrap}
+.community-map-canvas .leaflet-control-layers-base input{accent-color:#0e5135;min-width:14px;min-height:14px;margin:0}
+.community-map-canvas .leaflet-control-layers-base span{display:inline-block}
+@media(max-width:650px){.community-map-canvas .leaflet-control-layers-expanded{padding:8px 10px}.community-map-canvas .leaflet-control-layers-base label{padding:5px 0;font-size:12px}}
