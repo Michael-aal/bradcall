@@ -126,7 +126,7 @@
     layer = window.L.layerGroup().addTo(map);
     routeLayer = window.L.layerGroup().addTo(map);
     coverage = window.L.circle([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], {
-      radius: 10000, color: "#0E9F91", weight: 2, fillColor: "#0E9F91", fillOpacity: 0.08
+      radius: 10000, color: "#0e5135", weight: 2, fillColor: "#0e5135", fillOpacity: 0.08
     });
     mapNode.addEventListener("click", async event => {
       const routeButton = event.target.closest("[data-route-lat][data-route-lng]");
@@ -216,7 +216,7 @@
         .filter(([lat, lon]) => Number.isFinite(lat) && Number.isFinite(lon));
       if (!path.length) throw new Error("No usable route was returned.");
       routeLayer.clearLayers();
-      geoRouteLine = window.L.polyline(path, { color: "#0E9F91", weight: 5, opacity: 0.9 }).addTo(routeLayer);
+      geoRouteLine = window.L.polyline(path, { color: "#0e5135", weight: 5, opacity: 0.9 }).addTo(routeLayer);
       map.fitBounds(geoRouteLine.getBounds(), { padding: [20, 20] });
       const distance = Number(data.distanceMeters);
       const seconds = Number(data.timeSeconds);
