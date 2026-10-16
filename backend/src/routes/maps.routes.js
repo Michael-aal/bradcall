@@ -80,7 +80,7 @@ router.get("/satellite-tiles/:z/:x/:y", async (req, res) => {
   }
 
   try {
-    const url = new URL(`https://api.maptiler.com/tiles/satellite-v4/${z}/${x}/${y}`);
+    const url = new URL(`https://api.maptiler.com/tiles/satellite-v2/${z}/${x}/${y}.jpg`);
     url.searchParams.set("key", key);
     const upstream = await fetch(url, { signal: AbortSignal.timeout(10000) });
     if (upstream.status === 204) return res.status(204).end();
