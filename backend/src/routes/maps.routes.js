@@ -61,14 +61,63 @@ router.get("/tiles/:z/:x/:y.png", async (req, res) => {
   }
 });
 
-// Safe diagnostics: report configuration state only; never return the secret.
+// Proxy MapTiler satellite tiles so its API key stays on the backend.
+router.get("/satellite-tiles/:z/:x/:y", async (req, res) => {
+  const key = typeof process.env.MAPTILER_API_KEY === "string"
+    ? process.env.MAPTILER_API_KEY.trim()
+    : "";
+  if (!key) {
+    return res.status(503).json({ message: "Satellite imagery is not configured on the server." });
+  }
+
+  const z = Number(req.params.z);
+  const x = Number(req.params.x);
+  const y = Number(req.params.y);
+  if (!Number.isInteger(z) || z < 0 || z > 20 ||
+      !Number.isInteger(x) || !Number.isInteger(y) ||
+      x < 0 || y < 0 || x >= 2 ** z || y >= 2 ** z) {
+    return res.status(400).json({ message: "Invalid satellite tile coordinates." });
+  }
+
+  try {
+    const url = new URL(`https://api.maptiler.com/tiles/satellite-v4/${z}/${x}/${y}`);
+    url.searchParams.set("key", key);
+    const upstream = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (upstream.status === 204) return res.status(204).end();
+    if (!upstream.ok) {
+      return res.status(upstream.status === 429 ? 429 : 502).json({
+        message: upstream.status === 403
+          ? "MapTiler rejected the satellite tile request. Check the API key and account restrictions."
+          : "Satellite imagery is temporarily unavailable."
+      });
+    }
+
+    const bytes = Buffer.from(await upstream.arrayBuffer());
+    res.set("Content-Type", upstream.headers.get("content-type") || "image/jpeg");
+    res.set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+    res.set("X-Content-Type-Options", "nosniff");
+    return res.status(200).send(bytes);
+  } catch {
+    return res.status(502).json({ message: "Could not retrieve satellite imagery from MapTiler." });
+  }
+});
+
+// Safe diagnostics: report configuration state only; never return secrets.
 router.get("/status", (_req, res) => {
   res.set("Cache-Control", "no-store");
   res.json({
     provider: "Geoapify",
     configured: Boolean(getApiKey()),
     baseMapRequiresKey: true,
-    features: { tiles: Boolean(getApiKey()), autocomplete: Boolean(getApiKey()), geocoding: Boolean(getApiKey()), routing: Boolean(getApiKey()) }
+    satelliteProvider: "MapTiler",
+    satelliteConfigured: Boolean(process.env.MAPTILER_API_KEY?.trim()),
+    features: {
+      tiles: Boolean(getApiKey()),
+      autocomplete: Boolean(getApiKey()),
+      geocoding: Boolean(getApiKey()),
+      routing: Boolean(getApiKey()),
+      satellite: Boolean(process.env.MAPTILER_API_KEY?.trim())
+    }
   });
 });
 

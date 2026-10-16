@@ -102,8 +102,26 @@
       say("Geoapify map tiles could not load. Check the Render MAPS_API_KEY and backend logs.");
     });
     geoapifyTiles.once("load", () => {
-      say("Geoapify map ready. Allow location or search an area to find nearby providers.");
+      say("Street map ready. Use the map control to switch between Street and Satellite.");
     });
+
+    // Satellite imagery is proxied by the backend so the MapTiler key never
+    // appears in browser code. Street mode remains the default and keeps working
+    // even when MAPTILER_API_KEY has not been configured yet.
+    const satelliteTiles = window.L.tileLayer(API + "/api/maps/satellite-tiles/{z}/{x}/{y}", {
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noreferrer">MapTiler</a>',
+      crossOrigin: true
+    });
+    satelliteTiles.on("tileerror", () => {
+      say("Satellite imagery could not load. Check the Render MAPTILER_API_KEY and MapTiler account limits.");
+    });
+    window.L.control.layers(
+      { "Street": geoapifyTiles, "Satellite": satelliteTiles },
+      null,
+      { collapsed: true }
+    ).addTo(map);
+    map.setMaxZoom(20);
 
     layer = window.L.layerGroup().addTo(map);
     routeLayer = window.L.layerGroup().addTo(map);
