@@ -458,3 +458,27 @@ body.bradcall-home{background:#f5f7f2;color:#0a2118}
 @media(max-width:900px){.bradcall-home .hero{gap:26px;padding-top:62px}.bradcall-home .hero h1{font-size:clamp(45px,6.7vw,66px)}.bradcall-home .hero-art{height:420px}.bradcall-home .value-strip{padding-inline:24px;gap:14px}.bradcall-home .category-photo{height:210px}.bradcall-home .dark-section{gap:45px}.bradcall-home .earn-section{gap:35px}}
 @media(max-width:767px){.bradcall-home .topbar{height:66px;min-height:66px;padding:8px 16px;justify-content:space-between}.bradcall-home .topbar>nav,.bradcall-home .topbar>.actions{display:none!important}.bradcall-home .topbar>.hamb{display:block;margin-left:auto}.bradcall-home .hero{display:grid;grid-template-columns:1fr;min-height:0;padding:52px 18px 42px;gap:27px}.bradcall-home .hero h1{font-size:clamp(48px,12vw,66px)}.bradcall-home .hero p{font-size:14px}.bradcall-home .home-search{grid-template-columns:1fr;gap:0}.bradcall-home .home-search label{border-right:0;border-bottom:1px solid #e3e9e2;min-height:48px}.bradcall-home .home-search button{margin-top:6px;min-height:47px}.bradcall-home .hero-art{height:350px}.bradcall-home .hero-photo-main{inset:8px 25px 22px 10px}.bradcall-home .hero-photo-small{width:112px;height:137px;border-width:5px}.bradcall-home .hero-sticker{left:0;bottom:0;padding:10px 12px}.bradcall-home .photo-caption{left:15px;bottom:16px}.bradcall-home .value-strip{grid-template-columns:1fr 1fr;padding:23px 18px;gap:22px 12px}.bradcall-home .section{padding:57px 18px}.bradcall-home .section-head{display:block}.bradcall-home .section-link{margin-top:18px}.bradcall-home .category-photo-grid{grid-template-columns:1fr 1fr;gap:9px}.bradcall-home .category-photo{height:185px;border-radius:12px}.bradcall-home .category-overlay{left:12px;right:10px;bottom:12px}.bradcall-home .category-overlay b{font-size:17px}.bradcall-home .category-overlay small{font-size:8px}.bradcall-home .live-section{padding-top:12px}.bradcall-home .live-listing{grid-template-columns:40px minmax(0,1fr);gap:10px;padding:13px}.bradcall-home .listing-mark{width:38px;height:38px;border-radius:10px}.bradcall-home .listing-copy h3{font-size:14px}.bradcall-home .listing-end{grid-column:2;display:flex;justify-content:space-between;align-items:center;white-space:normal;width:100%;padding-top:3px}.bradcall-home .listing-end strong{font-size:14px}.bradcall-home .dark-section{grid-template-columns:1fr;padding:57px 20px;gap:23px}.bradcall-home .dark-section h2{font-size:42px}.bradcall-home .earn-section{grid-template-columns:1fr;padding:55px 18px;gap:24px}.bradcall-home .earn-photo{height:270px}.bradcall-home .home-final{margin:0 12px 40px;padding:27px 20px;display:grid;gap:12px}.bradcall-home .cta-actions{display:grid;grid-template-columns:1fr}.bradcall-home .cta-actions>*{width:100%;min-height:45px}.bradcall-home .home-footer{padding:24px 18px;align-items:flex-start;flex-direction:column}.bradcall-home .home-footer>div{gap:13px}}
 @media(max-width:390px){.bradcall-home .category-photo{height:160px}.bradcall-home .hero-proof{gap:10px}.bradcall-home .hero-sticker{font-size:10px}.bradcall-home .hero-sticker b{font-size:11px}}
+
+
+/* Landing-page navigation fix: keep the menu control visible and tappable at every viewport size. */
+.bradcall-home .topbar > .hamb {
+  display: grid !important;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  margin-left: 12px;
+  padding: 0;
+  border: 1px solid #2b6244;
+  border-radius: 12px;
+  background: #0b3422;
+  color: #fff;
+  cursor: pointer;
+}
+.bradcall-home .topbar > .hamb svg { width: 22px; height: 22px; stroke: currentColor; }
+.bradcall-home .topbar > .hamb:focus-visible { outline: 3px solid #b7f36b; outline-offset: 3px; }
+.bradcall-home .mobile-nav[hidden] { display: none !important; }
+.bradcall-home .mobile-nav:not([hidden]) { display: block; }
+@media (max-width: 767px) {
+  .bradcall-home .topbar > .hamb { margin-left: auto; }
+}

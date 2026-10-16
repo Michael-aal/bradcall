@@ -22,7 +22,6 @@
   let layer;
   let coverage;
   let routeLayer;
-  let directionsRenderer;
   let googleGeocoder;
   let geoRouteLine = null;
   let suggestionBox = null;
@@ -44,25 +43,7 @@
   const selectedRadius = () => { const value = Number(radiusSelect?.value || 10); return [5, 10, 25, 50].includes(value) ? value : 10; };
   const zoomForRadius = km => km <= 5 ? 13 : km <= 10 ? 12 : km <= 25 ? 10 : 8;
 
-  function loadScript(src, dataAttribute) {
-    return new Promise((resolve, reject) => {
-      const existing = document.querySelector("script[" + dataAttribute + "]");
-      if (existing) {
-        if (existing.dataset.loaded === "true") return resolve();
-        existing.addEventListener("load", resolve, { once: true });
-        existing.addEventListener("error", () => reject(new Error("The map service could not load. Check your connection and API configuration.")), { once: true });
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = src;
-      script.async = true;
-      script.dataset[dataAttribute.replace("data-", "").replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = "true";
-      script.setAttribute(dataAttribute, "true");
-      script.onload = () => { script.dataset.loaded = "true"; resolve(); };
-      script.onerror = () => reject(new Error("The map service could not load. Check your connection and API configuration."));
-      document.head.appendChild(script);
-    });
-  }
+
 
   async function loadGoogleMaps() {
     if (window.google?.maps?.Map) return true;
