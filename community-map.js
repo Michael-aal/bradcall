@@ -2,7 +2,6 @@
   "use strict";
 
   const API = (window.BRADCALL_API_URL || (location.hostname === "localhost" || location.hostname === "127.0.0.1" ? "http://localhost:5000" : location.origin)).replace(/\/$/, "");
-  const GOOGLE_KEY = String(window.BRADCALL_GOOGLE_MAPS_API_KEY || document.querySelector('meta[name="bradcall-google-maps-key"]')?.content || "").trim();
   const root = document.querySelector("[data-community-map]");
   if (!root) return;
 
@@ -44,30 +43,6 @@
   const zoomForRadius = km => km <= 5 ? 13 : km <= 10 ? 12 : km <= 25 ? 10 : 8;
 
 
-
-  async function loadGoogleMaps() {
-    if (window.google?.maps?.Map) return true;
-    if (!GOOGLE_KEY) return false;
-    await new Promise((resolve, reject) => {
-      if (window.google?.maps?.Map) return resolve();
-      const callbackName = "__bradcallGoogleMapsReady";
-      window[callbackName] = () => { delete window[callbackName]; resolve(); };
-      const existing = document.querySelector('script[data-bradcall-google-maps]');
-      if (existing) {
-        existing.addEventListener("load", () => window.google?.maps?.Map ? resolve() : reject(new Error("Google Maps did not initialize. Check that Maps JavaScript API is enabled.")), { once: true });
-        existing.addEventListener("error", () => reject(new Error("Google Maps could not load. Check the API key and allowed website referrers.")), { once: true });
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = "https://maps.googleapis.com/maps/api/js?key=" + encodeURIComponent(GOOGLE_KEY) + "&libraries=places&callback=" + callbackName + "&v=weekly";
-      script.async = true;
-      script.defer = true;
-      script.dataset.bradcallGoogleMaps = "true";
-      script.onerror = () => reject(new Error("Google Maps could not load. Check the API key and allowed website referrers."));
-      document.head.appendChild(script);
-    });
-    return Boolean(window.google?.maps?.Map);
-  }
 
   async function loadLeaflet() {
     if (window.L) return;
@@ -116,46 +91,23 @@
 
   async function initializeMap() {
     if (map) return;
-    try {
-      if (await loadGoogleMaps()) {
-        mapProvider = "google";
-        map = new google.maps.Map(mapNode, {
-          center: DEFAULT_CENTER, zoom: 6, mapTypeControl: false,
-          streetViewControl: false, fullscreenControl: true,
-          gestureHandling: "greedy"
-        });
-        googleGeocoder = new google.maps.Geocoder();
-        layer = [];
-        routeLayer = new google.maps.DirectionsRenderer({
-          map, suppressMarkers: false, polylineOptions: { strokeColor: "#0E9F91", strokeWeight: 5, strokeOpacity: 0.85 }
-        });
-        coverage = new google.maps.Circle({
-          map: null, center: DEFAULT_CENTER, radius: 10000, strokeColor: "#0E9F91",
-          strokeOpacity: 0.8, strokeWeight: 2, fillColor: "#0E9F91", fillOpacity: 0.08
-        });
-        return;
-      }
-    } catch (error) {
-      say(error.message || "Google Maps could not load. Showing the community map fallback.");
-    }
     mapProvider = "leaflet";
     await loadLeaflet();
     map = window.L.map(mapNode, { scrollWheelZoom: true }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
-    const osmTiles = window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
+
+    // Use Geoapify map tiles through Bradcall's backend. The API key stays on Render.
+    const geoapifyTiles = window.L.tileLayer(API + "/api/maps/tiles/{z}/{x}/{y}.png", {
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">Geoapify</a> &middot; &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>',
+      crossOrigin: true
     }).addTo(map);
-    let tileFallbackUsed = false;
-    osmTiles.once("tileerror", () => {
-      if (tileFallbackUsed) return;
-      tileFallbackUsed = true;
-      map.removeLayer(osmTiles);
-      window.L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19,
-        subdomains: "abcd",
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-      }).addTo(map);
+    geoapifyTiles.on("tileerror", () => {
+      say("Geoapify map tiles could not load. Check the Render MAPS_API_KEY and backend logs.");
     });
+    geoapifyTiles.once("load", () => {
+      say("Geoapify map ready. Allow location or search an area to find nearby providers.");
+    });
+
     layer = window.L.layerGroup().addTo(map);
     routeLayer = window.L.layerGroup().addTo(map);
     coverage = window.L.circle([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], {
@@ -214,9 +166,7 @@
     const details = '<div class="map-popup"><strong>' + title + '</strong><p>' +
       esc(service.category?.name || "Service provider") + '</p><p>' +
       esc(service.location || "Approximate service area") + '</p><p>' + money(service.price) +
-      '</p><a class="map-profile-link" href="' + esc(profileHref) + '">View provider profile</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route</button></p><p><a target="_blank" rel="noopener noreferrer" href="' +
-      esc("https://www.google.com/maps/dir/?api=1&destination=" + point.lat + "," + point.lng) +
-      '">Get directions in Google Maps</a></p></div>';
+      '</p><a class="map-profile-link" href="' + esc(profileHref) + '">View provider profile</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show Geoapify driving route</button></p></div>';
     const initial = esc(String(service.provider?.displayName || service.title || "P").trim().slice(0, 1).toUpperCase());
     if (mapProvider === "google") {
       const marker = new google.maps.Marker({
@@ -304,11 +254,7 @@
       ].filter(Boolean).join(" · ");
       say("Geoapify driving route" + (summary ? ": " + summary : "") + ". Estimates can change with traffic and road conditions.");
     } catch {
-      const url = "https://www.google.com/maps/dir/?api=1&origin=" +
-        encodeURIComponent(searchCenter.lat + "," + searchCenter.lng) + "&destination=" +
-        encodeURIComponent(destinationLat + "," + destinationLng) + "&travelmode=driving";
-      window.open(url, "_blank", "noopener,noreferrer");
-      say("Bradcall couldn't calculate an in-map route just now, so directions opened in Google Maps.");
+      say("Geoapify couldn't calculate this route right now. Check the Render MAPS_API_KEY and try again.");
     }
   }
 
