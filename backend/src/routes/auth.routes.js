@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { auth } from "../middleware/auth.js";
+import { validateProviderRegistration } from "../lib/registration.js";
 const router=Router(), POLICY_VERSION="2026-10-12-v1";
 const hashCode=code=>createHash("sha256").update(code).digest("hex");
 async function deliverVerification(user,method,code){
@@ -32,6 +33,7 @@ const sign=u=>{if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)thro
 router.post("/register",async(req,res,next)=>{try{
  const name=typeof req.body.name==="string"?req.body.name.trim():"",email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"",password=typeof req.body.password==="string"?req.body.password:"",role=req.body.role||"PARTNER";
  const providerType=role==="PROVIDER"?(req.body.providerType||"INDIVIDUAL"):null;
+ const providerRegistration=validateProviderRegistration({providerType,companyName:req.body.companyName});
  const phone=typeof req.body.phone==="string"?req.body.phone.trim():"",state=typeof req.body.state==="string"?req.body.state.trim():"",location=typeof req.body.location==="string"?req.body.location.trim():"",primaryCategory=typeof req.body.primaryCategory==="string"?req.body.primaryCategory.trim():"";
  const verificationMethod=req.body.verificationMethod==="PHONE"?"PHONE":"EMAIL";
  if(!name||name.length>100||!email||email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!password)return res.status(400).json({message:"Enter a valid name, email, and password."});
@@ -41,12 +43,12 @@ router.post("/register",async(req,res,next)=>{try{
  if(!state||state.length>80)return res.status(400).json({message:"Choose your state."});
  if(!location||location.length>120)return res.status(400).json({message:"Enter your town or area."});
  if(verificationMethod==="PHONE"&&(!phone||!/^\+?[0-9 ()-]{7,30}$/.test(phone)))return res.status(400).json({message:"Enter a valid phone number to verify by SMS."});
- if(role==="PROVIDER"&&providerType!=="INDIVIDUAL")return res.status(400).json({message:"Choose a supported provider account type."});
+ if(role==="PROVIDER"&&providerRegistration.error)return res.status(400).json({message:providerRegistration.error});
  if(role==="PROVIDER"&&(!phone||phone.length>30||!/^\+?[0-9 ()-]{7,30}$/.test(phone)))return res.status(400).json({message:"Enter a valid provider phone number."});
  if(role==="PROVIDER"&&(!location||location.length>120||!primaryCategory||primaryCategory.length>80))return res.status(400).json({message:"Enter your service location and choose a service category."});
  if(req.body.acceptedPolicies!==true)return res.status(400).json({message:"You must accept the Terms of Service and Privacy Policy."});
  if(await prisma.user.findUnique({where:{email}}))return res.status(409).json({message:"Email already registered. Try logging in or verifying the existing account."});
- const now=new Date(),u=await prisma.user.create({data:{name,email,phone:phone||null,state,location,passwordHash:await bcrypt.hash(password,12),role,verificationRequired:true,verificationMethod,provider:role==="PROVIDER"?{create:{displayName:name,providerType:"INDIVIDUAL",phone:phone||null,location:location||null,primaryCategory:primaryCategory||null}}:undefined,policyAcceptances:{create:{policyVersion:POLICY_VERSION,termsAcceptedAt:now,privacyAcceptedAt:now}}},include:{provider:true}});
+ const now=new Date(),u=await prisma.user.create({data:{name,email,phone:phone||null,state,location,passwordHash:await bcrypt.hash(password,12),role,verificationRequired:true,verificationMethod,provider:role==="PROVIDER"?{create:{displayName:providerRegistration.providerType==="COMPANY"?providerRegistration.companyName:name,providerType:providerRegistration.providerType,companyName:providerRegistration.companyName,phone:phone||null,location:location||null,primaryCategory:primaryCategory||null}}:undefined,policyAcceptances:{create:{policyVersion:POLICY_VERSION,termsAcceptedAt:now,privacyAcceptedAt:now}}},include:{provider:true}});
  try{await issueCode(u,verificationMethod);return res.status(201).json({verificationRequired:true,deliveryPending:false,method:verificationMethod,email:u.email,message:"Verification code sent."});}
  catch(error){console.error("Bradcall verification delivery failed:",error.message);return res.status(201).json({verificationRequired:true,deliveryPending:true,method:verificationMethod,email:u.email,message:"Your account was created, but the verification code could not be delivered. Check delivery settings and request a new code."});}
 }catch(e){next(e)}});
