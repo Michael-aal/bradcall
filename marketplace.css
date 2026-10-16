@@ -85,3 +85,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .provider-fields[hidden]{display:none!important}
 
 .marketplace-view-switch{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}.marketplace-view-switch .dash-btn{min-width:140px}@media(max-width:520px){.marketplace-view-switch .dash-btn{flex:1}}
+
+/* Dark-green primary actions and workspace navigation. */
+body:not(.bradcall-home) .dark,body:not(.bradcall-home) .auth-submit,body:not(.bradcall-home) .primary-action{background:#0e5135!important;color:#fff!important}
+body:not(.bradcall-home) .dark:hover,body:not(.bradcall-home) .auth-submit:hover,body:not(.bradcall-home) .primary-action:hover{background:#071b14!important}
+body:not(.bradcall-home) .topbar{background:#071b14!important;color:#fff!important;border-color:#244b35!important}
+body:not(.bradcall-home) .topbar .brand,body:not(.bradcall-home) .topbar nav a{color:#fff!important}
+body:not(.bradcall-home) .mobile-tabbar{background:#071b14!important;border-color:#244b35!important}
+body:not(.bradcall-home) .mobile-tabbar a.is-active{background:#0e5135!important;color:#fff!important}
