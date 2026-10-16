@@ -1,4 +1,4 @@
-:root{--ink:#171513;--muted:#77716c;--paper:#F4FAFB;--white:#fff;--line:#e5ded6;--green:#0E9F91;--soft:#DDF7F1;--dark:#102A33;--max:1180px}
+:root{--ink:#071b14;--muted:#77716c;--paper:#F4FAFB;--white:#fff;--line:#e5ded6;--green:#0e5135;--soft:#DDF7F1;--dark:#071b14;--max:1180px}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -74,7 +74,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:28px 5%;display:
 
 
 /* Bradcall brand accents: Glovo-inspired green and warm yellow. */
-:root{--green:#0E9F91;--green-soft:#E2F5EF;--yellow:#D9F36A}
+:root{--green:#0e5135;--green-soft:#E2F5EF;--yellow:#D9F36A}
 .brand-mark,.brand span{background:var(--green);color:#fff}
 .dark:not(.dark-section *),.search button,.red{background:var(--green);color:#fff}
 .tag{background:var(--yellow);color:var(--ink)}
@@ -107,10 +107,10 @@ input,select,textarea{max-width:100%}
   --paper:#f7f8f5;
   --white:#fff;
   --line:#DCE9EC;
-  --green:#0E9F91;
+  --green:#0e5135;
   --green-soft:#DDF7F1;
   --yellow:#D9F36A;
-  --dark:#102A33;
+  --dark:#071b14;
   --max:1200px;
   --radius-card:22px;
 }
