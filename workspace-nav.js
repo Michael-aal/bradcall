@@ -4,7 +4,7 @@
   let user = null;
   try { user = raw ? JSON.parse(raw) : null; } catch {}
   const root = document.querySelector("#dashboard-root");
-  const protectedWorkspace = document.body.dataset.workspace || root || document.querySelector("#tracking-map");
+  const protectedWorkspace = document.body.dataset.workspace || root || document.querySelector("#tracking-map") || document.body.classList.contains("profile-setup-page");
   if (!protectedWorkspace || !user || !["PARTNER", "PROVIDER", "ADMIN", "CONSUMER", "CUSTOMER"].includes(String(user.role || "").toUpperCase())) return;
 
   const role = user.role;
