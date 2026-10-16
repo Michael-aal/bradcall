@@ -512,14 +512,11 @@
       requestDeviceLocation();
     }
   }).catch(error => {
-    // Keep a useful, key-free map visible even when every Leaflet CDN is blocked.
-    // This fallback is for map display only; live provider pins/search need the interactive map.
-    say("Interactive map could not load. Showing a basic map preview; refresh or check your connection for provider pins.");
+    say("Geoapify interactive map could not start. Check your connection and the Render MAPS_API_KEY, then reload.");
     if (mapNode) {
-      mapNode.setAttribute("role", "region");
-      mapNode.setAttribute("aria-label", "Basic OpenStreetMap preview");
-      mapNode.innerHTML = '<iframe class="community-map-fallback-frame" title="OpenStreetMap map preview of Nigeria" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.openstreetmap.org/export/embed.html?bbox=2.6%2C4.2%2C14.7%2C13.9&layer=mapnik"></iframe>';
+      mapNode.setAttribute("role", "status");
+      mapNode.innerHTML = '<div class="community-map-load-error">The Geoapify map could not load. Check your connection and map configuration, then reload.</div>';
     }
-    if (locationStatus) locationStatus.textContent = "The basic map does not need an API key. Provider search and driving routes use the backend location service.";
+    if (locationStatus) locationStatus.textContent = "Bradcall uses Geoapify for its map, place search and driving routes.";
   });
 })();
