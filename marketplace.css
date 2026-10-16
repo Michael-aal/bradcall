@@ -93,3 +93,14 @@ body:not(.bradcall-home) .topbar{background:#071b14!important;color:#fff!importa
 body:not(.bradcall-home) .topbar .brand,body:not(.bradcall-home) .topbar nav a{color:#fff!important}
 body:not(.bradcall-home) .mobile-tabbar{background:#071b14!important;border-color:#244b35!important}
 body:not(.bradcall-home) .mobile-tabbar a.is-active{background:#0e5135!important;color:#fff!important}
+
+/* Registration account choices: compact, consistently sized native radio controls. */
+.auth-form .role-choice{display:grid;grid-template-columns:1fr;gap:8px}
+.auth-form .role-option{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;border:1px solid #d8e3de;border-radius:11px;cursor:pointer;background:#fff}
+.auth-form .role-option input[type="radio"]{appearance:auto;-webkit-appearance:radio;display:block;flex:0 0 16px;width:16px;height:16px;min-width:16px;min-height:16px;margin:0;padding:0;border:0;box-shadow:none;accent-color:var(--brand-green)}
+.auth-form .role-option span{display:grid;gap:2px;min-width:0}
+.auth-form .role-option strong{font-size:13px;line-height:1.35}
+.auth-form .role-option small{font-size:12px;line-height:1.4;color:#687a73;font-weight:500}
+.auth-form .role-option:has(input:checked){border-color:var(--brand-green);background:#effaf6;box-shadow:0 0 0 1px var(--brand-green) inset}
+.auth-form .role-option:focus-within{outline:2px solid var(--brand-yellow);outline-offset:2px}
+#company-name-field[hidden]{display:none!important}
