@@ -33,9 +33,11 @@ Set `MAPS_API_KEY` in the Render environment for the Bradcall backend service. K
 
 The backend exposes these Geoapify-backed endpoints:
 
+- `GET /api/maps/status` — reports whether the server key is configured without revealing it.
+- `GET /api/maps/tiles/{z}/{x}/{y}.png` — proxies Geoapify `osm-bright` map tiles; the browser never receives the secret key.
 - `GET /api/maps/autocomplete?q=...` — Nigerian address and area suggestions.
 - `GET /api/maps/geocode?q=...` — resolve an area or address to coordinates.
 - `GET /api/maps/reverse?lat=...&lon=...` — resolve device coordinates to a readable area.
 - `POST /api/maps/route` — driving route geometry and distance/time summary.
 
-The public map uses Leaflet/OpenStreetMap tiles by default. Geoapify search and route requests are proxied through the backend so the Render key is not exposed in browser code.
+The interactive community map uses Leaflet to display Geoapify `osm-bright` tiles. Tile requests, place search, geocoding, reverse geocoding, and routing are proxied through the backend so `MAPS_API_KEY` stays on Render and is not exposed in browser code. The Geoapify map itself requires a valid key; the status endpoint only confirms that a value is configured, while a successful tile request confirms the key can actually retrieve tiles.

@@ -27,14 +27,48 @@ function requireKey(res) {
   return false;
 }
 
+// Proxy Geoapify raster tiles so the private Render API key never reaches the browser.
+// Tile responses are cacheable; coordinates and style are strictly validated.
+router.get("/tiles/:z/:x/:y.png", async (req, res) => {
+  const key = getApiKey();
+  if (!key) return res.status(503).json({ message: "Geoapify map tiles are not configured on the server." });
+
+  const z = Number(req.params.z);
+  const x = Number(req.params.x);
+  const y = Number(req.params.y);
+  if (!Number.isInteger(z) || z < 0 || z > 20 ||
+      !Number.isInteger(x) || !Number.isInteger(y) ||
+      x < 0 || y < 0 || x >= 2 ** z || y >= 2 ** z) {
+    return res.status(400).json({ message: "Invalid map tile coordinates." });
+  }
+
+  try {
+    const url = new URL(`https://maps.geoapify.com/v1/tile/osm-bright/${z}/${x}/${y}.png`);
+    url.searchParams.set("apiKey", key);
+    const upstream = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!upstream.ok) {
+      return res.status(upstream.status === 429 ? 429 : 502).json({
+        message: "Geoapify map tiles are temporarily unavailable."
+      });
+    }
+    const bytes = Buffer.from(await upstream.arrayBuffer());
+    res.set("Content-Type", upstream.headers.get("content-type") || "image/png");
+    res.set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+    res.set("X-Content-Type-Options", "nosniff");
+    return res.status(200).send(bytes);
+  } catch {
+    return res.status(502).json({ message: "Could not retrieve Geoapify map tiles." });
+  }
+});
+
 // Safe diagnostics: report configuration state only; never return the secret.
 router.get("/status", (_req, res) => {
   res.set("Cache-Control", "no-store");
   res.json({
     provider: "Geoapify",
     configured: Boolean(getApiKey()),
-    baseMapRequiresKey: false,
-    features: { autocomplete: Boolean(getApiKey()), geocoding: Boolean(getApiKey()), routing: Boolean(getApiKey()) }
+    baseMapRequiresKey: true,
+    features: { tiles: Boolean(getApiKey()), autocomplete: Boolean(getApiKey()), geocoding: Boolean(getApiKey()), routing: Boolean(getApiKey()) }
   });
 });
 

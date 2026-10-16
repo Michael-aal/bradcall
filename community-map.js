@@ -2,7 +2,6 @@
   "use strict";
 
   const API = (window.BRADCALL_API_URL || (location.hostname === "localhost" || location.hostname === "127.0.0.1" ? "http://localhost:5000" : location.origin)).replace(/\/$/, "");
-  const GOOGLE_KEY = String(window.BRADCALL_GOOGLE_MAPS_API_KEY || document.querySelector('meta[name="bradcall-google-maps-key"]')?.content || "").trim();
   const root = document.querySelector("[data-community-map]");
   if (!root) return;
 
@@ -18,11 +17,9 @@
 
   const DEFAULT_CENTER = { lat: 9.0820, lng: 8.6753 };
   let map;
-  let mapProvider = "leaflet";
   let layer;
   let coverage;
   let routeLayer;
-  let googleGeocoder;
   let geoRouteLine = null;
   let suggestionBox = null;
   let autocompleteTimer = null;
@@ -44,30 +41,6 @@
   const zoomForRadius = km => km <= 5 ? 13 : km <= 10 ? 12 : km <= 25 ? 10 : 8;
 
 
-
-  async function loadGoogleMaps() {
-    if (window.google?.maps?.Map) return true;
-    if (!GOOGLE_KEY) return false;
-    await new Promise((resolve, reject) => {
-      if (window.google?.maps?.Map) return resolve();
-      const callbackName = "__bradcallGoogleMapsReady";
-      window[callbackName] = () => { delete window[callbackName]; resolve(); };
-      const existing = document.querySelector('script[data-bradcall-google-maps]');
-      if (existing) {
-        existing.addEventListener("load", () => window.google?.maps?.Map ? resolve() : reject(new Error("Google Maps did not initialize. Check that Maps JavaScript API is enabled.")), { once: true });
-        existing.addEventListener("error", () => reject(new Error("Google Maps could not load. Check the API key and allowed website referrers.")), { once: true });
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = "https://maps.googleapis.com/maps/api/js?key=" + encodeURIComponent(GOOGLE_KEY) + "&libraries=places&callback=" + callbackName + "&v=weekly";
-      script.async = true;
-      script.defer = true;
-      script.dataset.bradcallGoogleMaps = "true";
-      script.onerror = () => reject(new Error("Google Maps could not load. Check the API key and allowed website referrers."));
-      document.head.appendChild(script);
-    });
-    return Boolean(window.google?.maps?.Map);
-  }
 
   async function loadLeaflet() {
     if (window.L) return;
@@ -116,46 +89,22 @@
 
   async function initializeMap() {
     if (map) return;
-    try {
-      if (await loadGoogleMaps()) {
-        mapProvider = "google";
-        map = new google.maps.Map(mapNode, {
-          center: DEFAULT_CENTER, zoom: 6, mapTypeControl: false,
-          streetViewControl: false, fullscreenControl: true,
-          gestureHandling: "greedy"
-        });
-        googleGeocoder = new google.maps.Geocoder();
-        layer = [];
-        routeLayer = new google.maps.DirectionsRenderer({
-          map, suppressMarkers: false, polylineOptions: { strokeColor: "#0E9F91", strokeWeight: 5, strokeOpacity: 0.85 }
-        });
-        coverage = new google.maps.Circle({
-          map: null, center: DEFAULT_CENTER, radius: 10000, strokeColor: "#0E9F91",
-          strokeOpacity: 0.8, strokeWeight: 2, fillColor: "#0E9F91", fillOpacity: 0.08
-        });
-        return;
-      }
-    } catch (error) {
-      say(error.message || "Google Maps could not load. Showing the community map fallback.");
-    }
-    mapProvider = "leaflet";
     await loadLeaflet();
     map = window.L.map(mapNode, { scrollWheelZoom: true }).setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], 6);
-    const osmTiles = window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
+
+    // Use Geoapify map tiles through Bradcall's backend. The API key stays on Render.
+    const geoapifyTiles = window.L.tileLayer(API + "/api/maps/tiles/{z}/{x}/{y}.png", {
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">Geoapify</a> &middot; &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>',
+      crossOrigin: true
     }).addTo(map);
-    let tileFallbackUsed = false;
-    osmTiles.once("tileerror", () => {
-      if (tileFallbackUsed) return;
-      tileFallbackUsed = true;
-      map.removeLayer(osmTiles);
-      window.L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19,
-        subdomains: "abcd",
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-      }).addTo(map);
+    geoapifyTiles.on("tileerror", () => {
+      say("Geoapify map tiles could not load. Check the Render MAPS_API_KEY and backend logs.");
     });
+    geoapifyTiles.once("load", () => {
+      say("Geoapify map ready. Allow location or search an area to find nearby providers.");
+    });
+
     layer = window.L.layerGroup().addTo(map);
     routeLayer = window.L.layerGroup().addTo(map);
     coverage = window.L.circle([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], {
@@ -171,41 +120,19 @@
     const key = query.trim().toLowerCase();
     if (geocodeCache.has(key)) return geocodeCache.get(key);
     let point = null;
-    if (mapProvider === "google" && googleGeocoder) {
-      const result = await googleGeocoder.geocode({ address: query, region: "ng" });
-      const item = result.results?.[0];
-      if (item) point = {
-        lat: item.geometry.location.lat(), lng: item.geometry.location.lng(),
-        label: item.formatted_address || query
-      };
-    } else {
-      const response = await fetch(API + "/api/maps/geocode?q=" + encodeURIComponent(query));
-      const data = await response.json().catch(() => ({}));
-      if (response.ok && Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon))) {
-        point = { lat: Number(data.lat), lng: Number(data.lon), label: data.formatted || query };
-      } else {
-        // Keep area search usable if the Geoapify service is not configured or is temporarily down.
-        const fallback = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ng&q=" + encodeURIComponent(query), { headers: { Accept: "application/json" } });
-        if (fallback.ok) {
-          const results = await fallback.json();
-          if (results[0]) point = { lat: Number(results[0].lat), lng: Number(results[0].lon), label: results[0].display_name || query };
-        }
-      }
+    const response = await fetch(API + "/api/maps/geocode?q=" + encodeURIComponent(query));
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon))) {
+      point = { lat: Number(data.lat), lng: Number(data.lon), label: data.formatted || query };
     }
     if (point && Number.isFinite(point.lat) && Number.isFinite(point.lng)) geocodeCache.set(key, point);
     return point;
   }
 
   function clearMarkers() {
-    if (mapProvider === "google") {
-      layer.forEach(marker => marker.setMap(null));
-      layer = [];
-      routeLayer.set("directions", null);
-      if (geoRouteLine) { geoRouteLine.setMap(null); geoRouteLine = null; }
-    } else {
-      layer.clearLayers();
-      routeLayer.clearLayers();
-    }
+    layer.clearLayers();
+    routeLayer.clearLayers();
+    geoRouteLine = null;
   }
 
   function addMarker(service, point) {
@@ -214,28 +141,16 @@
     const details = '<div class="map-popup"><strong>' + title + '</strong><p>' +
       esc(service.category?.name || "Service provider") + '</p><p>' +
       esc(service.location || "Approximate service area") + '</p><p>' + money(service.price) +
-      '</p><a class="map-profile-link" href="' + esc(profileHref) + '">View provider profile</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show driving route</button></p><p><a target="_blank" rel="noopener noreferrer" href="' +
-      esc("https://www.google.com/maps/dir/?api=1&destination=" + point.lat + "," + point.lng) +
-      '">Get directions in Google Maps</a></p></div>';
+      '</p><a class="map-profile-link" href="' + esc(profileHref) + '">View provider profile</a><p><button type="button" class="map-route-button" data-route-lat="' + point.lat + '" data-route-lng="' + point.lng + '">Show Geoapify driving route</button></p></div>';
     const initial = esc(String(service.provider?.displayName || service.title || "P").trim().slice(0, 1).toUpperCase());
-    if (mapProvider === "google") {
-      const marker = new google.maps.Marker({
-        map, position: { lat: point.lat, lng: point.lng },
-        title: service.provider?.displayName || service.title || "Available provider",
-        label: { text: initial, color: "#092417", fontWeight: "800", fontSize: "12px" },
-        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 18, fillColor: "#B7F36B", fillOpacity: 1, strokeColor: "#0B3422", strokeWeight: 3 }
-      });
-      const info = new google.maps.InfoWindow({ content: details });
-      marker.addListener("click", () => info.open({ map, anchor: marker }));
-      layer.push(marker);
-    } else {
-      const icon = window.L.divIcon({
-        className: "provider-marker-wrap",
-        html: '<span class="provider-map-marker"><b>' + initial + '</b><i aria-hidden="true"></i></span>',
-        iconSize: [42, 42], iconAnchor: [21, 21], popupAnchor: [0, -20]
-      });
-      window.L.marker([point.lat, point.lng], { icon, title: service.provider?.displayName || service.title || "Available provider" }).bindPopup(details).addTo(layer);
-    }
+    const icon = window.L.divIcon({
+      className: "provider-marker-wrap",
+      html: '<span class="provider-map-marker"><b>' + initial + '</b><i aria-hidden="true"></i></span>',
+      iconSize: [42, 42], iconAnchor: [21, 21], popupAnchor: [0, -20]
+    });
+    window.L.marker([point.lat, point.lng], {
+      icon, title: service.provider?.displayName || service.title || "Available provider"
+    }).bindPopup(details).addTo(layer);
   }
 
   function renderList(services) {
@@ -265,7 +180,7 @@
       say("A valid route location could not be found.");
       return;
     }
-    say("Calculating a driving route…");
+    say("Calculating a Geoapify driving route…");
     try {
       const response = await fetch(API + "/api/maps/route", {
         method: "POST",
@@ -282,20 +197,9 @@
       const path = data.coordinates.map(([lon, lat]) => [Number(lat), Number(lon)])
         .filter(([lat, lon]) => Number.isFinite(lat) && Number.isFinite(lon));
       if (!path.length) throw new Error("No usable route was returned.");
-      if (mapProvider === "google") {
-        if (geoRouteLine) geoRouteLine.setMap(null);
-        geoRouteLine = new google.maps.Polyline({
-          map, path: path.map(([lat, lng]) => ({ lat, lng })),
-          strokeColor: "#0E9F91", strokeWeight: 5, strokeOpacity: 0.9
-        });
-        const bounds = new google.maps.LatLngBounds();
-        path.forEach(([lat, lng]) => bounds.extend({ lat, lng }));
-        map.fitBounds(bounds);
-      } else {
-        routeLayer.clearLayers();
-        geoRouteLine = window.L.polyline(path, { color: "#0E9F91", weight: 5, opacity: 0.9 }).addTo(routeLayer);
-        map.fitBounds(geoRouteLine.getBounds(), { padding: [20, 20] });
-      }
+      routeLayer.clearLayers();
+      geoRouteLine = window.L.polyline(path, { color: "#0E9F91", weight: 5, opacity: 0.9 }).addTo(routeLayer);
+      map.fitBounds(geoRouteLine.getBounds(), { padding: [20, 20] });
       const distance = Number(data.distanceMeters);
       const seconds = Number(data.timeSeconds);
       const summary = [
@@ -304,11 +208,7 @@
       ].filter(Boolean).join(" · ");
       say("Geoapify driving route" + (summary ? ": " + summary : "") + ". Estimates can change with traffic and road conditions.");
     } catch {
-      const url = "https://www.google.com/maps/dir/?api=1&origin=" +
-        encodeURIComponent(searchCenter.lat + "," + searchCenter.lng) + "&destination=" +
-        encodeURIComponent(destinationLat + "," + destinationLng) + "&travelmode=driving";
-      window.open(url, "_blank", "noopener,noreferrer");
-      say("Bradcall couldn't calculate an in-map route just now, so directions opened in Google Maps.");
+      say("Geoapify couldn't calculate this route right now. Check the Render MAPS_API_KEY and try again.");
     }
   }
 
@@ -321,23 +221,11 @@
     }
     searchCenter = { lat: Number(selectedPoint.lat), lng: Number(selectedPoint.lng) };
     searchRadiusKm = selectedRadius();
-    if (mapProvider === "google") {
-      if (!preserveViewport) {
-        map.setCenter(searchCenter);
-        map.setZoom(zoomForRadius(searchRadiusKm));
-      }
-      coverage.setCenter(searchCenter);
-      coverage.setRadius(searchRadiusKm * 1000);
-      coverage.setMap(map);
-      routeLayer.set("directions", null);
-    } else {
-      if (!preserveViewport) map.setView([searchCenter.lat, searchCenter.lng], zoomForRadius(searchRadiusKm));
-      coverage.setLatLng([searchCenter.lat, searchCenter.lng]);
-      coverage.setRadius(searchRadiusKm * 1000);
-      coverage.addTo(map);
-      clearMarkers();
-    }
-    if (mapProvider === "google") clearMarkers();
+    if (!preserveViewport) map.setView([searchCenter.lat, searchCenter.lng], zoomForRadius(searchRadiusKm));
+    coverage.setLatLng([searchCenter.lat, searchCenter.lng]);
+    coverage.setRadius(searchRadiusKm * 1000);
+    coverage.addTo(map);
+    clearMarkers();
 
     say("Finding nearby service listings…");
     const params = new URLSearchParams({
@@ -379,11 +267,9 @@
     clearTimeout(viewportTimer);
     viewportTimer = setTimeout(() => {
       if (!map) return;
-      const center = mapProvider === "google" ? map.getCenter() : map.getCenter();
-      const point = mapProvider === "google"
-        ? { lat: center?.lat(), lng: center?.lng() }
-        : { lat: center?.lat, lng: center?.lng };
-      const zoom = Number(mapProvider === "google" ? map.getZoom() : map.getZoom());
+      const center = map.getCenter();
+      const point = { lat: center?.lat, lng: center?.lng };
+      const zoom = Number(map.getZoom());
       if (!Number.isFinite(point.lat) || !Number.isFinite(point.lng) || !Number.isFinite(zoom)) return;
       const radius = zoom >= 13 ? 5 : zoom >= 11 ? 10 : zoom >= 9 ? 25 : 50;
       const sameCentre = searchCenter &&
@@ -411,18 +297,12 @@
       if (locationStatus) locationStatus.textContent = "Location enabled. Showing nearby services; your exact position is not shown publicly.";
       try {
         await initializeMap();
-        if (mapProvider === "google") {
-          const result = await googleGeocoder.geocode({ location: coords });
-          const address = result.results?.[0]?.formatted_address;
-          if (address) search.value = address.split(",").slice(0, 2).join(",").trim();
-        } else {
-          try {
-            const response = await fetch(API + "/api/maps/reverse?lat=" + encodeURIComponent(coords.lat) + "&lon=" + encodeURIComponent(coords.lng));
-            const area = await response.json();
-            if (response.ok && area.formatted) search.value = area.formatted.split(",").slice(0, 2).join(",").trim();
-          } catch {
-            // Coordinates still work when reverse geocoding is unavailable.
-          }
+        try {
+          const response = await fetch(API + "/api/maps/reverse?lat=" + encodeURIComponent(coords.lat) + "&lon=" + encodeURIComponent(coords.lng));
+          const area = await response.json();
+          if (response.ok && area.formatted) search.value = area.formatted.split(",").slice(0, 2).join(",").trim();
+        } catch {
+          // Coordinates still work when reverse geocoding is unavailable.
         }
         await refresh(coords);
       } catch (error) {
@@ -529,13 +409,11 @@
   initializeMap().then(() => {
     const resizeMap = () => {
       if (!map) return;
-      if (mapProvider === "google") google.maps.event.trigger(map, "resize");
-      else map.invalidateSize({ pan: false });
+      map.invalidateSize({ pan: false });
     };
     window.addEventListener("load", resizeMap, { once: true });
     window.addEventListener("resize", resizeMap);
-    if (mapProvider === "google") map.addListener("idle", refreshFromViewport);
-    else map.on("moveend zoomend", refreshFromViewport);
+    map.on("moveend zoomend", refreshFromViewport);
     requestAnimationFrame(() => requestAnimationFrame(resizeMap));
     say("Map ready. The base map works independently; Geoapify powers area search and driving routes. Allow location to see nearby providers, or search any area.");
     // This page is explicitly a nearby-services map, so ask for location on entry.
@@ -566,14 +444,11 @@
       requestDeviceLocation();
     }
   }).catch(error => {
-    // Keep a useful, key-free map visible even when every Leaflet CDN is blocked.
-    // This fallback is for map display only; live provider pins/search need the interactive map.
-    say("Interactive map could not load. Showing a basic map preview; refresh or check your connection for provider pins.");
+    say("Geoapify interactive map could not start. Check your connection and the Render MAPS_API_KEY, then reload.");
     if (mapNode) {
-      mapNode.setAttribute("role", "region");
-      mapNode.setAttribute("aria-label", "Basic OpenStreetMap preview");
-      mapNode.innerHTML = '<iframe class="community-map-fallback-frame" title="OpenStreetMap map preview of Nigeria" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.openstreetmap.org/export/embed.html?bbox=2.6%2C4.2%2C14.7%2C13.9&layer=mapnik"></iframe>';
+      mapNode.setAttribute("role", "status");
+      mapNode.innerHTML = '<div class="community-map-load-error">The Geoapify map could not load. Check your connection and map configuration, then reload.</div>';
     }
-    if (locationStatus) locationStatus.textContent = "The basic map does not need an API key. Provider search and driving routes use the backend location service.";
+    if (locationStatus) locationStatus.textContent = "Bradcall uses Geoapify for its map, place search and driving routes.";
   });
 })();
