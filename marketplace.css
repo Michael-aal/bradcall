@@ -26,7 +26,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .auth-form{display:grid;gap:15px}
 .field{display:grid;gap:7px}
 .field label{font-size:13px;font-weight:800}
-.field input,.field select{width:100%;border:1px solid #d8e3de;border-radius:10px;padding:13px 14px;background:#fff;color:#142D33;min-height:46px}
+.field input,.field select{width:100%;border:1px solid #d8e3de;border-radius:10px;padding:13px 14px;background:#fff;color:#071b14;min-height:46px}
 .auth-submit{width:100%;border:0;border-radius:11px;padding:14px;font-weight:800;margin-top:4px}
 .auth-error{display:none;background:#fff0ef;color:#9c3029;border-radius:10px;padding:11px 13px;font-size:13px;line-height:1.5}
 .auth-error.visible{display:block}
@@ -38,7 +38,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:800px){.market-grid{grid-template-columns:1fr 1fr}.auth-wrap{grid-template-columns:1fr;gap:22px;padding-top:32px}.auth-intro{padding:0 4px}.auth-intro h1{font-size:38px}}
 @media(max-width:520px){.market-grid{grid-template-columns:1fr}.page-shell{padding:32px 16px 52px}.auth-panel{padding:22px 18px}.auth-wrap{padding:26px 16px 44px}.role-choice{grid-template-columns:1fr}}
 
-:root{--red:var(--brand-green);--red-soft:#DDF7F1;--dark:#142D33;--paper:var(--brand-paper);--line:var(--brand-line)}
+:root{--red:var(--brand-green);--red-soft:#DDF7F1;--dark:#071b14;--paper:var(--brand-paper);--line:var(--brand-line)}
 
 
 /* Dribbble-inspired marketplace UI refinement */
