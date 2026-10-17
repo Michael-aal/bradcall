@@ -13,20 +13,20 @@
   const links = role === "ADMIN" ? [
     ["Overview", "admin-dashboard.html"], ["Marketplace", "services.html"], ["Community map", "map.html"],
     ["Verification & trust", "admin-verification.html"], ["Bookings", "bookings.html"],
-    ["Payments", "payments.html"], ["Support", "help-center.html"]
+    ["Payments", "payments.html"], ["Messages", "messages.html"], ["Support", "help-center.html"], ["Trust Centre", "trust-center.html"]
   ] : company ? [
     ["Company overview", "provider-dashboard.html"], ["Community map", "map.html"], ["Service catalogue", "provider-dashboard.html#provider-services"],
-    ["Customer requests", "bookings.html"], ["Messages", "messages.html"],
-    ["Company finance", "finance.html"], ["Payout account", "payout-account.html"],
-    ["Company profile", "profile-setup.html?edit=1"], ["Help", "help-center.html"]
+    ["Customer requests", "bookings.html"], ["Messages", "messages.html"], ["Company finance", "finance.html"],
+    ["Payout account", "payout-account.html"], ["Company profile", "profile-setup.html?edit=1"], ["Reviews", "reviews.html"], ["Help", "help-center.html"]
   ] : role === "PROVIDER" ? [
     ["Overview", "provider-dashboard.html"], ["Explore services", "services.html"], ["Community map", "map.html"],
     ["My listings", "provider-dashboard.html#provider-services"], ["Jobs & requests", "bookings.html"],
-    ["Messages", "messages.html"], ["Payments", "payments.html"], ["My profile", "profile-setup.html?edit=1"]
+    ["Payments", "payments.html"], ["Messages", "messages.html"], ["Reviews", "reviews.html"],
+    ["My profile", "profile-setup.html?edit=1"], ["Help", "help-center.html"], ["Trust Centre", "trust-center.html"]
   ] : [
     ["Home", "consumer-dashboard.html"], ["Explore services", "services.html"], ["Community map", "map.html"],
-    ["My bookings", "bookings.html"], ["Messages", "messages.html"],
-    ["My profile", "profile-setup.html?edit=1"], ["Help", "help-center.html"]
+    ["My bookings", "bookings.html"], ["Payments", "payments.html"], ["Messages", "messages.html"],
+    ["Reviews", "reviews.html"], ["My profile", "profile-setup.html?edit=1"], ["Help", "help-center.html"], ["Trust Centre", "trust-center.html"]
   ];
 
   const iconPaths = {
@@ -57,32 +57,75 @@
     "Support":'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.3 1.7c-1.1 1-1.8 1.3-1.8 3.3M12 17h.01"/>',
     "Help":'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.3 1.7c-1.1 1-1.8 1.3-1.8 3.3M12 17h.01"/>'
   };
+  iconPaths["More"] = '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>';
+  iconPaths["Reviews"] = '<path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/>';
+  iconPaths["Trust Centre"] = '<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>';
   const iconMarkup = label => '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (iconPaths[label] || iconPaths["Overview"]) + '</svg>';
   const decorateLink = (a, label) => { a.classList.add("workspace-nav-link"); a.innerHTML = iconMarkup(label) + '<span>' + label + '</span>'; };
 
   const nav = document.querySelector(".mp-nav, .topbar nav, header nav");
+  const isCurrent = href => location.pathname.endsWith(href.split("#")[0]) && (!href.includes("#") || location.hash === href.slice(href.indexOf("#")));
+  const createNavLink = ([label, href]) => {
+    const a = document.createElement("a");
+    decorateLink(a, label);
+    a.href = href;
+    if (isCurrent(href)) a.setAttribute("aria-current", "page");
+    return a;
+  };
   if (nav) {
     nav.replaceChildren();
-    for (const [label, href] of links) {
-      const a = document.createElement("a");
-      decorateLink(a, label);
-      a.href = href;
-      if (location.pathname.endsWith(href.split("#")[0]) && (!href.includes("#") || location.hash === href.slice(href.indexOf("#")))) {
-        a.setAttribute("aria-current", "page");
-      }
-      nav.append(a);
+    links.slice(0, 4).forEach(item => nav.append(createNavLink(item)));
+    const moreLinks = links.slice(4);
+    if (moreLinks.length) {
+      const more = document.createElement("div");
+      more.className = "workspace-more";
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "workspace-more-toggle";
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.innerHTML = iconMarkup("More") + '<span>More</span><svg class="workspace-more-chevron" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>';
+      const panel = document.createElement("div");
+      panel.className = "workspace-more-panel";
+      panel.hidden = true;
+      panel.setAttribute("aria-label", "More workspace sections");
+      moreLinks.forEach(item => panel.append(createNavLink(item)));
+      toggle.addEventListener("click", () => {
+        const open = toggle.getAttribute("aria-expanded") !== "true";
+        toggle.setAttribute("aria-expanded", String(open));
+        panel.hidden = !open;
+      });
+      document.addEventListener("click", event => {
+        if (!more.contains(event.target)) { toggle.setAttribute("aria-expanded", "false"); panel.hidden = true; }
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !panel.hidden) { toggle.setAttribute("aria-expanded", "false"); panel.hidden = true; toggle.focus(); }
+      });
+      more.append(toggle, panel);
+      nav.append(more);
     }
   }
 
   const mobileItems = role === "ADMIN"
-    ? [["Home", home], ["Marketplace", "services.html"], ["Map", "map.html"], ["Trust", "admin-verification.html"], ["Profile", "profile-setup.html?edit=1"]]
+    ? [["Home", home], ["Marketplace", "services.html"], ["Payments", "payments.html"], ["Trust", "admin-verification.html"], ["Profile", "profile-setup.html?edit=1"]]
     : company
-      ? [["Overview", home], ["Map", "map.html"], ["Listings", "provider-dashboard.html#provider-services"], ["Requests", "bookings.html"], ["Company", "profile-setup.html?edit=1"]]
+      ? [["Overview", home], ["Map", "map.html"], ["Requests", "bookings.html"], ["Finance", "finance.html"], ["Profile", "profile-setup.html?edit=1"]]
       : role === "PROVIDER"
-        ? [["Overview", home], ["Map", "map.html"], ["Explore", "services.html"], ["Jobs", "bookings.html"], ["Profile", "profile-setup.html?edit=1"]]
-        : [["Home", home], ["Map", "map.html"], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Profile", "profile-setup.html?edit=1"]];
+        ? [["Overview", home], ["Map", "map.html"], ["Jobs", "bookings.html"], ["Payments", "payments.html"], ["Profile", "profile-setup.html?edit=1"]]
+        : [["Home", home], ["Explore", "services.html"], ["Map", "map.html"], ["Bookings", "bookings.html"], ["Payments", "payments.html"]];
   const style = document.createElement("style");
   style.textContent = `
+    .workspace-more{position:relative;display:inline-flex;align-items:center}
+    .workspace-more-toggle{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 10px;border:1px solid transparent;border-radius:10px;background:transparent;color:inherit;font:700 13px/1 "DM Sans",system-ui,sans-serif;cursor:pointer}
+    .workspace-more-toggle>svg:first-child{width:17px;height:17px;flex:0 0 auto}
+    .workspace-more-chevron{width:14px;height:14px;transition:transform .18s ease}
+    .workspace-more-toggle[aria-expanded="true"] .workspace-more-chevron{transform:rotate(180deg)}
+    .workspace-more-toggle:hover,.workspace-more-toggle:focus-visible{background:#0e5135;color:#fff}
+    .workspace-more-panel{position:absolute;z-index:1200;top:calc(100% + 8px);right:0;width:min(280px,80vw);max-height:min(65vh,440px);overflow:auto;padding:8px;border:1px solid #315b43;border-radius:14px;background:#071b14;box-shadow:0 18px 45px #06160f55}
+    .workspace-more-panel[hidden]{display:none!important}
+    .workspace-more-panel a{display:flex!important;align-items:center;gap:10px;min-height:42px;padding:10px 12px;border-radius:9px;color:#e2eee5!important;text-decoration:none;font:700 13px/1.25 "DM Sans",system-ui,sans-serif}
+    .workspace-more-panel a svg{width:17px;height:17px;flex:0 0 auto}
+    .workspace-more-panel a:hover,.workspace-more-panel a[aria-current="page"]{background:#0e5135;color:#fff!important}
+    .workspace-more-toggle:focus-visible,.workspace-more-panel a:focus-visible{outline:3px solid #b7f36b;outline-offset:2px}
     .mobile-tabbar{display:none!important}
     .workspace-mobile-nav,.workspace-mobile-header,.workspace-mobile-drawer{display:none}
     .workspace-mobile-drawer:not([hidden]){display:block}
