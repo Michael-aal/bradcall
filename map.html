@@ -62,6 +62,7 @@
  menu.querySelectorAll("a").forEach(a=>a.addEventListener("click",close));
  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
  if(window.lucide)window.lucide.createIcons();
+ window.addEventListener("DOMContentLoaded",()=>{if(window.lucide)window.lucide.createIcons();});
 })();
 </script>
 </body></html>
