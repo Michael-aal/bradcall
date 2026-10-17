@@ -649,3 +649,93 @@ body.bradcall-home{background:#f5f7f2;color:#0a2118}
   .bradcall-home .home-topbar .brand strong { font-size: 18px; }
   .bradcall-home .home-topbar > .hamb { min-width: 78px; padding-inline: 9px; }
 }
+
+
+/* Landing navbar refinement: animated mobile drawer, crisp icon alignment, and reduced-motion support. */
+.bradcall-home .home-topbar #desktop-nav a,
+.bradcall-home .home-topbar .actions a,
+.bradcall-home .home-topbar > .hamb,
+.bradcall-home .home-topbar .mobile-nav-panel a,
+.bradcall-home .home-topbar .mobile-nav-head button,
+.bradcall-home .home-topbar .mobile-actions a {
+  transition: color .18s ease, background-color .18s ease, border-color .18s ease,
+    box-shadow .18s ease, transform .18s ease;
+}
+.bradcall-home .home-topbar #desktop-nav a {
+  min-height: 42px;
+  padding: 0 4px;
+}
+.bradcall-home .home-topbar #desktop-nav a svg,
+.bradcall-home .home-topbar .actions a svg,
+.bradcall-home .home-topbar .hamb svg,
+.bradcall-home .home-topbar .mobile-nav-panel a svg,
+.bradcall-home .home-topbar .mobile-nav-head button svg,
+.bradcall-home .home-topbar .mobile-actions a svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  stroke-width: 2;
+}
+.bradcall-home .home-topbar .mobile-nav {
+  display: block;
+  visibility: visible;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, background-color .18s ease;
+}
+.bradcall-home .home-topbar .mobile-nav[hidden] {
+  display: none !important;
+}
+.bradcall-home .home-topbar .mobile-nav.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bradcall-home .home-topbar .mobile-nav.is-closing {
+  opacity: 0;
+  pointer-events: none;
+}
+.bradcall-home .home-topbar .mobile-nav-panel {
+  transform: translateY(-9px) scale(.985);
+  transform-origin: top right;
+  transition: transform .2s cubic-bezier(.2,.75,.25,1), opacity .2s ease;
+  opacity: .96;
+}
+.bradcall-home .home-topbar .mobile-nav.is-open .mobile-nav-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.bradcall-home .home-topbar .mobile-nav.is-closing .mobile-nav-panel {
+  transform: translateY(-6px) scale(.99);
+  opacity: 0;
+}
+.bradcall-home .home-topbar > .hamb:hover {
+  box-shadow: 0 8px 20px rgba(183,243,107,.2);
+  transform: translateY(-1px);
+}
+.bradcall-home .home-topbar .mobile-nav-panel nav a:active,
+.bradcall-home .home-topbar .mobile-actions a:active {
+  transform: scale(.99);
+}
+.bradcall-home .home-topbar .mobile-nav-panel nav a:focus-visible,
+.bradcall-home .home-topbar .mobile-nav-head button:focus-visible,
+.bradcall-home .home-topbar .mobile-actions a:focus-visible {
+  outline: 3px solid #b7f36b;
+  outline-offset: 3px;
+}
+@media (max-width: 420px) {
+  .bradcall-home .home-topbar .mobile-nav { padding: 8px; }
+  .bradcall-home .home-topbar .mobile-nav-panel { padding: 14px; }
+  .bradcall-home .home-topbar .mobile-nav-panel nav { gap: 6px; }
+  .bradcall-home .home-topbar .mobile-nav-panel nav a { min-height: 49px; padding: 11px; gap: 10px; }
+  .bradcall-home .home-topbar .mobile-actions { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bradcall-home .home-topbar .mobile-nav,
+  .bradcall-home .home-topbar .mobile-nav-panel,
+  .bradcall-home .home-topbar > .hamb,
+  .bradcall-home .home-topbar .mobile-nav-panel a,
+  .bradcall-home .home-topbar .mobile-actions a {
+    transition: none !important;
+    animation: none !important;
+  }
+}
