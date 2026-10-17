@@ -104,3 +104,10 @@ body:not(.bradcall-home) .mobile-tabbar a.is-active{background:#0e5135!important
 .auth-form .role-option:has(input:checked){border-color:var(--brand-green);background:#effaf6;box-shadow:0 0 0 1px var(--brand-green) inset}
 .auth-form .role-option:focus-within{outline:2px solid var(--brand-yellow);outline-offset:2px}
 #company-name-field[hidden]{display:none!important}
+
+
+/* Shared marketplace card system: more breathing room without changing behavior. */
+:root{--bc-card-radius:20px;--bc-card-shadow:0 10px 28px rgba(7,27,20,.045)}
+.page-shell{width:min(100% - 48px,1240px);padding:clamp(36px,5vw,64px) 0 clamp(56px,7vw,84px)}.page-heading{margin-bottom:42px}.page-heading h1{max-width:850px;line-height:1.04}.page-heading p{max-width:700px}.market-grid{gap:22px}.market-card{padding:26px;min-height:220px;border-radius:var(--bc-card-radius);box-shadow:var(--bc-card-shadow)}.market-icon{width:50px;height:50px;margin-bottom:22px}.market-card h2,.market-card h3{line-height:1.2;margin:0 0 10px}.market-card p{margin:0 0 18px}.auth-wrap{width:min(100% - 48px,1120px);gap:clamp(28px,5vw,64px);padding-block:clamp(40px,6vw,72px)}.auth-panel{padding:clamp(22px,3vw,34px);border-radius:22px}.auth-form{gap:18px}.field{gap:8px}.field input,.field select{min-height:48px}.role-choice{gap:12px}.topbar{padding-inline:clamp(16px,4vw,64px)}
+@media(max-width:900px){.page-shell{width:calc(100% - 32px)}.market-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.market-card{padding:22px;min-height:0}.auth-wrap{width:calc(100% - 32px)}}
+@media(max-width:600px){.page-shell{width:calc(100% - 28px);padding:32px 0 48px}.page-heading{margin-bottom:26px}.market-grid{grid-template-columns:minmax(0,1fr);gap:14px}.market-card{padding:20px;border-radius:17px}.market-icon{margin-bottom:15px}.auth-wrap{width:calc(100% - 28px);padding:28px 0 44px;gap:22px}.auth-panel{padding:22px 18px;border-radius:18px}.auth-form{gap:15px}.role-choice{grid-template-columns:minmax(0,1fr)}}

@@ -66,3 +66,10 @@ body:not(.bradcall-home) .mobile-tabbar a.is-active{background:#0e5135!important
 body:not(.bradcall-home) a:not(.dark):not(.dash-btn):not(.mp-btn):not(.brand):not(.mp-brand){text-decoration-color:#0e5135}
 body:not(.bradcall-home) .page-heading .eyebrow,body:not(.bradcall-home) .mp-kicker,body:not(.bradcall-home) .inline-link{color:#0e5135}
 body:not(.bradcall-home) button:focus-visible,body:not(.bradcall-home) a:focus-visible,body:not(.bradcall-home) input:focus-visible,body:not(.bradcall-home) select:focus-visible,body:not(.bradcall-home) textarea:focus-visible{outline-color:#b7f36b}
+
+
+/* Bradcall UI audit: spacious layout, consistent cards, and phone-first rhythm. */
+:root{--bc-space-section:clamp(3.25rem,7vw,5.5rem);--bc-card-radius:20px;--bc-card-shadow:0 10px 30px rgba(7,27,20,.045)}
+img,svg{max-width:100%}main{min-width:0}.page-shell,.dash-shell{width:min(100% - 48px,1240px);margin-inline:auto}.page-heading{margin-bottom:40px}.page-heading h1{max-width:850px;line-height:1.04}.page-heading p{max-width:680px}.market-grid{gap:22px}.market-card{padding:26px;min-height:220px;border-radius:var(--bc-card-radius);box-shadow:var(--bc-card-shadow)}.market-icon{width:50px;height:50px;margin-bottom:22px}.market-card h2,.market-card h3{line-height:1.2;margin:0 0 10px}.market-card p{margin:0 0 18px}.topbar{padding-inline:clamp(16px,4vw,64px)}.topbar nav{gap:clamp(10px,1.7vw,24px)}.section{padding-block:var(--bc-space-section)}.section-head{margin-bottom:38px;gap:28px}.site-footer{padding:30px 20px}
+@media(max-width:900px){.page-shell,.dash-shell{width:min(100% - 32px,1240px)}.market-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.market-card{padding:22px;min-height:0}.topbar{gap:12px}.topbar nav{gap:6px}}
+@media(max-width:560px){.page-shell,.dash-shell{width:calc(100% - 28px)}.page-heading{margin-bottom:26px}.market-grid{grid-template-columns:minmax(0,1fr);gap:14px}.market-card{padding:20px;border-radius:17px}.market-icon{margin-bottom:15px}.section-head{align-items:flex-start;flex-direction:column;gap:14px;margin-bottom:24px}}

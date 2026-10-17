@@ -53,3 +53,9 @@ body:not(.bradcall-home) .mp-top{background:#071b14!important;color:#fff!importa
 body:not(.bradcall-home) .mp-brand,body:not(.bradcall-home) .mp-nav a{color:#fff!important}
 body:not(.bradcall-home) .mobile-tabbar{background:#071b14!important;border-color:#244b35!important}
 body:not(.bradcall-home) .mobile-tabbar a.is-active{background:#0e5135!important;color:#fff!important}
+
+
+/* Workspace screens: spacious content panels and responsive cards. */
+.mp-shell{width:min(100% - 48px,1240px);padding:clamp(28px,4vw,48px) 0 72px}.mp-head{margin-bottom:30px}.mp-head h1{line-height:1.06;max-width:900px}.mp-head>p{max-width:760px;line-height:1.65}.mp-panel,.mp-card{padding:clamp(20px,2.5vw,28px);border-radius:20px;margin:20px 0;box-shadow:0 8px 26px rgba(7,27,20,.04)}.mp-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.mp-item{padding:18px;border-radius:16px;margin:0}.mp-row{gap:18px}.mp-actions{gap:10px}.mp-empty{padding:28px;line-height:1.6}.mp-field{gap:8px;margin:16px 0}.mp-field input,.mp-field textarea,.mp-field select{min-height:46px;padding:13px 14px}.mp-btn{min-height:44px;border-radius:11px;padding:12px 16px}
+@media(max-width:900px){.mp-shell{width:calc(100% - 32px)}.mp-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+@media(max-width:600px){.mp-shell{width:calc(100% - 28px);padding:22px 0 46px}.mp-head{margin-bottom:22px}.mp-panel,.mp-card{padding:17px;border-radius:16px;margin:14px 0}.mp-grid{grid-template-columns:minmax(0,1fr);gap:12px}.mp-item{padding:15px}.mp-empty{padding:22px 16px}.mp-actions{display:grid;grid-template-columns:minmax(0,1fr)}.mp-actions>*{width:100%}}
