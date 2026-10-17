@@ -77,7 +77,7 @@
   const mobileItems = role === "ADMIN"
     ? [["Home", home], ["Marketplace", "services.html"], ["Map", "map.html"], ["Trust", "admin-verification.html"], ["Profile", "profile-setup.html?edit=1"]]
     : company
-      ? [["Overview", home], ["Map", "map.html"], ["Listings", "provider-dashboard.html#provider-services"], ["Requests", "bookings.html"], ["Messages", "messages.html"], ["Company", "profile-setup.html?edit=1"]]
+      ? [["Overview", home], ["Map", "map.html"], ["Listings", "provider-dashboard.html#provider-services"], ["Requests", "bookings.html"], ["Company", "profile-setup.html?edit=1"]]
       : role === "PROVIDER"
         ? [["Overview", home], ["Map", "map.html"], ["Explore", "services.html"], ["Jobs", "bookings.html"], ["Profile", "profile-setup.html?edit=1"]]
         : [["Home", home], ["Map", "map.html"], ["Explore", "services.html"], ["Bookings", "bookings.html"], ["Profile", "profile-setup.html?edit=1"]];
