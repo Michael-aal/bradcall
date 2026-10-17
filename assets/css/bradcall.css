@@ -539,14 +539,113 @@ body.bradcall-home{background:#f5f7f2;color:#0a2118}
 .preview-map-label>svg{width:24px;height:24px;color:#0e5135}.preview-map-label b,.preview-map-label small{display:block}.preview-map-label small{margin-top:2px;color:#68766e;font-size:11px}
 @media(max-width:760px){.home-map-teaser{width:calc(100% - 28px);margin:24px auto 46px;grid-template-columns:minmax(0,1fr);gap:22px;padding:22px;border-radius:20px}.home-map-teaser h2{font-size:clamp(31px,8vw,40px)}.home-map-preview{min-height:230px;height:230px;order:-1}.home-map-points{gap:10px 14px}.home-map-cta{width:100%;justify-content:center}.home-topbar .mobile-nav{background:#071b14ef}.home-topbar .mobile-nav-panel{padding:16px 18px 22px}.home-topbar .mobile-nav-panel nav a{min-height:50px;font-size:15px}.home-topbar .mobile-actions{display:grid;grid-template-columns:1fr 1fr}.home-topbar .mobile-actions>*{min-width:0}}
 
-/* Spacious mobile bottom navigation — mirrors the signed-in workspace tabs. */
-.home-mobile-bottom-nav{display:none}
-@media(max-width:760px){
-  body.bradcall-home{padding-bottom:94px}
-  .home-mobile-bottom-nav{position:fixed;z-index:30;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:10px max(12px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom));background:rgba(7,27,20,.98);border-top:1px solid #244b35;box-shadow:0 -6px 24px rgba(7,27,20,.22);backdrop-filter:blur(12px)}
-  .home-mobile-bottom-nav a{display:flex;min-width:0;min-height:54px;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 3px;border-radius:12px;color:#c0d4c6;text-decoration:none;font:700 10px/1.25 "DM Sans",system-ui,sans-serif;text-align:center}
-  .home-mobile-bottom-nav a svg{width:21px;height:21px;flex:0 0 auto}
-  .home-mobile-bottom-nav a span{display:block;max-width:100%;overflow-wrap:anywhere}
-  .home-mobile-bottom-nav a[aria-current=page]{background:#0e5135;color:#fff}
-  .home-mobile-bottom-nav a:focus-visible{outline:3px solid #ffbf42;outline-offset:2px}
+
+
+/* Refined landing-page mobile header: one navigation system, no fixed duplicate tab bar. */
+.bradcall-home { padding-bottom: 0 !important; }
+.bradcall-home .home-mobile-bottom-nav { display: none !important; }
+.bradcall-home .home-topbar {
+  min-height: 72px;
+  height: 72px;
+  gap: 14px;
+}
+.bradcall-home .home-topbar > .hamb {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  min-width: 94px;
+  height: 44px;
+  flex: 0 0 auto;
+  margin-left: 8px;
+  padding: 0 13px;
+  border: 1px solid #315b43;
+  border-radius: 13px;
+  background: #0e5135;
+  color: #fff;
+  box-shadow: 0 5px 14px rgba(7,27,20,.13);
+  font-size: 12px;
+  font-weight: 800;
+}
+.bradcall-home .home-topbar > .hamb svg { width: 19px; height: 19px; }
+.bradcall-home .home-topbar > .hamb .hamb-label { display: inline; }
+.bradcall-home .home-topbar > .hamb:active { transform: scale(.98); }
+.bradcall-home .home-topbar .brand { flex: 0 1 auto; min-width: 0; gap: 9px; }
+.bradcall-home .home-topbar .brand > span[aria-hidden="true"] {
+  width: 39px !important; height: 39px !important; flex: 0 0 39px;
+  border-radius: 13px !important; background: #b7f36b !important;
+  color: #071b14 !important; font-size: 15px !important;
+  box-shadow: 0 5px 14px rgba(183,243,107,.15);
+}
+.bradcall-home .home-topbar .brand strong { font-size: 21px; letter-spacing: -.055em; }
+.bradcall-home .home-topbar .mobile-nav {
+  top: 72px;
+  inset: 72px 0 0;
+  padding: 12px;
+  background: rgba(3,14,9,.72);
+  backdrop-filter: blur(14px);
+}
+.bradcall-home .home-topbar .mobile-nav-panel {
+  width: min(100%, 460px);
+  min-height: auto;
+  margin-left: auto;
+  padding: 18px;
+  border: 1px solid #315b43;
+  border-radius: 20px;
+  background: #092b20;
+  color: #fff;
+  box-shadow: 0 24px 70px rgba(0,0,0,.34);
+}
+.bradcall-home .home-topbar .mobile-nav-head { margin-bottom: 12px; }
+.bradcall-home .home-topbar .mobile-nav-head strong { font-size: 17px; letter-spacing: -.02em; }
+.bradcall-home .home-topbar .mobile-nav-head button {
+  display: grid; place-items: center; width: 42px; height: 42px;
+  min-width: 42px; min-height: 42px; border-radius: 12px;
+  color: #fff; background: #123e2b; border: 1px solid #315b43;
+}
+.bradcall-home .home-topbar .mobile-nav-panel nav { display: grid; gap: 7px; }
+.bradcall-home .home-topbar .mobile-nav-panel nav a {
+  display: flex; align-items: center; gap: 12px; min-height: 52px;
+  padding: 12px 13px; border: 1px solid transparent; border-radius: 12px;
+  color: #f4fbf5 !important; background: rgba(255,255,255,.035);
+  font-size: 14px; font-weight: 750;
+}
+.bradcall-home .home-topbar .mobile-nav-panel nav a svg {
+  width: 19px; height: 19px; color: #b7f36b; flex: 0 0 auto;
+}
+.bradcall-home .home-topbar .mobile-nav-panel nav a:hover,
+.bradcall-home .home-topbar .mobile-nav-panel nav a:focus-visible {
+  background: #12432d; border-color: #477653;
+}
+.bradcall-home .home-topbar .mobile-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.bradcall-home .home-topbar .mobile-actions a { min-height: 48px; border-radius: 12px; font-size: 13px; }
+@media (max-width: 767px) {
+  .bradcall-home .home-topbar {
+    position: sticky; top: 0; z-index: 1100;
+    height: 68px; min-height: 68px;
+    padding: 8px 14px;
+    background: rgba(7,27,20,.97);
+    border-bottom: 1px solid #254b35;
+    box-shadow: 0 6px 22px rgba(7,27,20,.12);
+    backdrop-filter: blur(16px);
+  }
+  .bradcall-home .home-topbar > nav,
+  .bradcall-home .home-topbar > .actions { display: none !important; }
+  .bradcall-home .home-topbar .brand { gap: 8px; }
+  .bradcall-home .home-topbar .brand > span[aria-hidden="true"] { width: 36px !important; height: 36px !important; flex-basis: 36px; }
+  .bradcall-home .home-topbar .brand strong { font-size: clamp(18px,5vw,21px); }
+  .bradcall-home .home-topbar > .hamb {
+    min-width: 84px; height: 42px; margin-left: auto; padding: 0 11px;
+    border-radius: 12px; background: #b7f36b; border-color: #b7f36b;
+    color: #071b14; box-shadow: 0 5px 15px rgba(183,243,107,.13);
+  }
+  .bradcall-home .home-topbar > .hamb svg { width: 18px; height: 18px; }
+  .bradcall-home .home-topbar .mobile-nav { top: 68px; inset: 68px 0 0; padding: 10px; }
+  .bradcall-home .home-topbar .mobile-nav-panel { padding: 16px; border-radius: 18px; }
+}
+@media (max-width: 360px) {
+  .bradcall-home .home-topbar { padding-inline: 10px; gap: 8px; }
+  .bradcall-home .home-topbar .brand strong { font-size: 18px; }
+  .bradcall-home .home-topbar > .hamb { min-width: 78px; padding-inline: 9px; }
 }
