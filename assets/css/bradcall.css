@@ -739,3 +739,121 @@ body.bradcall-home{background:#f5f7f2;color:#0a2118}
     animation: none !important;
   }
 }
+
+
+/* The drawer is a sibling of the header in index.html, so target it at page level. */
+.bradcall-home .mobile-nav {
+  z-index: 1090;
+}
+.bradcall-home .mobile-nav-panel {
+  width: min(100%, 460px);
+  margin-left: auto;
+  border: 1px solid #315b43;
+  border-radius: 20px;
+  background: #092b20;
+  color: #fff;
+  box-shadow: 0 24px 70px rgba(0,0,0,.34);
+}
+.bradcall-home .mobile-nav-head { color: #fff; }
+.bradcall-home .mobile-nav-head button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  color: #fff;
+  background: #123e2b;
+  border: 1px solid #315b43;
+}
+.bradcall-home .mobile-nav-panel nav {
+  display: grid;
+  gap: 7px;
+}
+.bradcall-home .mobile-nav-panel nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 12px 13px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #f4fbf5 !important;
+  background: rgba(255,255,255,.035);
+  font-size: 14px;
+  font-weight: 750;
+}
+.bradcall-home .mobile-nav-panel nav a svg,
+.bradcall-home .mobile-actions a svg,
+.bradcall-home .mobile-nav-head button svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+.bradcall-home .mobile-nav-panel nav a:hover,
+.bradcall-home .mobile-nav-panel nav a:focus-visible {
+  background: #12432d;
+  border-color: #477653;
+}
+.bradcall-home .mobile-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.bradcall-home .mobile-actions a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.bradcall-home .mobile-nav {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+.bradcall-home .mobile-nav[hidden] { display: none !important; }
+.bradcall-home .mobile-nav.is-open { opacity: 1; pointer-events: auto; }
+.bradcall-home .mobile-nav.is-closing { opacity: 0; pointer-events: none; }
+.bradcall-home .mobile-nav-panel {
+  transform: translateY(-9px) scale(.985);
+  transform-origin: top right;
+  opacity: .96;
+  transition: transform .2s cubic-bezier(.2,.75,.25,1), opacity .2s ease;
+}
+.bradcall-home .mobile-nav.is-open .mobile-nav-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.bradcall-home .mobile-nav.is-closing .mobile-nav-panel {
+  transform: translateY(-6px) scale(.99);
+  opacity: 0;
+}
+@media (max-width: 767px) {
+  .bradcall-home .mobile-nav {
+    top: 68px;
+    inset: 68px 0 0;
+    padding: 10px;
+    background: rgba(3,14,9,.72);
+    backdrop-filter: blur(14px);
+  }
+  .bradcall-home .mobile-nav-panel { padding: 16px; border-radius: 18px; }
+}
+@media (max-width: 420px) {
+  .bradcall-home .mobile-nav { padding: 8px; }
+  .bradcall-home .mobile-nav-panel { padding: 14px; }
+  .bradcall-home .mobile-nav-panel nav { gap: 6px; }
+  .bradcall-home .mobile-nav-panel nav a { min-height: 49px; padding: 11px; gap: 10px; }
+  .bradcall-home .mobile-actions { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bradcall-home .mobile-nav,
+  .bradcall-home .mobile-nav-panel,
+  .bradcall-home .mobile-nav-panel nav a,
+  .bradcall-home .mobile-actions a {
+    transition: none !important;
+    animation: none !important;
+  }
+}
