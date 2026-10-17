@@ -154,7 +154,7 @@
   mobile.setAttribute("aria-label", "Quick navigation");
   mobileItems.forEach(([label, href]) => {
     const a = document.createElement("a");
-    a.textContent = label;
+    decorateLink(a, label);
     a.href = href;
     if (location.pathname.endsWith(href.split("#")[0]) && (!href.includes("#") || location.hash === href.slice(href.indexOf("#")))) a.setAttribute("aria-current", "page");
     mobile.append(a);
