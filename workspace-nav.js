@@ -57,6 +57,8 @@
     "Support":'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.3 1.7c-1.1 1-1.8 1.3-1.8 3.3M12 17h.01"/>',
     "Help":'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.3 1.7c-1.1 1-1.8 1.3-1.8 3.3M12 17h.01"/>'
   };
+  iconPaths["Finance"] = '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>';
+  iconPaths["Jobs"] = '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 5V3h8v2M7 12l3 3 7-7"/>';
   iconPaths["More"] = '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>';
   iconPaths["Reviews"] = '<path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/>';
   iconPaths["Trust Centre"] = '<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>';
