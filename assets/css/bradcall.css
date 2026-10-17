@@ -507,3 +507,46 @@ body.bradcall-home{background:#f5f7f2;color:#0a2118}
 /* Mobile landing-menu regression: override legacy display:none!important at phone widths. */
 @media(max-width:767px){.bradcall-home .mobile-nav:not([hidden]){display:block!important;visibility:visible!important;pointer-events:auto!important}}
 .bradcall-home .brand strong{background:transparent!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;color:#fff!important;text-shadow:none!important;border:0!important;padding:0!important}
+
+/* Dedicated map page entry and white-on-dark landing navigation. */
+.home-topbar #desktop-nav a{display:inline-flex;align-items:center;gap:7px}
+.home-topbar #desktop-nav a svg{width:16px;height:16px}
+.home-topbar .mobile-nav-panel{background:#071b14;color:#fff;border-color:#244b35}
+.home-topbar .mobile-nav-head{color:#fff}
+.home-topbar .mobile-nav-head button{color:#fff;background:#0e5135;border:1px solid #315b43;border-radius:10px}
+.home-topbar .mobile-nav-panel nav a{display:flex;align-items:center;gap:11px;color:#fff!important;background:transparent;border-bottom-color:#244b35}
+.home-topbar .mobile-nav-panel nav a svg{width:19px;height:19px;color:#b7f36b;flex:0 0 auto}
+.home-topbar .mobile-nav-panel nav a:hover,.home-topbar .mobile-nav-panel nav a:focus-visible{background:#0e5135;color:#fff!important}
+.home-topbar .mobile-actions .home-login{display:flex;align-items:center;justify-content:center;min-height:46px;border:1px solid #315b43;border-radius:11px;color:#fff!important}
+.home-topbar .mobile-actions .home-join{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px}
+.home-map-teaser{width:min(1200px,calc(100% - 48px));margin:34px auto 70px;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.9fr);gap:32px;align-items:center;padding:clamp(24px,5vw,52px);border:1px solid #dce9e2;border-radius:26px;background:#fff;box-shadow:0 18px 55px rgba(7,27,20,.06);overflow:hidden}
+.home-map-teaser h2{font:800 clamp(30px,4vw,48px)/1.05 Manrope,sans-serif;letter-spacing:-.055em;margin:12px 0}
+.home-map-teaser h2 em{font-style:normal;color:#0e5135}
+.home-map-teaser p{max-width:560px;color:#68766e;line-height:1.75}
+.home-map-cta{display:inline-flex;align-items:center;gap:10px;margin-top:10px;padding:13px 17px;border-radius:12px;background:#0e5135;color:#fff;text-decoration:none;font-weight:800}
+.home-map-cta svg{width:18px;height:18px}
+.home-map-points{display:flex;gap:12px 18px;flex-wrap:wrap;margin-top:20px;color:#56665d;font-size:12px;font-weight:700}
+.home-map-points span{display:inline-flex;align-items:center;gap:6px}
+.home-map-points svg{width:15px;height:15px;color:#0e5135}
+.home-map-preview{position:relative;min-height:290px;height:100%;border-radius:20px;overflow:hidden;background-color:#e5eee4;background-image:linear-gradient(25deg,transparent 46%,#fff 46%,#fff 49%,transparent 49%),linear-gradient(105deg,transparent 33%,#fff 33%,#fff 36%,transparent 36%),linear-gradient(155deg,transparent 62%,#fff 62%,#fff 65%,transparent 65%),linear-gradient(75deg,transparent 75%,#d4e5d2 75%,#d4e5d2 81%,transparent 81%);background-size:100% 100%}
+.preview-road{position:absolute;height:13px;background:#fff;border:1px solid #d8e3d4;border-left:0;border-right:0;width:140%;left:-20%;top:46%;transform:rotate(-18deg)}
+.preview-road-b{top:60%;transform:rotate(30deg)}
+.preview-road-c{top:32%;transform:rotate(72deg);width:110%;left:-5%}
+.preview-pin{position:absolute;display:grid;place-items:center;width:42px;height:42px;border:3px solid #fff;border-radius:50% 50% 50% 6px;transform:rotate(-45deg);background:#0e5135;color:#fff;box-shadow:0 6px 16px #071b1433}
+.preview-pin svg{width:19px;height:19px;transform:rotate(45deg)}
+.preview-pin-one{top:22%;left:22%}.preview-pin-two{top:42%;right:22%;background:#b7f36b;color:#071b14}.preview-pin-three{bottom:24%;left:48%}
+.preview-map-label{position:absolute;bottom:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #ffffffbd;border-radius:14px;background:#ffffffed;backdrop-filter:blur(8px);color:#071b14}
+.preview-map-label>svg{width:24px;height:24px;color:#0e5135}.preview-map-label b,.preview-map-label small{display:block}.preview-map-label small{margin-top:2px;color:#68766e;font-size:11px}
+@media(max-width:760px){.home-map-teaser{width:calc(100% - 28px);margin:24px auto 46px;grid-template-columns:minmax(0,1fr);gap:22px;padding:22px;border-radius:20px}.home-map-teaser h2{font-size:clamp(31px,8vw,40px)}.home-map-preview{min-height:230px;height:230px;order:-1}.home-map-points{gap:10px 14px}.home-map-cta{width:100%;justify-content:center}.home-topbar .mobile-nav{background:#071b14ef}.home-topbar .mobile-nav-panel{padding:16px 18px 22px}.home-topbar .mobile-nav-panel nav a{min-height:50px;font-size:15px}.home-topbar .mobile-actions{display:grid;grid-template-columns:1fr 1fr}.home-topbar .mobile-actions>*{min-width:0}}
+
+/* Spacious mobile bottom navigation — mirrors the signed-in workspace tabs. */
+.home-mobile-bottom-nav{display:none}
+@media(max-width:760px){
+  body.bradcall-home{padding-bottom:94px}
+  .home-mobile-bottom-nav{position:fixed;z-index:30;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:10px max(12px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom));background:rgba(7,27,20,.98);border-top:1px solid #244b35;box-shadow:0 -6px 24px rgba(7,27,20,.22);backdrop-filter:blur(12px)}
+  .home-mobile-bottom-nav a{display:flex;min-width:0;min-height:54px;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 3px;border-radius:12px;color:#c0d4c6;text-decoration:none;font:700 10px/1.25 "DM Sans",system-ui,sans-serif;text-align:center}
+  .home-mobile-bottom-nav a svg{width:21px;height:21px;flex:0 0 auto}
+  .home-mobile-bottom-nav a span{display:block;max-width:100%;overflow-wrap:anywhere}
+  .home-mobile-bottom-nav a[aria-current=page]{background:#0e5135;color:#fff}
+  .home-mobile-bottom-nav a:focus-visible{outline:3px solid #ffbf42;outline-offset:2px}
+}
