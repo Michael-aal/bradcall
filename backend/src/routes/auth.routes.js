@@ -12,7 +12,7 @@ async function deliverVerification(user,method,code){
  if(method==="EMAIL"){
   if(!process.env.RESEND_API_KEY)throw new Error("Email verification delivery is not configured.");
   const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+process.env.RESEND_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({from:process.env.EMAIL_FROM||"Bradcall <onboarding@resend.dev>",to:[user.email],subject:"Verify your Bradcall account",text})});
-  if(!response.ok)throw new Error("Email verification delivery failed.");
+  if(!response.ok){const details=await response.json().catch(()=>({}));const reason=typeof details.message==="string"?details.message:typeof details.name==="string"?details.name:"";throw new Error("Resend rejected verification email (HTTP "+response.status+(reason?"; "+reason.slice(0,180):"")+").");}
   return;
  }
  if(!process.env.TERMII_API_KEY||!process.env.TERMII_SENDER_ID)throw new Error("SMS verification delivery is not configured.");
