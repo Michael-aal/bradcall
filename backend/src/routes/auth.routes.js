@@ -35,14 +35,12 @@ router.post("/register",async(req,res,next)=>{try{
  const providerType=role==="PROVIDER"?(req.body.providerType||"INDIVIDUAL"):null;
  const providerRegistration=validateProviderRegistration({providerType,companyName:req.body.companyName});
  const phone=typeof req.body.phone==="string"?req.body.phone.trim():"",state=typeof req.body.state==="string"?req.body.state.trim():"",location=typeof req.body.location==="string"?req.body.location.trim():"",primaryCategory=typeof req.body.primaryCategory==="string"?req.body.primaryCategory.trim():"";
- const verificationMethod=req.body.verificationMethod==="PHONE"?"PHONE":"EMAIL";
+ const verificationMethod="EMAIL"; // Bradcall currently verifies new accounts by email only.
  if(!name||name.length>100||!email||email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!password)return res.status(400).json({message:"Enter a valid name, email, and password."});
  if(password.length<8||password.length>128)return res.status(400).json({message:"Password must be between 8 and 128 characters."});
  if(!["PARTNER","PROVIDER"].includes(role))return res.status(400).json({message:"Invalid role."});
- if(!["EMAIL","PHONE"].includes(verificationMethod))return res.status(400).json({message:"Choose email or phone verification."});
  if(!state||state.length>80)return res.status(400).json({message:"Choose your state."});
  if(!location||location.length>120)return res.status(400).json({message:"Enter your town or area."});
- if(verificationMethod==="PHONE"&&(!phone||!/^\+?[0-9 ()-]{7,30}$/.test(phone)))return res.status(400).json({message:"Enter a valid phone number to verify by SMS."});
  if(role==="PROVIDER"&&providerRegistration.error)return res.status(400).json({message:providerRegistration.error});
  if(role==="PROVIDER"&&(!phone||phone.length>30||!/^\+?[0-9 ()-]{7,30}$/.test(phone)))return res.status(400).json({message:"Enter a valid provider phone number."});
  if(role==="PROVIDER"&&(!location||location.length>120||!primaryCategory||primaryCategory.length>80))return res.status(400).json({message:"Enter your service location and choose a service category."});
@@ -66,9 +64,9 @@ router.post("/verify",async(req,res,next)=>{try{
 router.post("/resend-verification",async(req,res,next)=>{try{
  const email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"";if(!email)return res.status(400).json({message:"Enter the email address used to register."});
  const user=await prisma.user.findUnique({where:{email}});if(!user||!user.verificationRequired)return res.json({message:"If an account needs verification, a new code will be sent."});
- if(user.verificationMethod==="PHONE"&&!user.phone)return res.status(400).json({message:"Add a phone number or contact support."});
- if(user.verificationSentAt&&Date.now()-user.verificationSentAt.getTime()<60000)return res.status(429).json({message:"Wait one minute before requesting another code."});
- try{await issueCode(user,user.verificationMethod);res.json({message:"A new verification code was sent."});}catch(error){console.error("Bradcall verification resend failed:",error.message);res.status(503).json({message:"We could not deliver the code. Please try again later."});}
+ const switchingToEmail=user.verificationMethod!=="EMAIL";
+ if(!switchingToEmail&&user.verificationSentAt&&Date.now()-user.verificationSentAt.getTime()<60000)return res.status(429).json({message:"Wait one minute before requesting another code."});
+ try{await issueCode(user,"EMAIL");res.json({message:"A new email verification code was sent."});}catch(error){console.error("Bradcall verification resend failed:",error.message);res.status(503).json({message:"We could not deliver the email code. Please try again later."});}
 }catch(e){next(e)}});
 router.post("/login",async(req,res,next)=>{try{
  const email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"",password=typeof req.body.password==="string"?req.body.password:"";
@@ -76,7 +74,10 @@ router.post("/login",async(req,res,next)=>{try{
  const u=await prisma.user.findUnique({where:{email},include:{provider:true}});
  if(!u||!(await bcrypt.compare(password,u.passwordHash)))return res.status(401).json({message:"Invalid email or password."});
  if(u.status==="SUSPENDED"||u.status==="BANNED")return res.status(403).json({message:"This account is restricted. Contact Bradcall support or submit an appeal."});
- if(u.verificationRequired&&!(u.verificationMethod==="PHONE"?u.phoneVerifiedAt:u.emailVerifiedAt))return res.status(403).json({code:"VERIFICATION_REQUIRED",method:u.verificationMethod,message:"Verify your "+(u.verificationMethod==="PHONE"?"phone number":"email address")+" before logging in."});
+ if(u.verificationRequired&&!(u.verificationMethod==="PHONE"?u.phoneVerifiedAt:u.emailVerifiedAt)){
+  if(u.verificationMethod!=="EMAIL")await prisma.user.update({where:{id:u.id},data:{verificationMethod:"EMAIL",verificationCodeHash:null,verificationExpiresAt:null,verificationSentAt:null,verificationAttempts:0}});
+  return res.status(403).json({code:"VERIFICATION_REQUIRED",method:"EMAIL",message:"Verify your email address before logging in."});
+ }
  return res.json({user:publicUser(u),token:sign(u)});
 }catch(e){next(e)}});
 router.get("/me",auth,async(req,res,next)=>{try{const u=await prisma.user.findUnique({where:{id:req.user.id},include:{provider:true}});if(!u)return res.status(404).json({message:"Account not found."});res.json({user:publicUser(u)});}catch(e){next(e)}});
