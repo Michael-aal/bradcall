@@ -136,7 +136,13 @@
     .workspace-mobile-header .workspace-brand-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#0e5135;color:#f6fff8;font:900 17px/1 "Manrope","DM Sans",system-ui,sans-serif}
     .workspace-mobile-menu-button{display:grid;place-items:center;width:42px;height:42px;border:1px solid #315b43;border-radius:12px;background:#0e5135;color:#fff}
     .workspace-mobile-menu-button svg{width:21px;height:21px}
-    .workspace-mobile-drawer{position:fixed;z-index:1002;inset:62px 0 auto;background:#071b14;color:#fff;border-bottom:1px solid #315b43;box-shadow:0 18px 35px #06160f55;padding:12px 16px 18px;max-height:calc(100dvh - 140px);overflow:auto}
+    .workspace-mobile-drawer{position:fixed;z-index:1002;inset:62px 0 auto;background:#071b14;color:#fff;border-bottom:1px solid #315b43;box-shadow:0 18px 35px #06160f55;padding:12px 16px 18px;max-height:calc(100dvh - 140px);overflow:auto;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .18s ease,transform .2s cubic-bezier(.2,.75,.25,1)}
+    .workspace-mobile-drawer.is-open{opacity:1;transform:translateY(0);pointer-events:auto}
+    .workspace-mobile-drawer.is-closing{opacity:0;transform:translateY(-6px);pointer-events:none}
+    .workspace-mobile-drawer[hidden]{display:none!important}
+    .workspace-more-panel{opacity:0;transform:translateY(-5px);transition:opacity .16s ease,transform .16s ease}
+    .workspace-more-panel:not([hidden]){opacity:1;transform:translateY(0)}
+    @media(prefers-reduced-motion:reduce){.workspace-mobile-drawer,.workspace-more-chevron,.workspace-more-panel{transition:none!important;animation:none!important}}
     .workspace-mobile-drawer[hidden]{display:none!important}
     .workspace-mobile-drawer nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
     .workspace-mobile-drawer a{display:flex;align-items:center;gap:10px;min-height:42px;padding:10px 12px;border-radius:10px;color:#e2eee5;text-decoration:none;font:700 13px/1.25 "DM Sans",system-ui,sans-serif;background:#0e5135}.workspace-mobile-drawer a svg,.topbar nav a.workspace-nav-link svg{width:17px;height:17px;flex:0 0 auto}.topbar nav a.workspace-nav-link{display:inline-flex;align-items:center;gap:7px}
@@ -182,17 +188,54 @@
   });
   drawer.append(signout);
   const menuButton = mobileHeader.querySelector("button");
-  const closeDrawer = () => { drawer.hidden = true; menuButton.setAttribute("aria-expanded", "false"); menuButton.setAttribute("aria-label", "Open workspace menu"); };
-  menuButton.addEventListener("click", () => {
-    drawer.hidden = !drawer.hidden;
-    menuButton.setAttribute("aria-expanded", String(!drawer.hidden));
-    menuButton.setAttribute("aria-label", drawer.hidden ? "Open workspace menu" : "Close workspace menu");
-    menuButton.innerHTML = drawer.hidden
-      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'
-      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>';
-  });
+  let drawerCloseTimer;
+  const setDrawerState = open => {
+    menuButton.setAttribute("aria-expanded", String(open));
+    menuButton.setAttribute("aria-label", open ? "Close workspace menu" : "Open workspace menu");
+    menuButton.innerHTML = open
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+  };
+  const openDrawer = () => {
+    if (!drawer.hidden) return;
+    if (drawerCloseTimer) clearTimeout(drawerCloseTimer);
+    drawer.classList.remove("is-closing");
+    drawer.hidden = false;
+    setDrawerState(true);
+    requestAnimationFrame(() => drawer.classList.add("is-open"));
+    const firstLink = drawer.querySelector("a[href]");
+    if (firstLink) firstLink.focus();
+  };
+  const closeDrawer = ({restoreFocus = false, immediate = false} = {}) => {
+    if (drawer.hidden) return;
+    if (drawerCloseTimer) clearTimeout(drawerCloseTimer);
+    drawer.classList.remove("is-open");
+    drawer.classList.add("is-closing");
+    setDrawerState(false);
+    const finish = () => {
+      if (menuButton.getAttribute("aria-expanded") === "true") return;
+      drawer.hidden = true;
+      drawer.classList.remove("is-closing");
+      if (restoreFocus) menuButton.focus();
+    };
+    if (immediate) { finish(); return; }
+    drawerCloseTimer = setTimeout(finish, 190);
+  };
+  menuButton.addEventListener("click", () => drawer.hidden ? openDrawer() : closeDrawer({restoreFocus:true}));
   drawer.addEventListener("click", event => { if (event.target.closest("a")) closeDrawer(); });
-  document.addEventListener("keydown", event => { if (event.key === "Escape") closeDrawer(); });
+  document.addEventListener("click", event => {
+    if (!drawer.hidden && !drawer.contains(event.target) && !menuButton.contains(event.target)) closeDrawer();
+  });
+  document.addEventListener("keydown", event => { if (event.key === "Escape" && !drawer.hidden) closeDrawer({restoreFocus:true}); });
+  drawer.addEventListener("keydown", event => {
+    if (event.key !== "Tab") return;
+    const focusable = [...drawer.querySelectorAll('a[href],button:not([disabled])')].filter(el => el.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
+  window.addEventListener("resize", () => { if (window.innerWidth > 760 && !drawer.hidden) closeDrawer({immediate:true}); });
   document.body.prepend(mobileHeader, drawer);
   const mobile = document.createElement("nav");
   mobile.className = "workspace-mobile-nav";
