@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071b14">
+<meta name="description" content="Explore nearby Bradcall service providers, search places, and plan driving routes across Nigeria.">
+<title>Community Map · Bradcall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bradcall.css">
+<link rel="stylesheet" href="marketplace.css">
+<link rel="stylesheet" href="community-map.css">
+<link rel="stylesheet" href="map-page.css">
+<script src="https://unpkg.com/lucide@latest" defer></script>
+<script src="config.js"></script>
+</head>
+<body class="bradcall-map-page" data-workspace="map">
+<a class="skip-link" href="#map-main">Skip to map</a>
+<header class="topbar map-topbar">
+<a class="brand" href="index.html" aria-label="Bradcall home"><span class="brand-mark">B</span><span>bradcall</span></a>
+<nav aria-label="Main navigation"><a href="index.html"><i data-lucide="house"></i> Home</a><a href="services.html"><i data-lucide="search"></i> Explore services</a><a href="map.html" aria-current="page"><i data-lucide="map-pinned"></i> Map</a><a href="bookings.html"><i data-lucide="calendar-check"></i> Bookings</a></nav>
+<div class="actions"><a class="plain" href="login.html">Log in</a><a class="dark" href="register.html">Get started</a></div>
+<button class="map-menu-button" id="map-menu-button" type="button" aria-controls="map-mobile-menu" aria-expanded="false" aria-label="Open navigation"><i data-lucide="menu"></i></button>
+</header>
+<div class="map-mobile-menu" id="map-mobile-menu" hidden><nav aria-label="Mobile navigation"><a href="index.html"><i data-lucide="house"></i> Home</a><a href="services.html"><i data-lucide="search"></i> Explore services</a><a href="map.html" aria-current="page"><i data-lucide="map-pinned"></i> Community map</a><a href="bookings.html"><i data-lucide="calendar-check"></i> Bookings</a><a href="login.html"><i data-lucide="log-in"></i> Log in</a><a class="map-menu-join" href="register.html"><i data-lucide="user-round-plus"></i> Get started</a></nav></div>
+<main id="map-main" class="map-page-main">
+<section class="map-page-intro">
+<div><div class="eyebrow"><i data-lucide="compass"></i> BRADCALL COMMUNITY MAP</div><h1>Good people. <em>Closer to you.</em></h1><p>Search an area or use your device location to discover real published services. Check provider profiles and request a driving route when you're ready.</p></div>
+<div class="map-page-badge"><i data-lucide="shield-check"></i><span><strong>Privacy first</strong><small>Your exact location isn't shown publicly.</small></span></div>
+</section>
+<section class="community-map-section map-page-map" data-community-map aria-label="Interactive nearby service map">
+<div class="community-map-search map-page-search">
+<label class="map-search-field"><i data-lucide="search"></i><input id="community-map-search" aria-label="Search an area or landmark" placeholder="Search a town, area, street or landmark" autocomplete="off"></label>
+<label class="map-radius-field"><span>Radius</span><select id="community-map-radius" aria-label="Search radius"><option value="5">5 km</option><option value="10" selected>10 km</option><option value="25">25 km</option><option value="50">50 km</option></select></label>
+<button id="community-map-submit" class="dark map-location-button" type="button"><i data-lucide="locate-fixed"></i> Use my location</button>
+</div>
+<p id="community-map-location-status" class="map-location-status">Search for an area or allow device location to find services near you.</p>
+<div class="community-map-key"><span><i></i> Available providers</span><span><i class="coverage"></i> Approximate service radius</span><span><i class="route-key"></i> Driving route</span></div>
+<div class="community-map-workspace">
+<aside class="community-map-sidepanel" aria-label="Nearby provider results">
+<div class="community-map-sidehead"><h2>Providers in this area</h2><span>Live listings</span></div>
+<p class="map-results-intro">Choose a provider to view their profile and service details.</p>
+<div id="community-map-list"><div class="map-empty-state">Search an area to discover available providers.</div></div>
+<p id="community-map-caption" class="community-map-caption" role="status">Loading community map…</p>
+<div class="map-privacy-note"><i data-lucide="lock-keyhole"></i><span>Map pins show approximate service areas, not private home addresses.</span></div>
+</aside>
+<div id="community-map-canvas" class="community-map-canvas" role="application" aria-label="Interactive map of nearby Bradcall service providers"></div>
+</div>
+</section>
+<section class="map-bottom-note"><i data-lucide="info"></i><p><strong>Map tips</strong><br>Search an area and press Enter or choose a suggestion. On the map, drag to explore nearby areas. Choose <em>Normal map</em> or <em>Satellite map</em> using the map layer control.</p></section>
+</main>
+<footer class="site-footer">Bradcall · Local services, made simpler.</footer>
+<script src="community-map.js?v=20261017-dedicated-map"></script>
+<script src="workspace-nav.js"></script>
+<script>
+(() => {
+ const button=document.getElementById("map-menu-button"),menu=document.getElementById("map-mobile-menu");
+ if(!button||!menu)return;
+ const close=()=>{menu.hidden=true;button.setAttribute("aria-expanded","false");button.setAttribute("aria-label","Open navigation");};
+ button.addEventListener("click",()=>{menu.hidden=!menu.hidden;button.setAttribute("aria-expanded",String(!menu.hidden));button.setAttribute("aria-label",menu.hidden?"Open navigation":"Close navigation");if(window.lucide)window.lucide.createIcons();});
+ menu.querySelectorAll("a").forEach(a=>a.addEventListener("click",close));
+ document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+ if(window.lucide)window.lucide.createIcons();
+})();
+</script>
+</body></html>
